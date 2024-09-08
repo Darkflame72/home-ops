@@ -33,6 +33,7 @@
     talosctl
     talhelper
     cloudflared
+    envsubst
           ];
         };
       };

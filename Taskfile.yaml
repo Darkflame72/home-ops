@@ -23,6 +23,7 @@ includes:
   flux: .taskfiles/Flux
   talos: .taskfiles/Talos
   sops: .taskfiles/Sops
+  bootstrap: .taskfiles/Bootstrap
 
 tasks:
 
