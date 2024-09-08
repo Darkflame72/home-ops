@@ -40,7 +40,7 @@ spec:
               DOTNET_SYSTEM_IO_DISABLEFILELOCKING: "true"
               JELLYFIN_FFmpeg__probesize: 50000000
               JELLYFIN_FFmpeg__analyzeduration: 50000000
-              JELLYFIN_PublishedServerUrl: https://jelly.${SECRET-DOMAIN}
+              JELLYFIN_PublishedServerUrl: "https://jelly.${SECRET_DOMAIN}"
               TZ: Pacific/Auckland
             probes:
               liveness: &probes
@@ -63,11 +63,9 @@ spec:
               capabilities: { drop: ["ALL"] }
             resources:
               requests:
-                gpu.intel.com/i915: 1
                 cpu: 100m
                 memory: 512Mi
               limits:
-                gpu.intel.com/i915: 1
                 memory: 4Gi
         pod:
           securityContext:
