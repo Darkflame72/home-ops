@@ -99,7 +99,7 @@ spec:
     persistence:
       config:
         enabled: true
-        existingClaim: *app
+        existingClaim: jellyfin
         globalMounts:
           - path: /config
       transcode:
