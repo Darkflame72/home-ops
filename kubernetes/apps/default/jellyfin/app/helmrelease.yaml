@@ -98,11 +98,20 @@ spec:
             secretName: "jelly-tls"
     persistence:
       config:
-        existingClaim: jellyfin
-      tmp:
-        type: emptyDir
+        enabled: true
+        existingClaim: *app
+        globalMounts:
+          - path: /config
       transcode:
+        enabled: true
         type: emptyDir
+        globalMounts:
+          - path: /transcode
+      cache:
+        enabled: true
+        type: emptyDir
+        globalMounts:
+          - path: /cache
       media:
         type: nfs
         server: 10.0.60.15
