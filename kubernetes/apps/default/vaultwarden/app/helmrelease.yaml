@@ -25,7 +25,7 @@ spec:
               pullPolicy: IfNotPresent
             envFrom:
               - secretRef:
-                  name: *secret
+                  name: vaultwarden-secret
         pod:
           securityContext:
             runAsUser: 568
@@ -50,7 +50,7 @@ spec:
               TRASH_AUTO_DELETE_DAYS: "30"
             envFrom:
               - secretRef:
-                  name: *secret
+                  name: vaultwarden-secret
             probes:
               liveness: &probes
                 enabled: true
