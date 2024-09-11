@@ -10,3 +10,4 @@ resources:
   - ./atuin/ks.yaml
   - ./excalidraw/ks.yaml
   - ./jellyfin/ks.yaml
+  - ./thelounge/ks.yaml
