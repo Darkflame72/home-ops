@@ -11,3 +11,4 @@ resources:
   - ./excalidraw/ks.yaml
   - ./jellyfin/ks.yaml
   - ./thelounge/ks.yaml
+  - ./vaultwarden/ks.yaml
