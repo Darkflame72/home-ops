@@ -12,3 +12,4 @@ resources:
   - ./jellyfin/ks.yaml
   - ./thelounge/ks.yaml
   - ./vaultwarden/ks.yaml
+  - ./ocis/ks.yaml
