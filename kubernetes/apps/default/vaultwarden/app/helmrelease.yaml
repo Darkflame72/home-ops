@@ -49,8 +49,6 @@ spec:
               DOMAIN: "https://vault.${SECRET_DOMAIN}"
               TZ: ${TIMEZONE}
               SIGNUPS_ALLOWED: "false"
-              SMTP_FROM: noreply@${SECRET_DOMAIN}
-              SMTP_SECURITY: force_tls
               INVITATION_ORG_NAME: ${SECRET_DOMAIN}
               TRASH_AUTO_DELETE_DAYS: "30"
             envFrom:
