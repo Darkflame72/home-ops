@@ -26,16 +26,31 @@ spec:
               TZ: ${TIMEZONE}
               META_TITLE: Leon Bowie
               META_DESCRIPTION: Leon Bowie Link Page
+              META_KEYWORDS: Homelab, devops, education
               META_AUTHOR: Leon Bowie
+              META_LANG: en
+              META_INDEX_STATUS: all
+              OG_SITE_NAME: Leon Bowie Links
+              OG_TITLE: Leon Bowie Links
+              OG_DESCRIPTION: A collection of all of my links and public accounts
+              OG_URL: https://links.darkflame.dev
+              NAME: Leon Bowie
               THEME: Dark
               BIO: "Software Developer / Hacker / Educator"
-              BUTTON_ORDER: Website,FORGEJO,MATRIX,MASTODON,GITHUB
+              BUTTON_ORDER: Website,FORGEJO,MATRIX,MASTODON,GITHUB,TT
               GITHUB: https://github.com/Darkflame72
               FORGEJO: https://git.darkflame.dev
               MATRIX: https://matrix.to/#/@darkflame72:darkflame.dev
               MASTODON: https://mastodon.darkflame.dev/@darkflame
               EMAIL: leon@darkflame.dev
               EMAIL_TEXT: Email me!
+              CUSTOM_BUTTON_TEXT: Tūhura Tech
+              CUSTOM_BUTTON_URL: https://tuhuratech.org.nz
+              CUSTOM_BUTTON_COLOR: #000000
+              CUSTOM_BUTTON_TEXT_COLOR: #ffffff
+              CUSTOM_BUTTON_ALT_TEXT: Tūhura Tech
+              CUSTOM_BUTTON_NAME: TT
+              CUSTOM_BUTTON_ICON: fas fa-cog
               FOOTER: Leon Bowie © 2024-Present
             resources:
               requests:
