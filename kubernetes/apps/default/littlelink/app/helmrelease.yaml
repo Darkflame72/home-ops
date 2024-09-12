@@ -5,17 +5,14 @@ metadata:
   name: littlelink
 spec:
   interval: 30m
-  releaseName: littlelink
   chart:
     spec:
       chart: app-template
-      version: 2.6.0
+      version: 3.4.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
-      interval: 5m
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -28,8 +25,6 @@ spec:
   values:
     controllers:
       main:
-        annotations:
-          reloader.stakater.com/auto: "true"
         containers:
           main:
             image:
@@ -56,12 +51,13 @@ spec:
               limits:
                 memory: 100M
     service:
-      main:
+      app:
+        controller: littlelink
         ports:
           http:
             port: 3000
     ingress:
-      app:
+      main:
         className: external
         annotations:
           external-dns.alpha.kubernetes.io/target: external.${SECRET_DOMAIN}
@@ -75,4 +71,3 @@ spec:
         tls:
           - hosts:
               - *host
-            secretName: *host
