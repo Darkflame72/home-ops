@@ -13,3 +13,4 @@ resources:
   - ./thelounge/ks.yaml
   - ./vaultwarden/ks.yaml
   - ./ocis/ks.yaml
+  - ./littlelink/ks.yaml
