@@ -90,10 +90,6 @@ spec:
       rules:
         enabled: true
 
-  valuesFrom:
-    - kind: Secret
-      name: secret-helm-values # created in overlay
-
 
     ingress:
       app:
