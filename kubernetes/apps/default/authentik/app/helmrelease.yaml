@@ -73,7 +73,7 @@ spec:
       rules:
         enabled: true
     redis:
-      enabled: false
+      enabled: true
   valuesFrom:
     - kind: Secret
       name: *secret
