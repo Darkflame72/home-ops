@@ -11,6 +11,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: authentik
+        namespace: flux-system
 
   # https://github.com/goauthentik/helm/blob/main/charts/authentik/values.yaml
   values:
