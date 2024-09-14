@@ -1,0 +1,113 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: authentik
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: "authentik"
+      version: "2023.4.1"
+      sourceRef:
+        kind: HelmRepository
+        name: authentik
+
+  # https://github.com/goauthentik/helm/blob/main/charts/authentik/values.yaml
+  values:
+    initContainers:
+          01-init-db:
+            image:
+              repository: ghcr.io/onedr0p/postgres-init
+              tag: 16.2
+              pullPolicy: IfNotPresent
+            envFrom:
+              - secretRef:
+                  name: authentik-secret
+    authentik:
+      error_reporting:
+        enabled: false
+      disable_update_check: true
+      disable_startup_analytics: true
+      postgresql: null # postgres config is set via environment variables
+
+    env:
+      AUTHENTIK_POSTGRESQL__USE_PGBOUNCER: "false"
+
+    envFrom:
+      - secretRef:
+          name: authentik-secret
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+    resources:
+      server:
+        requests:
+          memory: 450Mi
+          cpu: 10m
+        limits:
+          memory: 900Mi
+      worker:
+        requests:
+          memory: 250Mi
+          cpu: 10m
+        limits:
+          memory: 500Mi
+          cpu: 100m
+
+      enabled: true
+      master:
+        persistence:
+          enabled: false
+
+    # we deploy our own postgres instance
+    postgresql:
+      enabled: false
+
+    # for server
+    securityContext:
+      runAsNonRoot: true
+
+    podSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities: { drop: ["ALL"] }
+      readOnlyRootFilesystem: true
+
+    # for worker
+    worker:
+      securityContext:
+        runAsNonRoot: true
+      podSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities: { drop: ["ALL"] }
+        readOnlyRootFilesystem: true
+
+    prometheus:
+      serviceMonitor:
+        create: true
+      rules:
+        enabled: true
+
+  valuesFrom:
+    - kind: Secret
+      name: secret-helm-values # created in overlay
+
+
+    ingress:
+      app:
+        className: external
+        annotations:
+          external-dns.alpha.kubernetes.io/target: external.${SECRET_DOMAIN}
+        hosts:
+          - host: &host auth.${SECRET_DOMAIN}
+            paths:
+              - path: /
+                service:
+                  identifier: app
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: *host
