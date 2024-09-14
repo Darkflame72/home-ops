@@ -32,22 +32,16 @@ spec:
           envFrom:
             - secretRef:
                 name: &secret authentik-secret
-    ingress:
-      app:
-        className: external
+      ingress:
+        enabled: true
+        ingressClassName: external
         annotations:
           external-dns.alpha.kubernetes.io/target: external.${SECRET_DOMAIN}
         hosts:
-          - host: &host auth.${SECRET_DOMAIN}
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
+          - &host auth.${SECRET_DOMAIN}
         tls:
           - hosts:
               - *host
-            secretName: *host
       metrics:
         enabled: true
         serviceMonitor:
