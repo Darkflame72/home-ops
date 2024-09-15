@@ -68,7 +68,7 @@ spec:
           DEFAULT_PRIVATE: private
         storage:
           STORAGE_TYPE: minio
-          MINIO_ENDPOINT: http://minio.default.svc.cluster.local:9000
+          MINIO_ENDPOINT: minio.default.svc.cluster.local:9000
           MINIO_BUCKET: forgejo
           MINIO_USE_SSL: true
         webhook:
