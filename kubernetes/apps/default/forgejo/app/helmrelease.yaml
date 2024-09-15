@@ -63,7 +63,7 @@ spec:
               pullPolicy: IfNotPresent
             envFrom:
               - secretRef:
-                  name: forgejo-secret
+                  name: forgejo-db-secret
 
     gitea:
       admin:
