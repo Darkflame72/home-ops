@@ -15,3 +15,4 @@ resources:
   - ./ocis/ks.yaml
   - ./littlelink/ks.yaml
   - ./authentik/ks.yaml
+  - ./forgejo/ks.yaml
