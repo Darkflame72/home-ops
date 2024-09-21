@@ -14,6 +14,11 @@ spec:
         name: authentik
         namespace: flux-system
   interval: 2h
+  dependsOn:
+    - name: cloudnative-pg
+      namespace: database
+    - name: dragonfly-operator
+      namespace: database
   values:
     authentik:
       postgresql:
@@ -24,7 +29,7 @@ spec:
             host: postgres16-r.database.svc.cluster.local
             port: 5432
       redis:
-        enabled: true
+        host: dragonfly.database.svc.cluster.local
     server:
       initContainers:
           01-init-db:
@@ -74,7 +79,7 @@ spec:
       rules:
         enabled: true
     redis:
-      enabled: true
+      enabled: false
   valuesFrom:
     - kind: Secret
       name: *secret
