@@ -6,11 +6,11 @@ metadata:
   name: &app authentik
   namespace: flux-system
 spec:
-  targetNamespace: default
+  targetNamespace: security
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/default/authentik/app
+  path: ./kubernetes/apps/default/security/app
   prune: true
   sourceRef:
     kind: GitRepository
