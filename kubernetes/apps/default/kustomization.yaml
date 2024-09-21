@@ -12,7 +12,6 @@ resources:
   - ./jellyfin/ks.yaml
   - ./thelounge/ks.yaml
   - ./vaultwarden/ks.yaml
-  - ./ocis/ks.yaml
   - ./littlelink/ks.yaml
   - ./authentik/ks.yaml
   - ./forgejo/ks.yaml
