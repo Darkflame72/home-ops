@@ -6,8 +6,4 @@ resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
   # Flux-Kustomizations
-  - ./minio/ks.yaml
-  - ./atuin/ks.yaml
-  - ./excalidraw/ks.yaml
-  - ./littlelink/ks.yaml
-  - ./forgejo/ks.yaml
+  - ./jellyfin/ks.yaml
