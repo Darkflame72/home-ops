@@ -10,7 +10,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/main/apps/default/smtp-relay/app
+  path: ./kubernetes/apps/default/smtp-relay/app
   prune: true
   sourceRef:
     kind: GitRepository
