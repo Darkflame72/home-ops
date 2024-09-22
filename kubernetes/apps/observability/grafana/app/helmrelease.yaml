@@ -125,6 +125,9 @@ spec:
         cloudnative-pg:
           url: https://raw.githubusercontent.com/cloudnative-pg/grafana-dashboards/main/charts/cluster/grafana-dashboard.json
           datasource: Prometheus
+        matrix-synapse:
+          url: https://raw.githubusercontent.com/element-hq/synapse/master/contrib/grafana/synapse.json
+          datasource: Prometheus
       flux:
         flux-cluster:
           url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/cluster.json
