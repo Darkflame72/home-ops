@@ -149,9 +149,6 @@ spec:
       successThreshold: 1
 
     resources:
-      requests:
-        cpu: 500m
-        memory: 512Mi
       limits:
         cpu: 4
         memory: 5Gi
