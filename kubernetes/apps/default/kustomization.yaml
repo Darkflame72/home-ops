@@ -11,3 +11,4 @@ resources:
   - ./excalidraw/ks.yaml
   - ./littlelink/ks.yaml
   - ./forgejo/ks.yaml
+  - ./smtp-relay/ks.yaml

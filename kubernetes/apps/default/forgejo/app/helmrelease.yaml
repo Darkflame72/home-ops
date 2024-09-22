@@ -64,6 +64,12 @@ spec:
         database:
           DB_TYPE: postgres
           SSL_MODE: require
+        mailer:
+          ENABLED: true
+          FROM: "Forgejo <${NOREPLY_EMAIL}>"
+          PROTOCOL: smtp
+          SMTP_ADDR: smtp-relay.default.svc.cluster.local
+          SMTP_PORT: 25
         repository:
           DEFAULT_PRIVATE: private
         storage:
