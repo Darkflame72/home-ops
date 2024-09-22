@@ -124,8 +124,8 @@ spec:
       host: postgres16-rw.database.svc.cluster.local
       port: 5432
       username: "synapse_db_user"
-      existingSecret: "synapse-db-secret"
-      existingSecretPasswordKey: POSTGRES_SYNAPSE_PASSWORD
+      existingSecret: "synapse-secret"
+      existingSecretPasswordKey: INIT_POSTGRES_PASS
       database: "synapse"
 
     externalRedis:
