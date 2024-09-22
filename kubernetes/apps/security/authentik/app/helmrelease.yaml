@@ -30,6 +30,11 @@ spec:
             port: 5432
       redis:
         host: dragonfly.database.svc.cluster.local
+      email:
+        host: smtp-relay.default.svc.cluster.local
+        use_tls: false
+        port: 25
+        from: "Authentik <${NOREPLY_EMAIL}>"
     server:
       initContainers:
           01-init-db:
@@ -54,6 +59,7 @@ spec:
         enabled: true
         serviceMonitor:
           enabled: true
+      replicas: 1
       autoscaling:
         enabled: true
         minReplicas: 1
@@ -65,6 +71,7 @@ spec:
           memory: 800Mi
       revisionHistoryLimit: 3
     worker:
+      replicas: 1
       autoscaling:
         enabled: true
         minReplicas: 1
