@@ -145,9 +145,6 @@ spec:
       strategy:
         type: Recreate
       resources:
-        requests:
-          cpu: 1000m
-          memory: 2500Mi
         limits:
           memory: 2500Mi
       annotations:
