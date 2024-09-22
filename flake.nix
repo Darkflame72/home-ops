@@ -34,6 +34,7 @@
     talhelper
     cloudflared
     envsubst
+    kubectl-cnpg
           ];
         };
       };
