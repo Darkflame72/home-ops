@@ -24,3 +24,4 @@ resources:
   - ./runix.yaml
   - ./authentik.yaml
   - ./forgejo.yaml
+  - ./ananace.yaml
