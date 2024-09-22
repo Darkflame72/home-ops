@@ -25,3 +25,4 @@ resources:
   - ./authentik.yaml
   - ./forgejo.yaml
   - ./ananace.yaml
+  - ./nextcloud.yaml
