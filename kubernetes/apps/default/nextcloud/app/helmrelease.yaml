@@ -51,6 +51,29 @@ spec:
 
       host: cloud.${SECRET_DOMAIN}
 
+      # objectstore:
+      #   s3:
+      #     enabled: true
+      #     host: s3.{SECRET_DOMAIN}
+      #     ssl: true
+      #     bucket: nextcloud-data
+      #     usePathStyle: true
+      #     region: us-east-1
+      #     autocreate: true
+      #     existingSecret: nextcloud-secret
+      #     secretKeys:
+      #       accessKey: S3_ACCESS_KEY
+      #       secretKey: S3_SECRET_KEY
+
+      # mail:
+      #   enabled: true
+      #   fromAddress: Nextcloud <${NOREPLY_EMAIL}>
+      #   domain: ${SECRET_DOMAIN}
+      #   smtp:
+      #     host: smtp-relay.default.svc.cluster.local
+      #     secure: ""
+      #     port: 25
+
       configs:
         logging.config.php: |-
           <?php
@@ -138,7 +161,7 @@ spec:
       existingClaim: *app
 
     cronjob:
-      enabled: true
+      enabled: false
 
     startupProbe:
       enabled: true
