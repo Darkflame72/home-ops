@@ -51,6 +51,10 @@ spec:
               SIGNUPS_ALLOWED: "false"
               INVITATION_ORG_NAME: ${SECRET_DOMAIN}
               TRASH_AUTO_DELETE_DAYS: "30"
+              SMTP_HOST: smtp-relay.default.svc.cluster.local
+              SMTP_FROM: ${NOREPLY_EMAIL
+              SMTP_FROM_NAME: Vaultwarden
+              SMTP_PORT: 25
             envFrom:
               - secretRef:
                   name: vaultwarden-secret
