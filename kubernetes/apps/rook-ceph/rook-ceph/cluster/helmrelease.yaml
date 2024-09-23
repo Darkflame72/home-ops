@@ -73,6 +73,8 @@ spec:
           deviceFilter: "^sd."
         - name: "talos-control-3"
           deviceFilter: "^sd."
+        - name: "talos-worker-1"
+          deviceFilter: "^sd."
       placement:
         mgr: &placement
           nodeAffinity:
