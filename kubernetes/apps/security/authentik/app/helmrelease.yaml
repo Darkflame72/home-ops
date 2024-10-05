@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: authentik
-      version: 2024.8.3
+      version: 2023.6.1
       sourceRef:
         kind: HelmRepository
         name: authentik
@@ -25,7 +25,7 @@ spec:
         host: postgres16-rw.database.svc.cluster.local
         port: 5432
         read_replicas:
-          '0':
+          "0":
             host: postgres16-r.database.svc.cluster.local
             port: 5432
       redis:
@@ -37,14 +37,14 @@ spec:
         from: "Authentik <${NOREPLY_EMAIL}>"
     server:
       initContainers:
-          01-init-db:
-            image:
-              repository: ghcr.io/onedr0p/postgres-init
-              tag: 16.3
-              pullPolicy: IfNotPresent
-            envFrom:
-              - secretRef:
-                  name: &secret authentik-secret
+        01-init-db:
+          image:
+            repository: ghcr.io/onedr0p/postgres-init
+            tag: 16.3
+            pullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: &secret authentik-secret
       ingress:
         enabled: true
         ingressClassName: external
