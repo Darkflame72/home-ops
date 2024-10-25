@@ -69,12 +69,13 @@ spec:
                 memory: 4Gi
         pod:
           securityContext:
+            runAsNonRoot: true
             runAsUser: 568
             runAsGroup: 568
-            runAsNonRoot: true
             fsGroup: 568
             fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups: [44, 10000]
+            supplementalGroups: [10000]
+            seccompProfile: { type: RuntimeDefault }
     service:
       app:
         controller: jellyfin
@@ -118,4 +119,3 @@ spec:
         path: /mnt/Main/Media
         globalMounts:
           - path: /media
-            readOnly: false
