@@ -16,7 +16,6 @@ resources:
   - ./ingress-nginx.yaml
   - ./k8s-gateway.yaml
   - ./grafana.yaml
-  - ./onechart.yaml
   - ./backube.yaml
   - ./piraeus.yaml
   - ./rook-ceph.yaml
