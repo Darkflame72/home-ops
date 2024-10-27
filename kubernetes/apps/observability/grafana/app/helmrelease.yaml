@@ -187,6 +187,6 @@ spec:
             - *host
     persistence:
       enabled: true
-      storageClassName: openebs-hostpath
+      storageClassName: ceph-block
     testFramework:
       enabled: false
