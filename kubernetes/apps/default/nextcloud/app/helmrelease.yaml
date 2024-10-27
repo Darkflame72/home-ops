@@ -51,19 +51,6 @@ spec:
 
       host: cloud.${SECRET_DOMAIN}
 
-      objectstore:
-        s3:
-          enabled: true
-          host: s3.{SECRET_DOMAIN}
-          ssl: true
-          bucket: nextcloud
-          usePathStyle: true
-          autocreate: true
-          existingSecret: nextcloud-secret
-          secretKeys:
-            accessKey: S3_ACCESS_KEY
-            secretKey: S3_SECRET_KEY
-
       mail:
         enabled: true
         fromAddress: Nextcloud <${NOREPLY_EMAIL}>
@@ -74,14 +61,6 @@ spec:
           port: 25
 
       configs:
-        logging.config.php: |-
-          <?php
-          $CONFIG = array (
-            'log_type' => 'file',
-            'logfile' => 'nextcloud.log',
-            'loglevel' => 1,
-            'logdateformat' => 'F d, Y H:i:s'
-            );
         proxy.config.php: |-
           <?php
           $CONFIG = array (
@@ -100,11 +79,8 @@ spec:
         misc.config.php: |-
           <?php
           $CONFIG = array (
-            'default_phone_region' => 'US',
+            'default_phone_region' => 'NZ',
           );
-
-    deploymentAnnotations:
-      reloader.stakater.com/auto: "true"
 
     internalDatabase:
       enabled: false
