@@ -86,6 +86,17 @@ spec:
           MINIO_USE_SSL: false
         webhook:
           ALLOWED_HOST_LIST: private
+        service:
+          ALLOW_ONLY_EXTERNAL_REGISTRATION: true
+          DISABLE_REGISTRATION: false
+          ENABLE_NOTIFY_MAIL: true
+          SHOW_REGISTRATION_BUTTON: false
+        oauth2:
+          ACCOUNT_LINKING: auto
+          ENABLE_AUTO_REGISTRATION: true
+          OPENID_CONNECT_SCOPES: 'openid email groups'
+          UPDATE_AVATAR: true
+          USERNAME: nickname
       metrics:
         enabled: true
         serviceMonitor:
