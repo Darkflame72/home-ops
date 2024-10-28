@@ -49,7 +49,7 @@ spec:
       create: false
       claimName: forgejo
     redis-cluster:
-      enabled: true
+      enabled: false
     postgresql-ha:
       enabled: false
     postgresql:
@@ -84,6 +84,12 @@ spec:
           MINIO_ENDPOINT: minio.default.svc.cluster.local:9000
           MINIO_BUCKET: forgejo
           MINIO_USE_SSL: false
+        queue:
+          TYPE: redis
+          CONN_STR: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+        session:
+          PROVIDER: redis
+          PROVIDER_CONFIG: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
         webhook:
           ALLOWED_HOST_LIST: private
         service:
