@@ -51,14 +51,14 @@ spec:
 
       host: cloud.${SECRET_DOMAIN}
 
-      mail:
-        enabled: true
-        fromAddress: Nextcloud <${NOREPLY_EMAIL}>
-        domain: ${SECRET_DOMAIN}
-        smtp:
-          host: smtp-relay.default.svc.cluster.local
-          secure: ""
-          port: 25
+      # mail:
+      #   enabled: true
+      #   fromAddress: Nextcloud <${NOREPLY_EMAIL}>
+      #   domain: ${SECRET_DOMAIN}
+      #   smtp:
+      #     host: smtp-relay.default.svc.cluster.local
+      #     secure: ""
+      #     port: 25
 
       configs:
         proxy.config.php: |-
