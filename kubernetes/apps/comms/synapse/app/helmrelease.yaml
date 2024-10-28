@@ -106,6 +106,21 @@ spec:
       enable_3pid_lookup: false
       use_appservice_legacy_authorization: true
 
+      oidc_providers:
+        - idp_id: authentik
+          idp_name: SSO
+          discover: true
+          issuer: "https://authentik.${SECRET_DOMAIN}/application/o/synapse/"
+          existingSecret: synapse-authentik-secret
+          scopes:
+            - "openid"
+            - "profile"
+            - "email"
+          user_mapping_provider:
+            config:
+              localpart_template: "{{ user.nickname }}"
+              display_name_template: "{{ user.name | capitalize }}"
+
     ingress:
       enabled: true
       className: external
