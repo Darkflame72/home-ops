@@ -55,6 +55,12 @@ spec:
       #     port: 25
 
       configs:
+        logging.config.php: |-
+          <?php
+          $CONFIG = array (
+            'log_type' => 'syslog',
+            'loglevel' => 1,
+            );
         proxy.config.php: |-
           <?php
           $CONFIG = array (
