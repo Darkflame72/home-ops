@@ -43,12 +43,6 @@ spec:
         - name: REDIS_HOST_PORT
           value: "6379"
 
-      existingSecret:
-        enabled: true
-        secretName: nextcloud-secret
-        usernameKey: NEXTCLOUD_USERNAME
-        passwordKey: NEXTCLOUD_PASSWORD
-
       host: cloud.${SECRET_DOMAIN}
 
       # mail:
