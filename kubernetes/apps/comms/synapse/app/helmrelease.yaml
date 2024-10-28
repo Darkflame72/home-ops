@@ -110,7 +110,7 @@ spec:
         - idp_id: authentik
           idp_name: SSO
           discover: true
-          issuer: "https://authentik.${SECRET_DOMAIN}/application/o/synapse/"
+          issuer: "https://auth.${SECRET_DOMAIN}/application/o/synapse/"
           client_id: "test"
           scopes:
             - "openid"
