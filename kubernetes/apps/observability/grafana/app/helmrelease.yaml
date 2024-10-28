@@ -33,6 +33,8 @@ spec:
     env:
       GF_EXPLORE_ENABLED: true
       GF_SERVER_ROOT_URL: "https://grafana.${SECRET_DOMAIN}"
+    envFromSecrets:
+      - name: grafana-secret
     grafana.ini:
       auth:
           signout_redirect_url: "https://auth.${SECRET_DOMAIN}/application/o/grafana/end-session/"
