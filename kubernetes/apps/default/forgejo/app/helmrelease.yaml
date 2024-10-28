@@ -56,6 +56,13 @@ spec:
       enabled: false
 
     gitea:
+      oauth:
+        - name: "authentik"
+          provider: "openidConnect"
+          existingSecret: forgejo-authentik-secret
+          autoDiscoverUrl: "https://auth.${SECRET_DOMAIN}/application/o/forgejo/.well-known/openid-configuration"
+          iconUrl: "https://goauthentik.io/img/icon.png"
+          scopes: "email profile"
       admin:
         existingSecret: forgejo-admin-secret
       config:
