@@ -111,7 +111,6 @@ spec:
           idp_name: SSO
           discover: true
           issuer: "https://authentik.${SECRET_DOMAIN}/application/o/synapse/"
-          existingSecret: synapse-authentik-secret
           scopes:
             - "openid"
             - "profile"
@@ -167,3 +166,13 @@ spec:
     persistence:
       enabled: true
       existingClaim: *app
+
+  valuesFrom:
+  - kind: Secret
+    name: synapse-client-id
+    valuesKey: client_id
+    targetPath: extraConfig.oidc_providers[0].client_id
+  - kind: Secret
+    name: synapse-client-secret
+    valuesKey: client_secret
+    targetPath: extraConfig.oidc_providers[0].client_secret
