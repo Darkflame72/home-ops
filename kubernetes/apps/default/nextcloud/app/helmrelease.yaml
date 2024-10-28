@@ -133,7 +133,7 @@ spec:
       enabled: true
 
     startupProbe:
-      enabled: true
+      enabled: false
       initialDelaySeconds: 60
       periodSeconds: 30
       timeoutSeconds: 10
