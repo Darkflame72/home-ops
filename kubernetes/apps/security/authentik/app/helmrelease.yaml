@@ -35,16 +35,6 @@ spec:
         use_tls: false
         port: 25
         from: "Authentik <${NOREPLY_EMAIL}>"
-    server:
-      initContainers:
-        01-init-db:
-          image:
-            repository: ghcr.io/onedr0p/postgres-init
-            tag: 16.6
-            pullPolicy: IfNotPresent
-          envFrom:
-            - secretRef:
-                name: &secret authentik-secret
       ingress:
         enabled: true
         ingressClassName: external
