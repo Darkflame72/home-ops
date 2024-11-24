@@ -9,7 +9,7 @@ resources:
   - ./minio/ks.yaml
   - ./atuin/ks.yaml
   - ./excalidraw/ks.yaml
-  # - ./littlelink/ks.yaml
-  # - ./forgejo/ks.yaml
+  - ./littlelink/ks.yaml
+  - ./forgejo/ks.yaml
   - ./smtp-relay/ks.yaml
   # - ./nextcloud/ks.yaml
