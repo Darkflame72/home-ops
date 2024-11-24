@@ -80,7 +80,7 @@ spec:
       enabled: false
   valuesFrom:
     - kind: Secret
-      name: *secret
+      name: &secret authentik-secret
       valuesKey: SECRET_KEY
       targetPath: authentik.secret_key
     - kind: Secret
