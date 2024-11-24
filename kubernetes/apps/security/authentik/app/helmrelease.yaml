@@ -35,6 +35,7 @@ spec:
         use_tls: false
         port: 25
         from: "Authentik <${NOREPLY_EMAIL}>"
+    server:
       ingress:
         enabled: true
         ingressClassName: external
