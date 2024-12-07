@@ -12,4 +12,3 @@ resources:
   - ./littlelink/ks.yaml
   # - ./forgejo/ks.yaml
   - ./smtp-relay/ks.yaml
-  # - ./nextcloud/ks.yaml
