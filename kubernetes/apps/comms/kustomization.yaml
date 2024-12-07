@@ -8,4 +8,4 @@ resources:
   # Flux-Kustomizations
   - ./element/ks.yaml
   - ./synapse-admin/ks.yaml
-  # - ./thelounge/ks.yaml
+  - ./thelounge/ks.yaml
