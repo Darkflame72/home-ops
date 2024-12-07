@@ -6,3 +6,4 @@ resources:
   - ./secrets.sops.yaml
   - ./alertmanager-config.yaml
   - ./helmrelease.yaml
+  - ../../../../templates/gatus/guarded

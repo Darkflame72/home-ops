@@ -6,3 +6,4 @@ resources:
   - ./cluster16.yaml
   - ./scheduledbackup.yaml
   - ./prometheusrule.yaml
+  - ./gatus.yaml
