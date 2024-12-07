@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -25,15 +26,19 @@ spec:
   dependsOn:
     - name: rook-ceph-operator
       namespace: rook-ceph
+    - name: snapshot-controller
+      namespace: volsync-system
   values:
     monitoring:
       enabled: true
       createPrometheusRules: true
     ingress:
       dashboard:
+        annotations:
+          external-dns.alpha.kubernetes.io/target: internal.${SECRET_DOMAIN}
         ingressClassName: internal
         host:
-          name: "rook.${SECRET_DOMAIN}"
+          name: rook.${SECRET_DOMAIN}
           path: /
     toolbox:
       enabled: true
@@ -53,8 +58,6 @@ spec:
       mgr:
         modules:
           - name: pg_autoscaler
-            enabled: true
-          - name: rook
             enabled: true
       network:
         provider: host
@@ -125,8 +128,8 @@ spec:
             csi.storage.k8s.io/fstype: ext4
     cephBlockPoolsVolumeSnapshotClass:
       enabled: true
-      name: csi-ceph-block
-      isDefault: true
+      name: csi-ceph-blockpool
+      isDefault: false
       deletionPolicy: Delete
     cephFileSystems:
       - name: &cephFileSystemName ceph-filesystem
@@ -193,6 +196,7 @@ spec:
               codingChunks: 1
           preservePoolsOnDelete: true
           gateway:
+            hostNetwork: false
             port: 80
             resources:
               requests:
@@ -214,7 +218,11 @@ spec:
             region: us-east-1
         ingress:
           enabled: true
+          annotations:
+            external-dns.alpha.kubernetes.io/target: internal.${SECRET_DOMAIN}
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
           ingressClassName: internal
           host:
-            name: "rgw.${SECRET_DOMAIN}"
+            name: rgw.${SECRET_DOMAIN}
             path: /
