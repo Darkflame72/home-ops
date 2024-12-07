@@ -25,4 +25,5 @@ resources:
   - ./forgejo.yaml
   - ./ananace.yaml
   - ./nextcloud.yaml
+  - ./descheduler.yaml
   - ./kyverno.yaml
