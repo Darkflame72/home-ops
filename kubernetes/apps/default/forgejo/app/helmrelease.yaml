@@ -46,8 +46,7 @@ spec:
             - *host
     persistence:
       enabled: true
-      create: false
-      claimName: forgejo
+      storageClass: ceph-block
     redis-cluster:
       enabled: false
     postgresql-ha:
