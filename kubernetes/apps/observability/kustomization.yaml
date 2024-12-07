@@ -10,3 +10,4 @@ resources:
   - ./kromgo/ks.yaml
   - ./loki/ks.yaml
   - ./promtail/ks.yaml
+  - ./gatus/ks.yaml
