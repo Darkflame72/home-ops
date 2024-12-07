@@ -47,3 +47,4 @@ spec:
     substitute:
       APP: *app
       GATUS_SUBDOMAIN: git
+      VOLSYNC_CAPACITY: 50Gi
