@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./cluster.yaml
   - ./podmonitor.yaml
+  - ./gatus.yaml
 configMapGenerator:
   - name: dragonfly-dashboard
     files:
