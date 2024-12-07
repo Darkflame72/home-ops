@@ -25,3 +25,4 @@ resources:
   - ./forgejo.yaml
   - ./ananace.yaml
   - ./nextcloud.yaml
+  - ./kyverno.yaml
