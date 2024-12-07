@@ -1,0 +1,62 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+
+vars:
+  KUBECONFORM_SCRIPT: "{{.SCRIPTS_DIR}}/kubeconform.sh"
+
+tasks:
+
+  resources:
+    desc: Gather common resources in your cluster, useful when asking for support
+    cmds:
+      - for: { var: resource }
+        cmd: kubectl get {{.ITEM}} {{.CLI_ARGS | default "-A"}}
+    vars:
+      resource: >-
+        nodes
+        gitrepositories
+        kustomizations
+        helmrepositories
+        helmreleases
+        certificates
+        certificaterequests
+        ingresses
+        pods
+
+  kubeconform:
+    desc: Validate Kubernetes manifests with kubeconform
+    cmd: bash {{.KUBECONFORM_SCRIPT}} {{.KUBERNETES_DIR}}
+    preconditions:
+      - msg: Missing kubeconform script
+        sh: test -f {{.KUBECONFORM_SCRIPT}}
+
+  apply-ks:
+    desc: Apply a Flux Kustomization resource for a cluster [PATH=required] [NS=flux-system]
+    cmd: >
+      flux build --namespace {{.NS}} ks {{base .PATH}}
+      --kustomization-file apps/{{.PATH}}/ks.yaml
+      --path apps/{{.PATH}}
+      {{- if contains "not found" .KS }}--dry-run \{{ end }}
+      | yq 'with(select(.apiVersion == "kustomize.toolkit.fluxcd.io/v1" and .kind == "Kustomization"); .metadata.namespace = "{{.NS}}")' -
+      | kubectl apply --server-side --field-manager=kustomize-controller --filename -
+    requires:
+      vars: [PATH]
+    vars:
+      NS: '{{.NS | default "flux-system"}}'
+      KS:
+        sh: flux --namespace {{.NS}} get kustomizations {{base .PATH}} 2>&1
+    preconditions:
+      - test -f apps/{{.PATH}}/ks.yaml
+
+  browse-pvc:
+    desc: Mount PVC to an temp container for browsing [NS=default] [CLAIM=required]
+    interactive: true
+    cmd: kubectl browse-pvc --namespace {{.NS}} --image docker.io/library/alpine:latest {{.CLAIM}}
+    vars:
+      NS: '{{.NS | default "default"}}'
+    requires:
+      vars: [CLAIM]
+    preconditions:
+      - kubectl --namespace {{.NS}} get persistentvolumeclaims {{.CLAIM}}
