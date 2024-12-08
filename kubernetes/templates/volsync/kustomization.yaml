@@ -3,8 +3,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./r2.yaml
-  - ./r2-secret.sops.yaml
+  # - ./r2.yaml
+  # - ./r2-secret.sops.yaml
   - ./claim.yaml
   - ./minio.yaml
   - ./minio-secret.sops.yaml
