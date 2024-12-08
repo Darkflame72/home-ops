@@ -130,7 +130,8 @@ spec:
           revision: 1
           datasource: Prometheus
         cert-manager:
-          url: https://raw.githubusercontent.com/monitoring-mixins/website/master/assets/cert-manager/dashboards/cert-manager.json
+          gnetId: 20842 # https://grafana.com/grafana/dashboards/20842?tab=revisions
+          revision: 3
           datasource: Prometheus
         node-exporter-full:
           gnetId: 1860 # https://grafana.com/grafana/dashboards/1860?tab=revisions
