@@ -22,5 +22,4 @@ spec:
     substitute:
       APP: *app
       GATUS_SUBDOMAIN: vault
-      VOLSYNC_CAPACITY: 10Gi
-      VOLSYNC_CACHE_CAPACITY: 10Gi
+      VOLSYNC_CAPACITY: 1Gi
