@@ -67,6 +67,7 @@ spec:
               endpoints:
                 - name: {{ GATUS_NAME }}
                   url: https://{{ GATUS_HOST }}{{ GATUS_PATH }}
+                  group: external
                   interval: 1m
                   client:
                     dns-resolver: tcp://1.1.1.1:53
