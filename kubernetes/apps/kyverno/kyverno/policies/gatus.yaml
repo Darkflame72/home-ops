@@ -33,6 +33,9 @@ spec:
           - key: "{{ request.object.spec.ingressClassName }}"
             operator: Equals
             value: external
+          - key: "{{ request.object.metadata.name}}" # override here as it is manually set
+            operator: Equals
+            value: flux-webhook
       context:
         - name: GATUS_HOST
           variable:
