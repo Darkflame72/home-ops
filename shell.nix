@@ -19,6 +19,7 @@ pkgs.mkShell {
     pkgs.envsubst
     pkgs.kubectl-cnpg
     pkgs.yq
+    pkgs.minijinja
     (builtins.getFlake "github:budimanjojo/talhelper").packages.x86_64-linux.default
   ];
 }
