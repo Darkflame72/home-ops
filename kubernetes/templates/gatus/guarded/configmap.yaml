@@ -10,7 +10,7 @@ data:
     endpoints:
       - name: "${APP}"
         group: guarded
-        url: 1.1.1.1
+        url: https://{{ GATUS_HOST }}{{ GATUS_PATH }}
         interval: 1m
         ui:
           hide-hostname: true
