@@ -14,6 +14,11 @@ spec:
         kind: HelmRepository
         name: forgejo
         namespace: flux-system
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
   install:
     remediation:
       retries: 3
