@@ -21,5 +21,4 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      GATUS_SUBDOMAIN: vault
       VOLSYNC_CAPACITY: 1Gi

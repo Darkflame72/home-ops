@@ -23,4 +23,3 @@ spec:
       APP: *app
       VOLSYNC_CAPACITY: 30Gi
       VOLSYNC_CACHE_CAPACITY: 3Gi
-      GATUS_SUBDOMAIN: jelly
