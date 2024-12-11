@@ -1,0 +1,76 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app
+  namespace: comms
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.5.1
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+      interval: 5m
+  maxHistory: 3
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    controllers:
+      ghost:
+        type: deployment
+        replicas: 1
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: docker.io/library/ghost
+              tag: 5.104.1
+            env:
+              TZ: ${TIMEZONE}
+              NODE_ENV: "production"
+              url: https://blog.${SECRET_DOMAIN}
+              database__client: sqlite3
+              database__connection__filename: "/var/lib/ghost/content/data/ghost.db"
+              database__useNullAsDefault: true
+              database__debug: false
+              mail__transport: "SMTP"
+              mail__options__host: "smtp-relay.default.svc.cluster.local"
+              mail__options__port: "25"
+              mail__options__tls__rejectUnauthorized: false
+              mail__from: "noreply@${SECRET_DOMAIN}"
+              privacy__useRpcPing: false
+            resources:
+              requests:
+                memory: 512M
+              limits:
+                memory: 800M
+    persistence:
+      content:
+        enabled: true
+        existingClaim: &app
+        globalMounts:
+          - path: /var/lib/ghost/content
+    ingress:
+      app:
+        className: external
+        annotations:
+          external-dns.alpha.kubernetes.io/target: external.${SECRET_DOMAIN}
+        hosts:
+          - host: blog.${SECRET_DOMAIN}
+            paths:
+              - path: /
+                service:
+                  identifier: app
+                  port: http
