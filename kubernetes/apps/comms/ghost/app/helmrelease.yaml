@@ -61,7 +61,13 @@ spec:
       content:
         existingClaim: *app
         globalMounts:
-          - path: /var/lib/ghost/content
+          - path: /var/lib/ghost/contentz
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: 2368
     ingress:
       app:
         className: external
