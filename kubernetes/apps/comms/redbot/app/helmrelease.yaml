@@ -31,7 +31,7 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/phasecorex/red-discordbot:extra-pylav
+              repository: ghcr.io/phasecorex/red-discordbot
               tag: extra-audio
               pullPolicy: Always
             env:
