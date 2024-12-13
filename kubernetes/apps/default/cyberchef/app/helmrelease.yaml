@@ -28,14 +28,6 @@ spec:
               requests:
                 cpu: 5m
                 memory: 5Mi
-    defaultPodOptions:
-      securityContext:
-        fsGroup: 568
-        runAsGroup: 568
-        runAsNonRoot: true
-        runAsUser: 568
-        seccompProfile:
-          type: RuntimeDefault
     ingress:
       app:
         className: external
