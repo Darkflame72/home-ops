@@ -33,7 +33,6 @@ spec:
               capabilities:
                 drop:
                 - ALL
-              readOnlyRootFilesystem: true
     defaultPodOptions:
       securityContext:
         fsGroup: 568
