@@ -14,3 +14,4 @@ resources:
   - ./smtp-relay/ks.yaml
   - ./miniflux/ks.yaml
   - ./cyberchef.yaml
+  - ./it-tools.yaml
