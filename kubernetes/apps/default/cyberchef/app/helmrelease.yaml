@@ -28,11 +28,6 @@ spec:
               requests:
                 cpu: 5m
                 memory: 5Mi
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                - ALL
     defaultPodOptions:
       securityContext:
         fsGroup: 568
