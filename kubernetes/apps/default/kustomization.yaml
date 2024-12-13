@@ -13,5 +13,5 @@ resources:
   - ./forgejo/ks.yaml
   - ./smtp-relay/ks.yaml
   - ./miniflux/ks.yaml
-  - ./cyberchef.yaml
-  - ./it-tools.yaml
+  - ./cyberchef/ks.yaml
+  - ./it-tools/ks.yaml
