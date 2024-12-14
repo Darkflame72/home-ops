@@ -58,7 +58,7 @@ spec:
               port: http
     service:
       app:
-        controller: linkwarden
+        controller: app
         ports:
           http:
             port: 3000
