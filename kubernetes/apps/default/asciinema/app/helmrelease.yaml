@@ -1,5 +1,5 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -9,22 +9,32 @@ spec:
   chart:
     spec:
       chart: app-template
+      version: 3.5.1
       sourceRef:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
-      version: 3.5.1
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
   values:
     controllers:
-      main:
+      asciinema:
+        annotations:
+          reloader.stakater.com/auto: "true"
         initContainers:
-         01-init-db:
-           image:
-            repository: ghcr.io/onedr0p/postgres-init
-            tag: 16.6@sha256:35353a77777ee8f634d0f3945f495b4a40065134b8619e0d18bd49b0ee9c855b
-           envFrom:
-             - secretRef:
-                 name: asciinema-init-secret
+          init-db:
+            image:
+              repository: ghcr.io/onedr0p/postgres-init
+              tag: 16
+            envFrom:
+              - secretRef:
+                  name: asciinema-init-secret
         containers:
           app:
             image:
@@ -37,25 +47,26 @@ spec:
             envFrom:
               - secretRef:
                   name: asciinema-secret
-    ingress:
-      app:
-        className: internal
-        hosts:
-        - host: asciinema.${SECRET_DOMAIN}
-          paths:
-          - path: /
-            service:
-              identifier: app
-              port: http
     service:
       app:
-        controller: app
+        controller: asciinema
         ports:
           http:
             port: 4000
+    ingress:
+      app:
+        annotations:
+          external-dns.alpha.kubernetes.io/target: internal.${SECRET_DOMAIN}
+        className: internal
+        hosts:
+          - host: asciinema.${SECRET_DOMAIN}
+            paths:
+              - path: /
+                service:
+                  identifier: app
+                  port: http
     persistence:
       config:
-        enabled: true
         existingClaim: *app
         globalMounts:
           - path: /var/opt/asciinema
