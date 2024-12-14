@@ -14,9 +14,6 @@ spec:
         name: bjw-s
         namespace: flux-system
       version: 3.5.1
-  dependsOn:
-    - name: authentik
-      namespace: security
   values:
     controllers:
       main:
