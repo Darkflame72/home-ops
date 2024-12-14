@@ -46,7 +46,8 @@ spec:
             env:
               NEXTAUTH_URL: https://linkwarden.${SECRET_DOMAIN}/api/v1/auth
               STORAGE_FOLDER: "config" # Will always end up as /data/STOREAGE_FOLDER so eg /data/config
-              NEXT_PUBLIC_AUTHENTIK_ENABLED: "true"
+              NEXT_PUBLIC_AUTHENTIK_ENABLED: true
+              NEXT_PUBLIC_DISABLE_REGISTRATION: true
             envFrom:
               - secretRef:
                   name: linkwarden-secret
