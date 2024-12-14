@@ -49,7 +49,7 @@ spec:
               GTS_STORAGE_BACKEND: "s3"
               GTS_STORAGE_S3_PROXY: "true"
               GTS_STORAGE_S3_USE_SSL: "false"
-              GTS_STORAGE_S3_ENDPOINT: "minio.default.svc.cluster.local:6953"
+              GTS_STORAGE_S3_ENDPOINT: minio.default.svc.cluster.local:9000
               GTS_STORAGE_S3_BUCKET: "gotosocial-media"
               GTS_OIDC_ISSUER: auth.${SECRET_DOMAIN}
             envFrom:
