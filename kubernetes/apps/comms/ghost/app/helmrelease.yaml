@@ -61,7 +61,7 @@ spec:
       content:
         existingClaim: *app
         globalMounts:
-          - path: /var/lib/ghost/contentz
+          - path: /var/lib/ghost/content
     service:
       app:
         controller: *app
