@@ -16,3 +16,4 @@ resources:
   - ./cyberchef/ks.yaml
   - ./it-tools/ks.yaml
   - ./linkwarden/ks.yaml
+  - ./asciinema/ks.yaml
