@@ -38,6 +38,7 @@ spec:
               URL_HOST: asciinema.${SECRET_DOMAIN}
               URL_SCHEME: https
               SMTP_HOST: smtp-relay.default.svc.cluster.local
+              MAIL_FROM_ADDRESS: ${NOREPLY_EMAIL}
               SMTP_PORT: 25
             envFrom:
               - secretRef:
