@@ -20,12 +20,20 @@ spec:
       gotosocial:
         type: deployment
         replicas: 1
+        initContainers:
+          init-db:
+            image:
+              repository: ghcr.io/onedr0p/postgres-init
+              tag: 16
+            envFrom:
+              - secretRef:
+                  name: gotosocial-init-secret
         containers:
           main:
             image:
               repository: "docker.io/superseriousbusiness/gotosocial"
               tag: "0.16.0@sha256:54c0e2833f426b810861d8bc7b5633ca8119f2fa234a4ddaeb422519c04fca97"
-            env: &env
+            env:
               TZ: "${TIMEZONE}"
               GTS_HOST: &host social.${SECRET_DOMAIN}
               GTS_ACCOUNT_DOMAIN: ${SECRET_DOMAIN}
@@ -46,7 +54,7 @@ spec:
               GTS_OIDC_ISSUER: auth.${SECRET_DOMAIN}
             envFrom:
               - secretRef:
-                  name: gotosocial-secrets
+                  name: gotosocial-secret
             securityContext:
               readOnlyRootFilesystem: true
               allowPrivilegeEscalation: false
