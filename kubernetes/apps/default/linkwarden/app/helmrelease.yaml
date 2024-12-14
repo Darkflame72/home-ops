@@ -27,12 +27,8 @@ spec:
     - name: authentik
       namespace: security
   values:
-    defaultPodOptions:
-      automountServiceAccountToken: false
-
     controllers:
       main:
-        pod:
         annotations:
           reloader.stakater.com/auto: "true"
         initContainers:
