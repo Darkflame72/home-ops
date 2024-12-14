@@ -30,8 +30,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/asciinema/asciinema
-              tag: alpine
+              repository: ghcr.io/asciinema/asciinema-server
+              tag: 20241103@sha256:c6876d9d0e0c4ede206792fce831ea9e32cc483ea341326406e67743ff4721fc
             env:
               HOME: /data/config
               SIGN_UP_DISABLED: false
