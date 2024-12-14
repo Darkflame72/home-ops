@@ -43,6 +43,8 @@ spec:
             env:
               HOME: /data/config
               SIGN_UP_DISABLED: false
+              URL_HOST: asciinema.${SECRET_DOMAIN}
+              URL_SCHEME: https
               SMTP_HOST: smtp-relay.default.svc.cluster.local
             envFrom:
               - secretRef:
