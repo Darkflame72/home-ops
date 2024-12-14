@@ -38,7 +38,7 @@ spec:
               GTS_HOST: &host social.${SECRET_DOMAIN}
               GTS_ACCOUNT_DOMAIN: ${SECRET_DOMAIN}
               GTS_LANDING_PAGE_USER: "darkflame72"
-              GTS_ACCOUNTS_REGISTRATION_OPEN: "false"
+              GTS_ACCOUNTS_REGISTRATION_OPEN: "true"
               GTS_APPLICATION_NAME: "My corner of the fediverse"
               GTS_PROTOCOL: "https" # not HTTP server listen mode, but used for generating URLs etc
               GTS_PORT: "8080"
