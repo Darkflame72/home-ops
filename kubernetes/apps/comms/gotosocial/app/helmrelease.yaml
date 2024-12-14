@@ -51,7 +51,7 @@ spec:
               GTS_STORAGE_S3_USE_SSL: "false"
               GTS_STORAGE_S3_ENDPOINT: minio.default.svc.cluster.local:9000
               GTS_STORAGE_S3_BUCKET: "gotosocial-media"
-              GTS_OIDC_ISSUER: auth.${SECRET_DOMAIN}
+              GTS_OIDC_ISSUER: auth.${SECRET_DOMAIN}/application/o/gotosocial/
             envFrom:
               - secretRef:
                   name: gotosocial-secret
