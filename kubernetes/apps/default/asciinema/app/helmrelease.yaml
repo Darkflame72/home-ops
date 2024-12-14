@@ -34,7 +34,7 @@ spec:
               tag: 20241103@sha256:c6876d9d0e0c4ede206792fce831ea9e32cc483ea341326406e67743ff4721fc
             env:
               HOME: /data/config
-              SIGN_UP_DISABLED: false
+              SIGN_UP_DISABLED: true
               URL_HOST: asciinema.${SECRET_DOMAIN}
               URL_SCHEME: https
               SMTP_HOST: smtp-relay.default.svc.cluster.local
