@@ -27,7 +27,7 @@ spec:
       namespace: security
   values:
     controllers:
-      llinkwarden:
+      linkwarden:
         annotations:
           reloader.stakater.com/auto: "true"
         initContainers:
@@ -52,7 +52,7 @@ spec:
                   name: linkwarden-secret
     service:
       app:
-        controller: asciinema
+        controller: linkwarden
         ports:
           http:
             port: 3000
