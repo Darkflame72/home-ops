@@ -54,7 +54,6 @@ spec:
           value: "10G"
 
       host: cloud.${SECRET_DOMAIN}
-      containerPort: 80
 
       mail:
         enabled: true
@@ -63,6 +62,10 @@ spec:
         smtp:
           host: smtp-relay.default.svc.cluster.local
           port: 25
+      securityContext:
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroupChangePolicy: "OnRootMismatch"
 
       configs:
         logging.config.php: |-
