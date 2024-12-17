@@ -53,12 +53,6 @@ spec:
         - name: PHP_POST_MAX_SIZE
           value: "10G"
 
-      existingSecret:
-        enabled: true
-        secretName: nextcloud-secret
-        usernameKey: NEXTCLOUD_USERNAME
-        passwordKey: NEXTCLOUD_PASSWORD
-
       host: cloud.${SECRET_DOMAIN}
       containerPort: 80
 
