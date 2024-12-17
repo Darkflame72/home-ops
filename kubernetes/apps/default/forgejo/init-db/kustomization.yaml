@@ -6,4 +6,4 @@ resources:
   - ./secret.sops.yaml
   # the job is only needed to create the database since the
   # forgejo helm chart does not support injecting custom init containers yet.
-  - ./job.yaml
+  # - ./job.yaml
