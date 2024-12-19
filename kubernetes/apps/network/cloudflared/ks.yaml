@@ -10,9 +10,6 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: external-dns-cloudflare
-    - name: external-secrets-stores
   path: ./kubernetes/apps/network/cloudflared/app
   prune: false
   sourceRef:
