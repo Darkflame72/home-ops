@@ -1,12 +1,7 @@
 ---
 autoDirectNodeRoutes: true
-bandwidthManager:
-  enabled: true
-  bbr: true
 bpf:
-  masquerade: true
-  preallocateMaps: true
-  tproxy: true
+  masquerade: false # Required for Talos `.machine.features.hostDNS.forwardKubeDNSToHost`
 cgroup:
   automount:
     enabled: false
@@ -18,7 +13,6 @@ cni:
   exclusive: false
 # NOTE: devices might need to be set if you have more than one active NIC on your hosts
 # devices: eno+ eth+
-enableIPv4BIGTCP: true
 endpointRoutes:
   enabled: true
 envoy:
@@ -75,3 +69,5 @@ securityContext:
       - NET_ADMIN
       - SYS_ADMIN
       - SYS_RESOURCE
+socketLB:
+  hostNamespaceOnly: true
