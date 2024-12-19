@@ -39,3 +39,5 @@ spec:
         memory: 128Mi # unchangable
         cpu: 100m # unchangable
       limits: {}
+    snapshotter:
+      tag: v8.2.0
