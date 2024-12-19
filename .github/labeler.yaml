@@ -1,7 +1,4 @@
 ---
-area/bootstrap:
-  - changed-files:
-      - any-glob-to-any-file: bootstrap/**/*
 area/github:
   - changed-files:
       - any-glob-to-any-file: .github/**/*
@@ -10,5 +7,9 @@ area/kubernetes:
       - any-glob-to-any-file: kubernetes/**/*
 area/taskfile:
   - changed-files:
-      - any-glob-to-any-file: .taskfiles/**/*
-      - any-glob-to-any-file: Taskfile*
+      - any-glob-to-any-file:
+          - .taskfiles/**/*
+          - Taskfile.yaml
+cluster:
+  - changed-files:
+      - any-glob-to-any-file: kubernetes/**/*
