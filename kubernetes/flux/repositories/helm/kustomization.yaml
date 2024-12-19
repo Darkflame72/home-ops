@@ -27,3 +27,4 @@ resources:
   - ./descheduler.yaml
   - ./kyverno.yaml
   - ./nextcloud.yaml
+  - ./minecraft.yaml
