@@ -34,6 +34,8 @@ spec:
       createPrometheusRules: true
     ingress:
       dashboard:
+        annotations:
+          external-dns.alpha.kubernetes.io/target: internal.${SECRET_DOMAIN}
         ingressClassName: internal
         host:
           name: rook.${SECRET_DOMAIN}
@@ -46,8 +48,6 @@ spec:
       bdev_async_discard = true
       osd_class_update_on_start = false
     cephClusterSpec:
-      cephVersion:
-        image: quay.io/ceph/ceph:v19.2.0 # TODO: Remove when Rook is updated >= v19.2.0
       crashCollector:
         disable: false
       csi:
@@ -72,7 +72,7 @@ spec:
           requireMsgr2: true
       storage:
         useAllNodes: true
-        useAllDevices: false
+        useAllDevices: true
         deviceFilter: sda
         config:
           osdsPerDevice: "1"
@@ -85,6 +85,31 @@ spec:
                     - key: node-role.kubernetes.io/control-plane
                       operator: Exists
         mon: *placement
+      resources:
+        mgr:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+        mon:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+        osd:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            memory: 6Gi
+        mgr-sidecar:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
     cephBlockPools:
       - name: ceph-blockpool
         spec:
@@ -98,7 +123,6 @@ spec:
           reclaimPolicy: Delete
           allowVolumeExpansion: true
           volumeBindingMode: Immediate
-          mountOptions: ["discard"]
           parameters:
             imageFormat: "2"
             imageFeatures: layering,fast-diff,object-map,deep-flatten,exclusive-lock
