@@ -74,14 +74,9 @@ spec:
             any: true
       extraArgs:
         default-ssl-certificate: "network/${SECRET_DOMAIN/./-}-production-tls"
-        publish-status-address: *hostname
       terminationGracePeriodSeconds: 120
-      publishService:
-        enabled: false
       resources:
         requests:
           cpu: 100m
         limits:
           memory: 500Mi
-    defaultBackend:
-      enabled: false
