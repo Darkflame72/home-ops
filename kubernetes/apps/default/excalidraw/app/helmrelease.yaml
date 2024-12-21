@@ -25,7 +25,6 @@ spec:
   values:
     controllers:
       excalidraw:
-        replicas: 1
         strategy: RollingUpdate
         containers:
           app:

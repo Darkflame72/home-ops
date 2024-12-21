@@ -30,7 +30,6 @@ spec:
     controllers:
       ghost:
         type: deployment
-        replicas: 1
         annotations:
           reloader.stakater.com/auto: "true"
         containers:

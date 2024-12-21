@@ -19,7 +19,6 @@ spec:
     controllers:
       gotosocial:
         type: deployment
-        replicas: 1
         initContainers:
           init-db:
             image:
