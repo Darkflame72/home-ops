@@ -6,9 +6,9 @@ resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
   # Flux-Kustomizations
-  - ./element/ks.yaml
-  - ./synapse-admin/ks.yaml
+  # - ./element/ks.yaml
+  # - ./synapse-admin/ks.yaml
   - ./thelounge/ks.yaml
-  - ./ghost/ks.yaml
+  # - ./ghost/ks.yaml
   - ./redbot/ks.yaml
   - ./gotosocial/ks.yaml
