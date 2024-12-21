@@ -1,7 +1,7 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: [
-    "config:recommended",
+    "config:best-practices",
     "docker:enableMajor",
     "replacements:k8s-registry-move",
     ":automergeBranch",
@@ -9,7 +9,6 @@
     ":dependencyDashboard",
     ":semanticCommits",
     ":skipStatusChecks",
-    ":timezone(America/New_York)",
     "github>Darkflame72/home-ops//.github/renovate/autoMerge.json5",
     "github>Darkflame72/home-ops//.github/renovate/clusters.json5",
     "github>Darkflame72/home-ops//.github/renovate/commitMessage.json5",
