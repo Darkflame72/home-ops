@@ -1,3 +1,8 @@
 ---
+replicas: 2
 providerRegex: ^(talos-control-1|talos-control-2|talos-control-3)$
 bypassDnsResolution: true
+metrics:
+  enable: true
+  serviceMonitor:
+    enabled: true
