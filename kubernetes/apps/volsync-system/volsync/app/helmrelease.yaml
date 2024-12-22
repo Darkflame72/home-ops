@@ -31,11 +31,6 @@ spec:
       namespace: volsync-system
   values:
     manageCRDs: true
-    replicaCount: 1
+    replicaCount: 2
     metrics:
       disableAuth: true
-    podSecurityContext:
-      runAsNonRoot: true
-      runAsUser: 65534
-      runAsGroup: 65534
-      seccompProfile: { type: RuntimeDefault }

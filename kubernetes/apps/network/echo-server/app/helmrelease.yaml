@@ -1,9 +1,8 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: echo-server
+  name: &app echo-server
 spec:
   interval: 30m
   chart:
@@ -25,16 +24,17 @@ spec:
   values:
     controllers:
       echo-server:
+        replicas: 2
         strategy: RollingUpdate
         containers:
           app:
             image:
               repository: ghcr.io/mendhak/http-https-echo
-              tag: "35"
+              tag: 35@sha256:440ca6b810bc04606aac700e461caca5543eaa882c4e0af96a33424d05a23592
             env:
-              HTTP_PORT: &port 80
+              PORT: &port 8080
               LOG_WITHOUT_NEWLINE: true
-              LOG_IGNORE_PATH: /healthz
+              LOG_IGNORE_PATH: &path /healthz
               PROMETHEUS_ENABLED: true
             probes:
               liveness: &probes
@@ -42,48 +42,34 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /healthz
+                    path: *path
                     port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
-              seccompProfile:
-                type: RuntimeDefault
             resources:
               requests:
                 cpu: 10m
               limits:
                 memory: 64Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        seccompProfile: { type: RuntimeDefault }
-    service:
-      app:
-        controller: echo-server
-        ports:
-          http:
-            port: *port
-    serviceMonitor:
-      app:
-        serviceName: echo-server
-        endpoints:
-          - port: http
-            scheme: http
-            path: /metrics
-            interval: 1m
-            scrapeTimeout: 10s
+        runAsUser: 568
+        runAsGroup: 568
     ingress:
       app:
         className: external
+        annotations:
+          gatus.io/path: *path
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
@@ -91,3 +77,14 @@ spec:
                 service:
                   identifier: app
                   port: http
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    serviceMonitor:
+      app:
+        serviceName: *app
+        endpoints:
+          - port: http

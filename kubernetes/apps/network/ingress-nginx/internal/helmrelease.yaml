@@ -3,10 +3,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ingress-nginx-internal
-  namespace: network
+  name: &app nginx-internal
 spec:
   interval: 30m
+  timeout: 15m
   chart:
     spec:
       chart: ingress-nginx
@@ -24,38 +24,30 @@ spec:
       strategy: rollback
       retries: 3
   values:
-    fullnameOverride: ingress-nginx-internal
+    fullnameOverride: *app
     controller:
-      replicaCount: 1
-      service:
-        annotations:
-          io.cilium/lb-ipam-ips: "10.0.60.11"
-        externalTrafficPolicy: Cluster
-      ingressClassResource:
-        name: internal
-        default: true
-        controllerValue: k8s.io/internal
+      replicaCount: 2
+      allowSnippetAnnotations: true
       admissionWebhooks:
         objectSelector:
           matchExpressions:
             - key: ingress-class
               operator: In
-              values: ["internal"]
-      allowSnippetAnnotations: true
+              values:
+                - internal
       config:
-        block-user-agents: "AdsBot-Google,Amazonbot,anthropic-ai,Applebot-Extended,Bytespider,CCBot,ChatGPT-User,ClaudeBot,Claude-Web,cohere-ai,Diffbot,FacebookBot,FriendlyCrawler,Google-Extended,GoogleOther,GPTBot,img2dataset,omgili,omgilibot,peer39_crawler,peer39_crawler/1.0,PerplexityBot,YouBot," # taken from https://github.com/ai-robots-txt/ai.robots.txt
         client-body-buffer-size: 100M
         client-body-timeout: 120
         client-header-timeout: 120
-        enable-brotli: "true"
-        enable-ocsp: "true"
-        enable-real-ip: "true"
-        force-ssl-redirect: "true"
+        enable-brotli: true
+        enable-ocsp: true
+        enable-real-ip: true
+        force-ssl-redirect: true
         hide-headers: Server,X-Powered-By
         hsts-max-age: 31449600
         keep-alive-requests: 10000
         keep-alive: 120
-        log-format-escape-json: "true"
+        log-format-escape-json: true
         log-format-upstream: >
           {"time": "$time_iso8601", "remote_addr": "$proxy_protocol_addr", "x_forwarded_for": "$proxy_add_x_forwarded_for",
           "request_id": "$req_id", "remote_user": "$remote_user", "bytes_sent": $bytes_sent, "request_time": $request_time,
@@ -64,19 +56,34 @@ spec:
           "http_user_agent": "$http_user_agent"}
         proxy-body-size: 0
         proxy-buffer-size: 16k
+        ssl-early-data: true
         ssl-protocols: TLSv1.3 TLSv1.2
-        use-forwarded-headers: "true"
+      extraArgs:
+        default-ssl-certificate: network/${SECRET_DOMAIN/./-}-production-tls
+        publish-status-address: &hostname internal.${SECRET_DOMAIN}
+      ingressClass: internal
+      ingressClassResource:
+        name: internal
+        default: true
+        controllerValue: k8s.io/internal
       metrics:
         enabled: true
         serviceMonitor:
           enabled: true
+          namespace: networking
           namespaceSelector:
             any: true
-      extraArgs:
-        default-ssl-certificate: "network/${SECRET_DOMAIN/./-}-production-tls"
-      terminationGracePeriodSeconds: 120
+      publishService:
+        enabled: false
       resources:
         requests:
           cpu: 100m
         limits:
-          memory: 500Mi
+          memory: 512Mi
+      service:
+        annotations:
+          external-dns.alpha.kubernetes.io/hostname: *hostname
+          lbipam.cilium.io/ips: 10.0.60.11
+      terminationGracePeriodSeconds: 120
+    defaultBackend:
+      enabled: false
