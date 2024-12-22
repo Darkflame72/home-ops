@@ -26,7 +26,7 @@ spec:
   values:
     fullnameOverride: ingress-nginx-internal
     controller:
-      replicaCount: 2
+      replicaCount: 1
       service:
         annotations:
           io.cilium/lb-ipam-ips: "10.0.60.11"
