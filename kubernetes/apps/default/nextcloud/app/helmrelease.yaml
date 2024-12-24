@@ -93,7 +93,7 @@ spec:
         logging.config.php: |-
           <?php
           $CONFIG = array (
-            'log_type' => 'errorlog',
+            'log_type' => 'debuglog',
             'loglevel' => 1,
             'logdateformat' => 'F d, Y H:i:s'
             );
