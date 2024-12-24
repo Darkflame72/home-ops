@@ -43,16 +43,6 @@ spec:
           value: "1"
         - name: REDIS_HOST_PORT
           value: "6379"
-        - name: OIDC_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: *secret
-              key: OIDC_CLIENT_ID
-        - name: OIDC_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: *secret
-              key: OIDC_CLIENT_SECRET
       mail:
         enabled: true
         fromAddress: ${NOREPLY_EMAIL}
@@ -89,11 +79,11 @@ spec:
             'overwrite.cli.url' => 'https://cloud.${SECRET_DOMAIN}',
             'overwriteprotocol' => 'https',
           );
-        misc.config.php: |-
-          <?php
-          $CONFIG = array (
-            'default_phone_region' => 'NZ',
-          );
+        # misc.config.php: |-
+        #   <?php
+        #   $CONFIG = array (
+        #     'default_phone_region' => 'NZ',
+        #   );
 
         # sso.config.php: |-
         #   <?php
@@ -121,12 +111,12 @@ spec:
         #     'oidc_create_groups' => true,
         #     'oidc_login_auto_redirect' => true, // bypass via /login?noredir=1
         #   );
-      phpConfigs:
-        uploadLimit.ini: |
-          upload_max_filesize = 16G
-          post_max_size = 16G
-          max_input_time = 3600
-          max_execution_time = 3600
+      # phpConfigs:
+      #   uploadLimit.ini: |
+      #     upload_max_filesize = 16G
+      #     post_max_size = 16G
+      #     max_input_time = 3600
+      #     max_execution_time = 3600
     internalDatabase:
       enabled: false
     externalDatabase:
