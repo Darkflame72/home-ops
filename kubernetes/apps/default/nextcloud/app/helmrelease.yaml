@@ -29,10 +29,6 @@ spec:
     nginx:
       enabled: true
 
-    phpClientHttpsFix:
-      enabled: true
-      protocol: https
-
     nextcloud:
       extraInitContainers:
         - name: init-db
@@ -66,20 +62,8 @@ spec:
           host: smtp-relay.default.svc.cluster.local
           port: 25
           secure: ''
-      securityContext:
-        runAsUser: 568
-        runAsGroup: 568
-        fsGroupChangePolicy: "OnRootMismatch"
 
       configs:
-        logging.config.php: |-
-          <?php
-          $CONFIG = array (
-            'log_type' => 'file',
-            'logfile' => 'nextcloud.log',
-            'loglevel' => 1,
-            'logdateformat' => 'F d, Y H:i:s'
-            );
         proxy.config.php: |-
           <?php
           $CONFIG = array (
@@ -93,7 +77,7 @@ spec:
               1 => 'cloud.${SECRET_DOMAIN}',
             ),
             'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
-          ); ?>
+          );
         ingress.config.php: |-
           <?php
           $CONFIG = array (
@@ -104,7 +88,28 @@ spec:
           <?php
           $CONFIG = array (
             'default_phone_region' => 'NZ',
+            'maintenance_window_start' => 2,
           );
+        logging.config.php: |-
+          <?php
+          $CONFIG = array (
+            'log_type' => 'errorlog',
+            'loglevel' => 1,
+            'logdateformat' => 'F d, Y H:i:s'
+            );
+
+      datadir: /var/www/data
+
+      phpConfigs:
+        custom.ini: |
+          memory_limit=512M
+          upload_max_filesize=16G
+          post_max_size=16G
+          max_execution_time=3600
+          max_input_time=3600
+
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
 
     internalDatabase:
       enabled: false
@@ -131,9 +136,12 @@ spec:
         nginx.ingress.kubernetes.io/proxy-body-size: "10G"
         nginx.ingress.kubernetes.io/proxy-buffering: "off"
         nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
-        nginx.ingress.kubernetes.io/server-snippet: |-
-          server_tokens off;
-          proxy_hide_header X-Powered-By;
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+        nginx.ingress.kubernetes.io/fastcgi-read-timeout: "600"
+        nginx.ingress.kubernetes.io/fastcgi-send-timeout: "600"
+        nginx.ingress.kubernetes.io/fastcgi-connect-timeout: "60"
+        nginx.ingress.kubernetes.io/configuration-snippet: |
           rewrite ^/.well-known/webfinger /index.php/.well-known/webfinger last;
           rewrite ^/.well-known/nodeinfo /index.php/.well-known/nodeinfo last;
           rewrite ^/.well-known/host-meta /public.php?service=host-meta last;
@@ -144,21 +152,33 @@ spec:
           location = /.well-known/caldav {
             return 301 $scheme://$host/remote.php/dav;
           }
-          location = /robots.txt {
-            allow all;
-            log_not_found off;
-            access_log off;
+          location /.well-known/nodeinfo {
+            return 301 $scheme://$host/index.php/.well-known/nodeinfo;
           }
           location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)/ {
             deny all;
           }
-          location ~ ^/(?:autotest|occ|issue|indie|db_|console) {
+          location ~ ^/(?:\.|autotest|occ|issue|indie|db_|console) {
             deny all;
+          }
+          location ~ ^/(?:index|remote|public|cron|core/ajax/update|status|ocs/v[12]|updater/.+|ocs-provider/.+)\.php(?:$|/) {
+            fastcgi_split_path_info ^(.+\.php)(/.*)$;
+            try_files $fastcgi_script_name =404;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param PATH_INFO $fastcgi_path_info;
+            fastcgi_param modHeadersAvailable true;
+            fastcgi_param front_controller_active true;
+            fastcgi_read_timeout 180;
+            fastcgi_pass php-handler;
+            fastcgi_intercept_errors on;
+            fastcgi_request_buffering off;
           }
       path: /
       pathType: Prefix
 
     persistence:
+      # Config storage using volsync template PVC (local)
       enabled: true
       existingClaim: *app
 
@@ -167,16 +187,19 @@ spec:
 
     startupProbe:
       enabled: true
-      initialDelaySeconds: 120
-      periodSeconds: 30
-      timeoutSeconds: 10
-      failureThreshold: 10
+      initialDelaySeconds: 30
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 30
       successThreshold: 1
 
     resources:
       requests:
         cpu: 500m
-        memory: 512Mi
+        memory: 1Gi
       limits:
         cpu: 4
         memory: 5Gi
+
+    strategy:
+      type: Recreate
