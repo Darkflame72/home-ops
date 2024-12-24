@@ -11,4 +11,4 @@ resources:
   # - ./thelounge/ks.yaml
   # - ./ghost/ks.yaml
   # - ./redbot/ks.yaml
-  - ./gotosocial/ks.yaml
+  # - ./gotosocial/ks.yaml
