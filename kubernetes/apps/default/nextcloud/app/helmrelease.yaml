@@ -98,6 +98,8 @@ spec:
         memory: 400Mi
       limits:
         memory: 1Gi
+    nginx:
+      enabled: true
     ingress:
       enabled: true
       className: external
