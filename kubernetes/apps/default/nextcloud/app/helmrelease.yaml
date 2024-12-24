@@ -5,39 +5,58 @@ kind: HelmRelease
 metadata:
   name: &app nextcloud
 spec:
+  timeout: 15m
   interval: 30m
   chart:
     spec:
       chart: nextcloud
-      version: 6.5.1
+      version: 6.4.1
       sourceRef:
         kind: HelmRepository
         name: nextcloud
         namespace: flux-system
   install:
-    timeout: 60m
+    remediation:
+      retries: 3
   upgrade:
-    timeout: 60m
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
   values:
     image:
       flavor: fpm-alpine
+    nginx:
+      enabled: true
+
+    phpClientHttpsFix:
+      enabled: true
+      protocol: https
+
     nextcloud:
-      host: &host cloud.${SECRET_DOMAIN}
-      defaultConfigs:
-        imaginary.config.php: true
       extraInitContainers:
         - name: init-db
-          image: ghcr.io/onedr0p/postgres-init:16.6@sha256:c1d3a845d47fe1aeebd110fefb5f43f54c4735aec1d2b0c01de8d4d5e8cdd6a4
+          image: ghcr.io/onedr0p/postgres-init:16
           envFrom:
             - secretRef:
-                name: &secret nextcloud-secret
+                name: nextcloud-secret
+      defaultConfigs:
+        imaginary.config.php: true
+
       extraEnv:
         - name: REDIS_HOST
-          value: dragonfly.database.svc.cluster.local
-        - name: REDIS_DATABASE
-          value: "1"
+          value: dragonfly.database.svc.cluster.local.
         - name: REDIS_HOST_PORT
           value: "6379"
+        - name: PHP_MEMORY_LIMIT
+          value: "11G"
+        - name: PHP_UPLOAD_LIMIT
+          value: "10G"
+        - name: PHP_POST_MAX_SIZE
+          value: "10G"
+
+      host: cloud.${SECRET_DOMAIN}
+
       mail:
         enabled: true
         fromAddress: ${NOREPLY_EMAIL}
@@ -46,6 +65,11 @@ spec:
           host: smtp-relay.default.svc.cluster.local
           port: 25
           secure: ''
+      securityContext:
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroupChangePolicy: "OnRootMismatch"
+
       configs:
         logging.config.php: |-
           <?php
@@ -59,23 +83,31 @@ spec:
           <?php
           $CONFIG = array (
             'trusted_proxies' => array(
-              '127.0.0.1',
-              '10.0.0.0/8',
+              0 => '127.0.0.1',
+              1 => '10.96.0.0/16',
+              2 => '10.69.0.0/16',
             ),
             'trusted_domains' => array(
               0 => '127.0.0.1',
               1 => 'cloud.${SECRET_DOMAIN}',
             ),
             'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
-          );
+          ); ?>
         ingress.config.php: |-
           <?php
           $CONFIG = array (
             'overwrite.cli.url' => 'https://cloud.${SECRET_DOMAIN}',
             'overwriteprotocol' => 'https',
           );
+        misc.config.php: |-
+          <?php
+          $CONFIG = array (
+            'default_phone_region' => 'NZ',
+          );
+
     internalDatabase:
       enabled: false
+
     externalDatabase:
       enabled: true
       type: postgresql
@@ -83,30 +115,21 @@ spec:
       database: *app
       existingSecret:
         enabled: true
-        secretName: *secret
+        secretName: nextcloud-secret
         usernameKey: INIT_POSTGRES_USER
         passwordKey: INIT_POSTGRES_PASS
-    redis:
-      enabled: false
-    cronjob:
-      enabled: true
+
     imaginary:
       enabled: true
-    resources:
-      requests:
-        cpu: 200m
-        memory: 400Mi
-      limits:
-        memory: 1Gi
-    nginx:
-      enabled: true
+
     ingress:
       enabled: true
       className: external
       annotations:
-        nginx.ingress.kubernetes.io/enable-cors: "true"
-        nginx.ingress.kubernetes.io/cors-allow-headers: "X-Forwarded-For"
-        nginx.ingress.kubernetes.io/custom-http-errors: "502,503"
+        external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
+        nginx.ingress.kubernetes.io/proxy-body-size: "10G"
+        nginx.ingress.kubernetes.io/proxy-buffering: "off"
+        nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
         nginx.ingress.kubernetes.io/server-snippet: |-
           server_tokens off;
           proxy_hide_header X-Powered-By;
@@ -133,5 +156,26 @@ spec:
           }
       path: /
       pathType: Prefix
+
     persistence:
+      enabled: true
       existingClaim: *app
+
+    cronjob:
+      enabled: true
+
+    startupProbe:
+      enabled: true
+      initialDelaySeconds: 120
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 4
+        memory: 5Gi
