@@ -7,8 +7,7 @@ tasks:
     desc: Retrieve the rook-ceph password
     cmd: |
       kubectl --namespace rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" \
-        | base64 --decode \
-        | pbcopy && echo "Copied to clipboard"
+        | base64 --decode
 
   toolbox:
     desc: Exec into the rook-ceph toolbox
