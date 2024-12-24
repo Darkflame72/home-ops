@@ -7,4 +7,4 @@ resources:
   - ./namespace.yaml
   # Flux-Kustomizations
   # - ./jellyfin/ks.yaml
-  # - ./jellystat/ks.yaml
+  - ./jellystat/ks.yaml
