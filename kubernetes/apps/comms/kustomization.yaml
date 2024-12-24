@@ -8,7 +8,7 @@ resources:
   # Flux-Kustomizations
   - ./element/ks.yaml
   - ./synapse-admin/ks.yaml
-  # - ./thelounge/ks.yaml
-  # - ./ghost/ks.yaml
-  # - ./redbot/ks.yaml
-  # - ./gotosocial/ks.yaml
+  - ./thelounge/ks.yaml
+  - ./ghost/ks.yaml
+  - ./redbot/ks.yaml
+  - ./gotosocial/ks.yaml
