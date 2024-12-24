@@ -3,12 +3,17 @@
   extends: [
     "config:recommended",
     "docker:enableMajor",
+    "helpers:pinGitHubActionDigests",
     "replacements:k8s-registry-move",
     ":automergeBranch",
+    ":automergeDigest",
     ":disableRateLimiting",
     ":dependencyDashboard",
+    ":gitSignOff",
     ":semanticCommits",
     ":skipStatusChecks",
+    ":timezone(Pacific/Auckland)",
+    "github>Darkflame72/home-ops//.github/renovate/allowedVersions.json5",
     "github>Darkflame72/home-ops//.github/renovate/autoMerge.json5",
     "github>Darkflame72/home-ops//.github/renovate/commitMessage.json5",
     "github>Darkflame72/home-ops//.github/renovate/customManagers.json5",
@@ -20,7 +25,10 @@
   ],
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
   suppressNotifications: ["prEditedNotification", "prIgnoreNotification"],
-  ignorePaths: ["**/*.sops.*"],
+  rebaseWhen: "conflicted",
+  assigneesFromCodeOwners: true,
+  reviewersFromCodeOwners: true,
+  ignorePaths: ["**/*.sops.*", "**/resources/**"],
   flux: {
     fileMatch: ["(^|/)kubernetes/.+\\.ya?ml$"],
   },
@@ -28,6 +36,10 @@
     fileMatch: ["(^|/)kubernetes/.+\\.ya?ml$"],
   },
   kubernetes: {
-    fileMatch: ["(^|/)\\.taskfiles/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
+    fileMatch: [
+      "(^|/).taskfiles/.+\\.ya?ml$",
+      "(^|/)talos/.+\\.ya?ml$",
+      "(^|/)kubernetes/.+\\.ya?ml$",
+    ],
   },
 }

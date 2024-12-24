@@ -24,5 +24,3 @@ Brewfile.lock.json
 wiki
 # Bootstrap
 /config.yaml
-# vscode
-.vscode

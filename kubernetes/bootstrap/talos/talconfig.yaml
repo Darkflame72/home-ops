@@ -7,13 +7,15 @@ kubernetesVersion: v1.32.0
 
 clusterName: "home-kubernetes"
 endpoint: https://10.0.60.20:6443
+
 clusterPodNets:
   - "10.69.0.0/16"
 clusterSvcNets:
   - "10.96.0.0/16"
+
 additionalApiServerCertSans: &sans
   - "10.0.60.20"
-  - 127.0.0.1 # KubePrism
+  - "127.0.0.1"
 additionalMachineCertSans: *sans
 
 # Disable built-in Flannel to use Cilium
@@ -108,15 +110,16 @@ patches:
   - "@./patches/global/cluster-discovery.yaml"
   - "@./patches/global/containerd.yaml"
   - "@./patches/global/disable-search-domain.yaml"
+  - "@./patches/global/dns.yaml"
   - "@./patches/global/hostdns.yaml"
   - "@./patches/global/kubelet.yaml"
+  - "@./patches/global/ntp.yaml"
   - "@./patches/global/openebs-local.yaml"
   - "@./patches/global/sysctl.yaml"
 
 # Controller patches
 controlPlane:
   patches:
-    - "@./patches/controller/api-access.yaml"
     - "@./patches/controller/cluster.yaml"
     - "@./patches/controller/disable-admission-controller.yaml"
     - "@./patches/controller/etcd.yaml"

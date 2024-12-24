@@ -17,6 +17,7 @@ includes:
   bootstrap: .taskfiles/bootstrap
   kubernetes: .taskfiles/kubernetes
   talos: .taskfiles/talos
+  rook: .taskfiles/rook
   volsync: .taskfiles/volsync
 
 tasks:

@@ -4,11 +4,10 @@
   color: "0e8a16"
 - name: area/kubernetes
   color: "0e8a16"
+- name: area/talos
+  color: "0e8a16"
 - name: area/taskfile
   color: "0e8a16"
-# Cluster
-- name: cluster
-  color: "ffc300"
 # Renovate Types
 - name: renovate/container
   color: "027fa0"
@@ -29,3 +28,6 @@
   color: "ff9800"
 - name: type/major
   color: "f6412d"
+# Uncategorized
+- name: hold
+  color: "ee0701"

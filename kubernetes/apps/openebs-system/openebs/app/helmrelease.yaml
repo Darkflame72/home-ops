@@ -20,15 +20,8 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
-      strategy: rollback
       retries: 3
   values:
-    zfs-localpv:
-      enabled: false
-    lvm-localpv:
-      enabled: false
-    mayastor:
-      enabled: false
     engines:
       local:
         lvm:
