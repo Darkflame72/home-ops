@@ -45,7 +45,7 @@ spec:
 
       extraEnv:
         - name: REDIS_HOST
-          value: dragonfly.database.svc.cluster.local.
+          value: dragonfly.database.svc.cluster.local
         - name: REDIS_HOST_PORT
           value: "6379"
         - name: PHP_MEMORY_LIMIT
