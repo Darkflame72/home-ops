@@ -32,7 +32,7 @@ spec:
           main:
             image:
               repository: "docker.io/superseriousbusiness/gotosocial"
-              tag: "0.18.3@sha256:5eb48f2273092126e71e1290c80c92df90ba3ef72b1e81de070ae38fd5d85d27"
+              tag: "0.19.0@sha256:6de5714314ead3468f5514b8957b400260a743b4035a167cfd3922d86e85f792"
             env:
               TZ: "${TIMEZONE}"
               GTS_HOST: &host social.${SECRET_DOMAIN}
