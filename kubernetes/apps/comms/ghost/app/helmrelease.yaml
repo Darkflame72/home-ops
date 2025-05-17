@@ -37,7 +37,7 @@ spec:
           app:
             image:
               repository: docker.io/library/ghost
-              tag: 5.119.3
+              tag: 5.120.0
             env:
               TZ: ${TIMEZONE}
               NODE_ENV: "production"
