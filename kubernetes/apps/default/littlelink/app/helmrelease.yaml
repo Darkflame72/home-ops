@@ -21,7 +21,7 @@ spec:
           main:
             image:
               repository: ghcr.io/techno-tim/littlelink-server
-              tag: latest@sha256:c4f8512c964356b0b9d7d89808f74d141aa429adda60ad4d20c3d9166e197a19
+              tag: latest@sha256:f57e7fc78304458f7bb356912ae1e460d08663b9bc131e1a949b2a2abaee87ed
             env:
               TZ: ${TIMEZONE}
               META_TITLE: Leon Bowie
