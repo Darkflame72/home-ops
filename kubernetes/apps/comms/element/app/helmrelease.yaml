@@ -32,7 +32,7 @@ spec:
           app:
             image:
               repository: vectorim/element-web
-              tag: v1.11.100@sha256:3367f18a2b830fa6dd454c605a1c0a58ea328e831226b9774e9051ae573bd13f
+              tag: v1.11.102@sha256:bcc0186488f98bdb0a531fd7780050d64f12b3c8658848204e277707a52727f7
 
     service:
       app:
