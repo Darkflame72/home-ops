@@ -76,6 +76,40 @@ nodes:
         mtu: 1500
         vip:
           ip: "10.0.60.2"
+  - hostname: "k8s-3"
+    ipAddress: "10.0.60.24"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: false
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "6c:4b:90:70:f5:e7"
+        dhcp: false
+        addresses:
+          - "10.0.60.24/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+  - hostname: "k8s-4"
+    ipAddress: "10.0.60.25"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: false
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "00:23:24:b4:9a:3f"
+        dhcp: false
+        addresses:
+          - "10.0.60.25/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
 
 # Global patches
 patches:
@@ -90,3 +124,4 @@ controlPlane:
   patches:
     - "@./patches/controller/admission-controller-patch.yaml"
     - "@./patches/controller/cluster.yaml"
+
