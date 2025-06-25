@@ -12,10 +12,9 @@ pkgs.mkShell {
     pkgs.cloudflared
     pkgs.cue
     pkgs.age
-    pkgs.flux
+    pkgs.fluxcd
     pkgs.sops
     pkgs.go-task
-    pkgs.helm
     pkgs.helmfile
     pkgs.jq
     pkgs.kustomize
@@ -23,11 +22,13 @@ pkgs.mkShell {
     pkgs.yq
     pkgs.talosctl
     pkgs.kubeconform
+    pkgs.kubernetes-helm
     pkgs.talhelper
+    pkgs.nmap
   ];
 
-  # KUBECONFIG = "nvim";
-  # SOPS_AGE_KEY_FILE = "nvim";
-  # TALOSCONFIG = "";
+  KUBECONFIG = "${toString ./.}/kubeconfig";
+  SOPS_AGE_KEY_FILE = "${toString ./.}/age.key";
+  TALOSCONFIG = "${toString ./.}/talos/clusterconfig/talosconfig";
 
 }

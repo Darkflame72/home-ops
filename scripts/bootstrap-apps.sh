@@ -120,7 +120,7 @@ function sync_helm_releases() {
         log error "File does not exist" "file=${helmfile_file}"
     fi
 
-    if ! helmfile --file "${helmfile_file}" sync --hide-notes; then
+    if ! helmfile --file "${helmfile_file}" --kubeconfig kubeconfig sync --hide-notes; then
         log error "Failed to sync Helm releases"
     fi
 
