@@ -20,7 +20,7 @@ cniConfig:
 
 nodes:
   - hostname: "k8s-0"
-    ipAddress: "10.0.60.51"
+    ipAddress: "10.0.60.21"
     installDisk: "/dev/nvme0n1"
     machineSpec:
       secureboot: false
@@ -31,7 +31,7 @@ nodes:
           hardwareAddr: "c0:18:03:63:ad:14"
         dhcp: false
         addresses:
-          - "10.0.60.20/24"
+          - "10.0.60.21/24"
         routes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
@@ -39,7 +39,7 @@ nodes:
         vip:
           ip: "10.0.60.2"
   - hostname: "k8s-1"
-    ipAddress: "10.0.60.52"
+    ipAddress: "10.0.60.22"
     installDisk: "/dev/nvme0n1"
     machineSpec:
       secureboot: false
@@ -50,7 +50,7 @@ nodes:
           hardwareAddr: "c0:18:03:63:af:63"
         dhcp: false
         addresses:
-          - "10.0.60.21/24"
+          - "10.0.60.22/24"
         routes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
@@ -58,7 +58,7 @@ nodes:
         vip:
           ip: "10.0.60.2"
   - hostname: "k8s-2"
-    ipAddress: "10.0.60.53"
+    ipAddress: "10.0.60.23"
     installDisk: "/dev/nvme0n1"
     machineSpec:
       secureboot: false
@@ -69,7 +69,7 @@ nodes:
           hardwareAddr: "c0:18:03:63:9d:d7"
         dhcp: false
         addresses:
-          - "10.0.60.22/24"
+          - "10.0.60.23/24"
         routes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
