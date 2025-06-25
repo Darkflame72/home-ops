@@ -5,10 +5,10 @@ clusterName: kubernetes
 talosVersion: "${talosVersion}"
 kubernetesVersion: "${kubernetesVersion}"
 
-endpoint: https://10.0.60.2:6443
+endpoint: https://10.0.60.10:6443
 additionalApiServerCertSans: &sans
   - "127.0.0.1"
-  - "10.0.60.2"
+  - "10.0.60.10"
 additionalMachineCertSans: *sans
 
 clusterPodNets: ["10.42.0.0/16"]
@@ -37,7 +37,7 @@ nodes:
             gateway: "10.0.60.1"
         mtu: 1500
         vip:
-          ip: "10.0.60.2"
+          ip: "10.0.60.10"
   - hostname: "k8s-1"
     ipAddress: "10.0.60.22"
     installDisk: "/dev/nvme0n1"
@@ -56,7 +56,7 @@ nodes:
             gateway: "10.0.60.1"
         mtu: 1500
         vip:
-          ip: "10.0.60.2"
+          ip: "10.0.60.10"
   - hostname: "k8s-2"
     ipAddress: "10.0.60.23"
     installDisk: "/dev/nvme0n1"
@@ -75,7 +75,7 @@ nodes:
             gateway: "10.0.60.1"
         mtu: 1500
         vip:
-          ip: "10.0.60.2"
+          ip: "10.0.60.10"
   - hostname: "k8s-3"
     ipAddress: "10.0.60.24"
     installDisk: "/dev/nvme0n1"
