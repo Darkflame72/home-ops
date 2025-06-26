@@ -1,0 +1,60 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app pihole-dns
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: external-dns
+      version: 1.17.0
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+        namespace: flux-system
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    fullnameOverride: *app
+    provider: cloudflare
+    env:
+      - name: PIHOLE_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: &secret pihole-dns-secret
+            key: api-token
+    extraArgs:
+      # Pihole only supports A/AAAA/CNAME records so there is no mechanism to track ownership.
+      # You don't need to set this flag, but if you leave it unset, you will receive warning
+      # logs when ExternalDNS attempts to create TXT records.
+      - --registry=noop
+      # IMPORTANT: If you have records that you manage manually in Pi-hole, set
+      # the policy to upsert-only so they do not get deleted.
+      - --policy=upsert-only
+      - --provider=pihole
+      # Switch to pihole V6 API
+      - --pihole-api-version=6
+      # Change this to the actual address of your Pi-hole web server
+      - --pihole-server=https://192.168.1.2
+      - --pihole-tls-skip-verify
+      - --crd-source-apiversion=internal.k8s.io/v1alpha1
+      - --crd-source-kind=DNSEndpoint
+      - --gateway-name=internal
+    triggerLoopOnEvent: true
+    policy: sync
+    sources: ["crd", "gateway-httproute"]
+    txtPrefix: k8s.
+    txtOwnerId: default
+    domainFilters: ["${SECRET_DOMAIN}"]
+    serviceMonitor:
+      enabled: true
+    podAnnotations:
+      secret.reloader.stakater.com/reload: *secret
