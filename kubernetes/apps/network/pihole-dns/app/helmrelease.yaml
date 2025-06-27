@@ -44,11 +44,11 @@ spec:
       # Change this to the actual address of your Pi-hole web server
       - --pihole-server=https://192.168.1.2
       - --pihole-tls-skip-verify
-      - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
-      - --crd-source-kind=DNSEndpoint
+      # - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
+      # - --crd-source-kind=DNSEndpoint
       - --gateway-name=internal
     triggerLoopOnEvent: true
-    sources: ["crd", "gateway-httproute"]
+    sources: ["gateway-tlsroute", "gateway-httproute", "service"]
     txtPrefix: k8s.
     txtOwnerId: default
     domainFilters: ["${SECRET_DOMAIN}"]
