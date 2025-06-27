@@ -21,7 +21,7 @@ cniConfig:
 nodes:
   - hostname: "k8s-0"
     ipAddress: "10.0.60.21"
-    installDisk: "/dev/nvme0n1"
+    installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
@@ -40,7 +40,7 @@ nodes:
           ip: "10.0.60.10"
   - hostname: "k8s-1"
     ipAddress: "10.0.60.22"
-    installDisk: "/dev/nvme0n1"
+    installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
@@ -59,7 +59,7 @@ nodes:
           ip: "10.0.60.10"
   - hostname: "k8s-2"
     ipAddress: "10.0.60.23"
-    installDisk: "/dev/nvme0n1"
+    installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
@@ -78,7 +78,7 @@ nodes:
           ip: "10.0.60.10"
   - hostname: "k8s-3"
     ipAddress: "10.0.60.24"
-    installDisk: "/dev/nvme0n1"
+    installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
@@ -95,7 +95,7 @@ nodes:
         mtu: 1500
   - hostname: "k8s-4"
     ipAddress: "10.0.60.25"
-    installDisk: "/dev/nvme0n1"
+    installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
