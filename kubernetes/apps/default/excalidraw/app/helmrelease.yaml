@@ -48,7 +48,7 @@ spec:
           - port: http
     route:
       app:
-        hostnames: ["{{ .Release.Name }}.${SECRET_DOMAIN}"]
+        hostnames: ["draw.${SECRET_DOMAIN}"]
         parentRefs:
           - name: external
             namespace: kube-system
