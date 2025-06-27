@@ -28,14 +28,14 @@ spec:
             image:
               repository: vectorim/element-web
               tag: v1.11.100@sha256:3367f18a2b830fa6dd454c605a1c0a58ea328e831226b9774e9051ae573bd13f
-    persistence:
-      config:
-        enabled: true
-        type: configMap
-        name: element-config
-        globalMounts:
-          - path: /app/config.json
-            subPath: config.json
+    # persistence:
+    #   config:
+    #     enabled: true
+    #     type: configMap
+    #     name: element-config
+    #     globalMounts:
+    #       - path: /app/config.json
+    #         subPath: config.json
     service:
       app:
         ports:
