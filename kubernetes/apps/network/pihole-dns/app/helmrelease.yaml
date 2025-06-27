@@ -24,7 +24,6 @@ spec:
       retries: 3
   values:
     fullnameOverride: *app
-    provider: cloudflare
     env:
       - name: PIHOLE_API_TOKEN
         valueFrom:
@@ -38,8 +37,8 @@ spec:
     # IMPORTANT: If you have records that you manage manually in Pi-hole, set
     # the policy to upsert-only so they do not get deleted.
     policy: upsert-only
+    provider: pihole
     extraArgs:
-      - --provider=pihole
       # Switch to pihole V6 API
       - --pihole-api-version=6
       # Change this to the actual address of your Pi-hole web server
