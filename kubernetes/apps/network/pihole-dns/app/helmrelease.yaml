@@ -46,9 +46,9 @@ spec:
       - --pihole-tls-skip-verify
       # - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
       # - --crd-source-kind=DNSEndpoint
-      - --gateway-name=internal
+      # - --gateway-name=internal
     triggerLoopOnEvent: true
-    sources: ["gateway-tlsroute", "gateway-httproute", "service"]
+    sources: ["gateway-tlsroute", "gateway-httproute", "service", "ingress"]
     txtPrefix: k8s.
     txtOwnerId: default
     domainFilters: ["${SECRET_DOMAIN}"]
