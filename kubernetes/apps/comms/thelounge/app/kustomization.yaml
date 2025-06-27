@@ -2,9 +2,7 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: comms
-components:
-  - ../../components/common
 resources:
-  - ./element/ks.yaml
-  - ./thelounge/ks.yaml
+  - ./helmrelease.yaml
+  - ../../../../templates/volsync
+  - ../../../../templates/gatus/guarded
