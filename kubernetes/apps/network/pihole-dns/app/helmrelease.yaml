@@ -45,9 +45,7 @@ spec:
       - --pihole-server=https://192.168.1.2
       - --pihole-tls-skip-verify
     triggerLoopOnEvent: true
-    sources: ["gateway-tlsroute", "gateway-httproute", "service", "ingress"]
-    txtPrefix: k8s.
-    txtOwnerId: default
+    sources: ["gateway-httproute"]
     domainFilters: ["${SECRET_DOMAIN}"]
     serviceMonitor:
       enabled: true
