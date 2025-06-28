@@ -25,6 +25,10 @@ pkgs.mkShell {
     pkgs.kubernetes-helm
     pkgs.talhelper
     pkgs.nmap
+    pkgs.cmctl
+    pkgs.kubectl-cnpg
+    pkgs.kubectl-rook-ceph
+    pkgs.kubectl-view-secret
   ];
 
   KUBECONFIG = "${toString ./.}/kubeconfig";
