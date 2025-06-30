@@ -59,7 +59,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-        postBuild:
     substituteFrom:
       - name: cluster-secrets
         kind: Secret
