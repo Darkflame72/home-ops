@@ -53,9 +53,6 @@ spec:
             resources:
               requests:
                 cpu: 100m
-              limits:
-                gpu.intel.com/i915: 1
-                memory: 8Gi
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
