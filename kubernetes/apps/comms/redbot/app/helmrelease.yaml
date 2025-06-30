@@ -33,10 +33,6 @@ spec:
             envFrom:
               - secretRef:
                   name: redbot-secret
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
             resources:
               requests:
                 cpu: 10m
