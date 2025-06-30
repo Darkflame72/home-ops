@@ -20,6 +20,10 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 5Gi
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   prune: true
   retryInterval: 2m
   sourceRef:
