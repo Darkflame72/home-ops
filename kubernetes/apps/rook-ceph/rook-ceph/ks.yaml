@@ -18,6 +18,10 @@ spec:
   path: ./kubernetes/apps/rook-ceph/rook-ceph/app
   prune: true
   retryInterval: 2m
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   sourceRef:
     kind: GitRepository
     name: flux-system
