@@ -10,3 +10,4 @@ resources:
   - ./excalidraw/ks.yaml
   - ./smtp-relay/ks.yaml
   - ./littlelink/ks.yaml
+  - ./atuin/ks.yaml
