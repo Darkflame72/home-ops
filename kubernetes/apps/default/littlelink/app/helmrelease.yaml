@@ -17,7 +17,7 @@ spec:
               repository: ghcr.io/techno-tim/littlelink-server
               tag: latest@sha256:d8f3b066e8d4e142dafb1f5dc73a5590cb3341c1f032e61c2e2995b6809fd7e9
             env:
-              TZ: Pacific/Auckland
+              TZ: ${TIMEZONE}
               META_TITLE: Leon Bowie
               META_DESCRIPTION: Leon Bowie Link Page
               META_KEYWORDS: Homelab, devops, education
