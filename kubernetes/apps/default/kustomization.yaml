@@ -11,3 +11,4 @@ resources:
   - ./smtp-relay/ks.yaml
   - ./littlelink/ks.yaml
   - ./atuin/ks.yaml
+  - ./jellyfin/ks.yaml
