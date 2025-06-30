@@ -14,6 +14,14 @@ spec:
       namespace: rook-ceph
   interval: 1h
   path: ./kubernetes/apps/observability/loki/app
+  postBuild:
+    substituteFrom:
+      - name: cluster-secrets
+        kind: Secret
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   prune: true
   retryInterval: 2m
   sourceRef:

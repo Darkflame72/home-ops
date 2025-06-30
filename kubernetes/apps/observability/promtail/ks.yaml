@@ -11,6 +11,14 @@ spec:
       app.kubernetes.io/name: *app
   interval: 1h
   path: ./kubernetes/apps/observability/promtail/app
+  postBuild:
+    substituteFrom:
+      - name: cluster-secrets
+        kind: Secret
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   prune: true
   retryInterval: 2m
   sourceRef:

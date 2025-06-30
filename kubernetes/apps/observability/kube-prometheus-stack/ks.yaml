@@ -18,6 +18,13 @@ spec:
     substitute:
       APP: kube-prometheus-stack
       GATUS_SUBDOMAIN: prometheus
+    substituteFrom:
+      - name: cluster-secrets
+        kind: Secret
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   prune: true
   retryInterval: 2m
   sourceRef:
