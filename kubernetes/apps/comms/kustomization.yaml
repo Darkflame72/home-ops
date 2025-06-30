@@ -7,4 +7,4 @@ components:
   - ../../components/common
 resources:
   - ./element/ks.yaml
-  # - ./thelounge/ks.yaml
+  - ./thelounge/ks.yaml
