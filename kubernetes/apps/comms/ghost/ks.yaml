@@ -20,6 +20,9 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 5Gi
+    substituteFrom:
+      - name: cluster-secrets
+        kind: Secret
   decryption:
     provider: sops
     secretRef:
