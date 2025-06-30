@@ -18,6 +18,13 @@ spec:
     substitute:
       APP: *app
       GATUS_SUBDOMAIN: status
+    substituteFrom:
+      - name: cluster-secrets
+        kind: Secret
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   prune: true
   retryInterval: 2m
   sourceRef:
