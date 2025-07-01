@@ -76,7 +76,7 @@ spec:
       SYNC_CHUNK_WRITES: "false"
     envFrom:
       - secretRef:
-          name: *secret
+          name: minecraft-secret
     resources:
       requests:
         cpu: 500m
