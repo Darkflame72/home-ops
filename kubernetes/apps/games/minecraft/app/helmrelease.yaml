@@ -23,46 +23,63 @@ spec:
   chartRef:
     kind: OCIRepository
     name: minecraft-server
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
   values:
+    fullnameOverride: *app
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
     image:
-      repository: itzg/minecraft-server
-      tag: 2025.6.2
-    resources:
-      limits:
-        memory: 8000Mi
-      requests:
-        cpu: 1000m
-        memory: 4000Mi
-    securityContext:
-      runAsUser: 568
-      fsGroup: 568
+      repository: ghcr.io/itzg/minecraft-server
+      tag: 2025.6.2-java21@sha256:262e2309f7cc6b2ff0ac1458ac52c91e9bc778989543feec6588501f6dad31ef
+      pullPolicy: IfNotPresent
     livenessProbe:
-      initialDelaySeconds: 0
-    readinessProbe:
-      initialDelaySeconds: 0
-    startupProbe:
-      enabled: true
-    extraEnv:
-      TZ: ${TIMEZONE}
-      ENABLE_ROLLING_LOGS: true
-      MEMORY: ""
+      initialDelaySeconds: 120
+    serviceAnnotations:
+      external-dns.alpha.kubernetes.io/hostname: mc.${SECRET_DOMAIN}
+      external-dns.alpha.kubernetes.io/target: mc-router.${SECRET_DOMAIN}
+      mc-router.itzg.me/externalServerName: mc.${SECRET_DOMAIN}
+    minecraftServer:
+      difficulty: "normal"
+      eula: "true"
+      forcegameMode: true
+      maxPlayers: 10
+      memory: 4G
+      motd: "Testing"
+      ops: "Darkflame72"
+      overrideServerProperties: true
+      spawnProtection: 0
+      type: "PAPER"
+      vanillaTweaksShareCodes:
+        - t4ezKQ
+      version: "1.21.7"
+      viewDistance: 7
     persistence:
       dataDir:
         enabled: true
         existingClaim: *app
-    serviceAnnotations:
-      lbipam.cilium.io/ips: "10.0.60.16"
-    minecraftServer:
-      eula: true
-      version: 1.21.7
-      type: PURPUR
-      difficulty: normal
-      whitelist: "Darkflame72"
-      ops: "Darkflame72"
-      pvp: true
-      motd: Testing
-      worldSaveName: World
-      viewDistance: 12
-      forceReDownload: true
-      memory: ""
-      jvmXXOpts: "-XX:MaxRAMPercentage=70"
+    extraEnv:
+      ENABLE_ROLLING_LOGS: "true"
+      ENFORCE_WHITELIST: "true"
+      OVERRIDE_WHITELIST: "true"
+      RCON_CMDS_STARTUP: |-
+        gamerule doFireTick false
+        gamerule playersSleepingPercentage 0
+        scoreboard objectives setdisplay list ts_Deaths
+      SIMULATION_DISTANCE: "4"
+      SNOOPER_ENABLED: "false"
+      SYNC_CHUNK_WRITES: "false"
+    envFrom:
+      - secretRef:
+          name: *secret
+    resources:
+      requests:
+        cpu: 500m
+        memory: &mem 6Gi
+      limits:
+        memory: *mem
