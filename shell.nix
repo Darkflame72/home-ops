@@ -29,6 +29,7 @@ pkgs.mkShell {
     pkgs.kubectl-cnpg
     pkgs.kubectl-rook-ceph
     pkgs.kubectl-view-secret
+    pkgs.kubescape
   ];
 
   KUBECONFIG = "${toString ./.}/kubeconfig";
