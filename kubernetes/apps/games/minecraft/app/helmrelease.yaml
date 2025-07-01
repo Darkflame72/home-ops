@@ -47,8 +47,6 @@ spec:
     minecraftServer:
       difficulty: "normal"
       eula: "true"
-      forcegameMode: true
-      maxPlayers: 10
       memory: 6G
       motd: "Testing"
       ops: "Darkflame72"
