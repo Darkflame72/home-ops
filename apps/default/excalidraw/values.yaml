@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+controllers:
+  excalidraw:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: docker.io/excalidraw/excalidraw
+          tag: latest@sha256:525d72908ffed09807bad50321b94698d725ddc5945118dc3e0b4a494f9772a8
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            memory: 50Mi
+service:
+  app:
+    ports:
+      http:
+        port: &port 80
+serviceMonitor:
+  app:
+    endpoints:
+      - port: http
+route:
+  app:
+    hostnames: ["draw.darkflame.dev"]
+    parentRefs:
+      - name: external
+        namespace: kube-system
+        sectionName: https
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
