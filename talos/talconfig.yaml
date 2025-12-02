@@ -1,0 +1,222 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
+---
+clusterName: kubernetes
+
+talosVersion: "${talosVersion}"
+kubernetesVersion: "${kubernetesVersion}"
+
+endpoint: https://10.0.60.10:6443
+additionalApiServerCertSans: &sans
+  - "127.0.0.1"
+  - "10.0.60.10"
+additionalMachineCertSans: *sans
+
+clusterPodNets: ["10.42.0.0/16"]
+clusterSvcNets: ["10.43.0.0/16"]
+
+# Disable built-in CNI to use Cilium
+cniConfig:
+  name: none
+
+nodes:
+  - hostname: "k8s-1"
+    ipAddress: "10.0.60.21"
+    installDisk: "/dev/nvme1n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "c0:18:03:63:ad:14"
+        dhcp: false
+        addresses:
+          - "10.0.60.21/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+        vip:
+          ip: "10.0.60.10"
+
+  - hostname: "k8s-2"
+    ipAddress: "10.0.60.22"
+    installDisk: "/dev/nvme1n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: false
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "c0:18:03:63:af:63"
+        dhcp: false
+        addresses:
+          - "10.0.60.22/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+
+  - hostname: "k8s-3"
+    ipAddress: "10.0.60.23"
+    installDisk: "/dev/nvme1n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "c0:18:03:63:9d:d7"
+        dhcp: false
+        addresses:
+          - "10.0.60.23/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+        vip:
+          ip: "10.0.60.10"
+
+  # PSU not Working
+  # - hostname: "k8s-4"
+  #   ipAddress: "10.0.60.24"
+  #   installDisk: "/dev/nvme1n1"
+  #   machineSpec:
+  #     secureboot: false
+  #   talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+  #   controlPlane: true
+  #   networkInterfaces:
+  #     - deviceSelector:
+  #         hardwareAddr: "6c:4b:90:70:f5:e7"
+  #       dhcp: false
+  #       addresses:
+  #         - "10.0.60.24/24"
+  #       routes:
+  #         - network: "0.0.0.0/0"
+  #           gateway: "10.0.60.1"
+  #       mtu: 1500
+
+  - hostname: "k8s-5"
+    ipAddress: "10.0.60.25"
+    installDisk: "/dev/nvme1n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "00:23:24:b4:9a:3f"
+        dhcp: false
+        addresses:
+          - "10.0.60.25/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+        vip:
+          ip: "10.0.60.10"
+
+  - hostname: "k8s-6"
+    ipAddress: "10.0.60.26"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: false
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "6c:4b:90:70:f5:c2"
+        dhcp: false
+        addresses:
+          - "10.0.60.26/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+
+  - hostname: "k8s-7"
+    ipAddress: "10.0.60.27"
+    installDisk: "/dev/nvme1n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: false
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "6c:4b:90:70:f5:9a"
+        dhcp: false
+        addresses:
+          - "10.0.60.27/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+
+  - hostname: "k8s-8"
+    ipAddress: "10.0.60.28"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: false
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "6c:4b:90:7a:85:04"
+        dhcp: false
+        addresses:
+          - "10.0.60.28/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+
+  - hostname: "k8s-9"
+    ipAddress: "10.0.60.29"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+    controlPlane: false
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "6c:4b:90:70:f5:e7"
+        dhcp: false
+        addresses:
+          - "10.0.60.29/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "10.0.60.1"
+        mtu: 1500
+
+  # Not starting
+  # - hostname: "k8s-10"
+  #   ipAddress: "10.0.60.30"
+  #   installDisk: "/dev/nvme1n1"
+  #   machineSpec:
+  #     secureboot: false
+  #   talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+  #   controlPlane: false
+  #   networkInterfaces:
+  #     - deviceSelector:
+  #         hardwareAddr: "00:23:24:b4:9a:3f"
+  #       dhcp: false
+  #       addresses:
+  #         - "10.0.60.30/24"
+  #       routes:
+  #         - network: "0.0.0.0/0"
+  #           gateway: "10.0.60.1"
+  #       mtu: 1500
+
+
+# Global patches
+patches:
+  - "@./patches/global/machine-files.yaml"
+  - "@./patches/global/machine-kubelet.yaml"
+  - "@./patches/global/machine-network.yaml"
+  - "@./patches/global/machine-sysctls.yaml"
+  - "@./patches/global/machine-time.yaml"
+
+# Controller patches
+controlPlane:
+  patches:
+    - "@./patches/controller/cluster.yaml"

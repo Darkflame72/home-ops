@@ -1,0 +1,15 @@
+# Secrets
+*.pub
+*.key
+*.decrypted~*.yaml
+/age.key
+# Kubernetes
+kubeconfig
+talosconfig
+# Misc.
+.private/
+.task/
+.venv/
+.DS_Store
+Thumbs.db
+.direnv
