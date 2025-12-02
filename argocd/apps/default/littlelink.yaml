@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: littelink
+  name: littlelink
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: '0'
@@ -10,16 +10,16 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/default/littelink
+      path: apps/default/littlelink
       targetRevision: main
       ref: repo
     - repoURL: ghcr.io/bjw-s-labs/helm
       chart: app-template
       targetRevision: 4.4.0
       helm:
-        releaseName: littelink
+        releaseName: littlelink
         valueFiles:
-          - $repo/apps/default/littelink/values.yaml
+          - $repo/apps/default/littlelink/values.yaml
   destination:
     name: in-cluster
     namespace: default
