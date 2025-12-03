@@ -1,3 +1,4 @@
+---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 controllers:
   echo:
@@ -6,41 +7,29 @@ controllers:
       app:
         image:
           repository: ghcr.io/mendhak/http-https-echo
-          tag: 37@sha256:f55000d9196bd3c853d384af7315f509d21ffb85de315c26e9874033b9f83e15
+          tag: 38
         env:
-          HTTP_PORT: 8080
+          HTTP_PORT: &port 80
           LOG_WITHOUT_NEWLINE: true
           LOG_IGNORE_PATH: /healthz
           PROMETHEUS_ENABLED: true
         probes:
-          liveness:
+          liveness: &probes
             enabled: true
             custom: true
             spec:
               httpGet:
                 path: /healthz
-                port: 8080
+                port: *port
               initialDelaySeconds: 0
               periodSeconds: 10
               timeoutSeconds: 1
               failureThreshold: 3
-          readiness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /healthz
-                port: 8080
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
+          readiness: *probes
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-              - ALL
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             cpu: 10m
@@ -53,13 +42,11 @@ defaultPodOptions:
     runAsGroup: 65534
 service:
   app:
-    controller: echo
     ports:
       http:
-        port: 8080
+        port: *port
 serviceMonitor:
   app:
-    serviceName: echo
     endpoints:
       - port: http
 route:
@@ -68,9 +55,9 @@ route:
       - echo.darkflame.dev
     parentRefs:
       - name: envoy-external
-        namespace: kube-system
+        namespace: network
         sectionName: https
     rules:
       - backendRefs:
           - identifier: app
-            port: 8080
+            port: *port
