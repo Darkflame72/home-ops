@@ -4,4 +4,6 @@ kind: Kustomization
 namespace: argocd
 
 resources:
+- ./config/applications.yaml
+- ./config/http-route.yaml
 - https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/ha/install.yaml
