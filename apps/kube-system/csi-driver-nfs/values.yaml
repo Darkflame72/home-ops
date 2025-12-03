@@ -1,0 +1,16 @@
+---
+controller:
+  replicas: 1
+storageClass:
+  create: true
+  name: nfs-slow
+  parameters:
+    server: 10.0.60.15
+    share: /mnt/Main/Kubernetes
+  mountOptions:
+    - nfsvers=4.2
+    - nconnect=16
+    - hard
+    - noatime
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
