@@ -1,6 +1,8 @@
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kubernetes-sigs/external-dns/refs/heads/master/charts/external-dns/values.schema.json
 fullnameOverride: pihole-dns
-provider: pihole
+provider:
+  name: pihole
 env:
   - name: PIHOLE_API_TOKEN
     valueFrom:
