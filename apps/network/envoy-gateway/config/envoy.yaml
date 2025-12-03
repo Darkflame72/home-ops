@@ -77,7 +77,7 @@ spec:
         certificateRefs:
           - group: ""
             kind: Secret
-            name: darkflame-dev-tls
+            name: darkflame-dev-production-tls
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoypatchpolicy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
@@ -145,7 +145,7 @@ spec:
         certificateRefs:
           - group: ""
             kind: Secret
-            name: darkflame-dev-tls
+            name: darkflame-dev-production-tls
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoypatchpolicy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
