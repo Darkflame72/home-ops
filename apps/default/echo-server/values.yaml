@@ -67,7 +67,7 @@ route:
     hostnames:
       - echo.darkflame.dev
     parentRefs:
-      - name: external
+      - name: envoy-external
         namespace: kube-system
         sectionName: https
     rules:
