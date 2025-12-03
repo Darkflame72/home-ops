@@ -3,11 +3,11 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: cilium
-  namespace: argo-system
+  namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: '0'
 spec:
-  project: kubernetes
+  project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/kube-system/cilium
