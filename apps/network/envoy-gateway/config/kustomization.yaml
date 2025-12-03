@@ -4,5 +4,5 @@ kind: Kustomization
 
 resources:
   - ./certificate.yaml
-  # - ./envoy.yaml
+  - ./envoy.yaml
   - ./podmonitor.yaml
