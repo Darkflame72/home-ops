@@ -39,3 +39,7 @@ route:
       - backendRefs:
           - identifier: app
             port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
