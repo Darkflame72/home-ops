@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoyproxy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
@@ -20,7 +21,7 @@ spec:
             limits:
               memory: 1Gi
       envoyService:
-        externalTrafficPolicy: Cluster
+        externalTrafficPolicy: Local
   shutdown:
     drainTimeout: 180s
   telemetry:
@@ -29,6 +30,7 @@ spec:
         compression:
           type: Gzip
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gatewayclass_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
@@ -41,18 +43,23 @@ spec:
     name: envoy
     namespace: network
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gateway_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: envoy-external
   annotations:
-    external-dns.alpha.kubernetes.io/target: "external.darkflame.dev"
+    external-dns.alpha.kubernetes.io/target: &hostname external.darkflame.dev
+    gatus.home-operations.com/endpoint: |-
+      client:
+        dns-resolver: tcp://1.1.1.1:53
+      group: external
 spec:
   gatewayClassName: envoy
   infrastructure:
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "external.darkflame.dev"
-      lbipam.cilium.io/ips: "10.0.60.13"
+      external-dns.alpha.kubernetes.io/hostname: *hostname
+      lbipam.cilium.io/ips: 10.0.60.13
   listeners:
     - name: http
       protocol: HTTP
@@ -69,20 +76,57 @@ spec:
       tls:
         certificateRefs:
           - kind: Secret
-            name: "darkflame-dev-production-tls"
+            name: turbo-ac-tls
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoypatchpolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: envoy-external
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: envoy-external
+  type: JSONPatch
+  jsonPatches:
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: network/envoy-external/https
+      operation: &operation
+        op: add
+        jsonPath: ..filters[*].typed_config.http_filters[?(@.name=="envoy.filters.http.compressor.zstd")].typed_config
+        value:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.compressor.v3.Compressor
+          choose_first: true
+          compressor_library:
+            name: envoy.compression.zstd.compressor
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.compression.zstd.compressor.v3.Zstd
+          response_direction_config:
+            remove_accept_encoding_header: true
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: network/envoy-external/https-quic
+      operation: *operation
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gateway_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: envoy-internal
   annotations:
-    external-dns.alpha.kubernetes.io/target: "internal.darkflame.dev"
+    external-dns.alpha.kubernetes.io/target: &hostname internal.darkflame.dev
+    gatus.home-operations.com/endpoint: |-
+      group: internal
+      guarded: true
+      ui:
+        hide-hostname: true
+        hide-url: true
 spec:
   gatewayClassName: envoy
   infrastructure:
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "internal.darkflame.dev"
-      lbipam.cilium.io/ips: "10.0.60.12"
+      external-dns.alpha.kubernetes.io/hostname: *hostname
+      lbipam.cilium.io/ips: 10.0.60.12
   listeners:
     - name: http
       protocol: HTTP
@@ -99,8 +143,39 @@ spec:
       tls:
         certificateRefs:
           - kind: Secret
-            name: "darkflame-dev-production-tls"
+            name: turbo-ac-tls
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoypatchpolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: envoy-internal
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: envoy-internal
+  type: JSONPatch
+  jsonPatches:
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: network/envoy-internal/https
+      operation: &operation
+        op: add
+        jsonPath: ..filters[*].typed_config.http_filters[?(@.name=="envoy.filters.http.compressor.zstd")].typed_config
+        value:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.compressor.v3.Compressor
+          choose_first: true
+          compressor_library:
+            name: envoy.compression.zstd.compressor
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.compression.zstd.compressor.v3.Zstd
+          response_direction_config:
+            remove_accept_encoding_header: true
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: network/envoy-internal/https-quic
+      operation: *operation
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
 metadata:
@@ -109,6 +184,7 @@ spec:
   compression:
     - type: Brotli
     - type: Gzip
+    - type: Zstd
   connection:
     bufferLimit: 8Mi
   targetSelectors:
@@ -119,6 +195,7 @@ spec:
     http:
       requestTimeout: 0s
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/clienttrafficpolicy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
 metadata:
@@ -128,11 +205,11 @@ spec:
     xForwardedFor:
       numTrustedHops: 1
   connection:
-    bufferLimit: 4Mi
+    bufferLimit: 8Mi
     maxAcceptPerSocketEvent: 0
   http2:
-    initialStreamWindowSize: 512Ki
-    initialConnectionWindowSize: 8Mi
+    initialStreamWindowSize: 2Mi
+    initialConnectionWindowSize: 32Mi
     onInvalidMessage: TerminateStream
   http3: {}
   targetSelectors:
@@ -148,6 +225,7 @@ spec:
       - h2
       - http/1.1
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/httproute_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
