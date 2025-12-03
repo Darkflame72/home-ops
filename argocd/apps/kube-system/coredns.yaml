@@ -13,7 +13,7 @@ spec:
       path: apps/kube-system/coredns
       targetRevision: main
       ref: repo
-    - repoURL: oci://ghcr.io/coredns/charts/coredns
+    - repoURL: ghcr.io/coredns/charts
       chart: coredns
       targetRevision: 1.45.0
       helm:
