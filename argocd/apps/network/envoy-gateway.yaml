@@ -9,17 +9,17 @@ metadata:
 spec:
   project: default
   sources:
-    # - repoURL: "https://github.com/Darkflame72/home-ops.git"
-    #   path: apps/network/envoy-gateway
-    #   targetRevision: main
-    #   ref: repo
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/network/envoy-gateway
+      targetRevision: main
+      ref: repo
     - repoURL: mirror.gcr.io/envoyproxy
       chart: gateway-helm
       targetRevision: v1.6.0
       helm:
         releaseName: envoy-gateway
-        # valueFiles:
-        #   - $repo/apps/network/envoy-gateway/values.yaml
+        valueFiles:
+          - $repo/apps/network/envoy-gateway/values.yaml
   destination:
     name: in-cluster
     namespace: network
