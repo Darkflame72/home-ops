@@ -1,0 +1,29 @@
+---
+fullnameOverride: pihole-dns
+provider: pihole
+env:
+  - name: PIHOLE_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: &secret pihole-dns-secret
+        key: api-token
+extraArgs:
+  # Switch to pihole V6 API
+  - --pihole-api-version=6
+  # Change this to the actual address of your Pi-hole web server
+  - --pihole-server=https://192.168.1.2
+  - --pihole-tls-skip-verify
+triggerLoopOnEvent: true
+# IMPORTANT: If you have records that you manage manually in Pi-hole, set
+# the policy to upsert-only so they do not get deleted.
+policy: upsert-only
+sources: ["gateway-httproute"]
+# Pihole only supports A/AAAA/CNAME records so there is no mechanism to track ownership.
+# You don't need to set this flag, but if you leave it unset, you will receive warning
+# logs when ExternalDNS attempts to create TXT records.
+registry: noop
+domainFilters: ["darkflame.dev"]
+serviceMonitor:
+  enabled: true
+podAnnotations:
+  secret.reloader.stakater.com/reload: *secret
