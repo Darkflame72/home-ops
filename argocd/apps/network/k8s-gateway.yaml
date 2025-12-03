@@ -10,7 +10,7 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/kube-system/k8s-gateway
+      path: apps/network/k8s-gateway
       targetRevision: main
       ref: repo
     - repoURL: https://ori-edge.github.io/k8s_gateway
