@@ -18,6 +18,8 @@ spec:
       targetRevision: 1.19.0
       helm:
         releaseName: pihole-dns
+        valueFiles:
+          - $repo/apps/network/pihole-dns/values.yaml
   destination:
     name: in-cluster
     namespace: network
