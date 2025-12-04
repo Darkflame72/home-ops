@@ -1,42 +1,44 @@
-# ---
-# apiVersion: argoproj.io/v1alpha1
-# kind: Application
-# metadata:
-#   name: rook-ceph
-#   namespace: argocd
-#   annotations:
-#     argocd.argoproj.io/sync-wave: '0'
-# spec:
-#   project: default
-#   sources:
-#     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-#       path: apps/rook-ceph/operator
-#       targetRevision: main
-#       ref: repo
-#     - repoURL: ghcr.io/rook
-#       chart: rook-ceph
-#       targetRevision: v1.18.8
-#       helm:
-#         releaseName: rook-ceph
-#         valueFiles:
-#           - $repo/apps/rook-ceph/operator/values.yaml
-#   destination:
-#     name: in-cluster
-#     namespace: rook-ceph
-#   syncPolicy:
-#     automated:
-#       allowEmpty: true
-#       prune: true
-#       selfHeal: true
-#     retry:
-#       limit: 1
-#       backoff:
-#         duration: 10s
-#         factor: 2
-#         maxDuration: 3m
-#     syncOptions:
-#       - CreateNamespace=true
-#       - ApplyOutOfSyncOnly=true
-#       - ServerSideApply=true
-#       - PruneLast=true
-#       - RespectIgnoreDifferences=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-ceph
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/rook-ceph/operator
+      targetRevision: main
+      ref: repo
+    - repoURL: ghcr.io/rook
+      chart: rook-ceph
+      targetRevision: v1.18.8
+      helm:
+        releaseName: rook-ceph
+        valueFiles:
+          - $repo/apps/rook-ceph/operator/values.yaml
+  destination:
+    name: in-cluster
+    namespace: rook-ceph
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 1
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true

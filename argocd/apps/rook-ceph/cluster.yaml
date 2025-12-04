@@ -5,6 +5,8 @@
 # metadata:
 #   name: rook-ceph-cluster
 #   namespace: argocd
+#   finalizers:
+#   - resources-finalizer.argocd.argoproj.io
 #   annotations:
 #     argocd.argoproj.io/sync-wave: '0'
 # spec:
