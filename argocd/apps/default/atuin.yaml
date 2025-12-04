@@ -4,8 +4,8 @@
 # metadata:
 #   name: atuin
 #   namespace: argocd
-  finalizers:
-  - resources-finalizer.argocd.argoproj.io
+#   finalizers:
+#   - resources-finalizer.argocd.argoproj.io
 #   annotations:
 #     argocd.argoproj.io/sync-wave: '0'
 # spec:
