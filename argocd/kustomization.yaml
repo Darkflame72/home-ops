@@ -6,4 +6,9 @@ namespace: argocd
 resources:
 - ./config/applications.yaml
 - ./config/http-route.yaml
+- ./config/grpc-route.yaml
 - https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/ha/install.yaml
+
+patches:
+- path: ./config/argocd-cmd-params-cm.yaml
+- path: https://raw.githubusercontent.com/argoproj/argo-cd/stable/notifications_catalog/install.yaml

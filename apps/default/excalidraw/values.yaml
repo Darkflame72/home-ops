@@ -33,7 +33,7 @@ route:
     hostnames: ["draw.darkflame.dev"]
     parentRefs:
       - name: envoy-external
-        namespace: kube-system
+        namespace: network
         sectionName: https
     rules:
       - backendRefs:
