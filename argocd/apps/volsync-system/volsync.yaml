@@ -9,7 +9,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '0'
 spec:
-  project: volsync-system
+  project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/volsync-system/volsync
