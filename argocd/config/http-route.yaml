@@ -5,7 +5,7 @@ metadata:
 spec:
   parentRefs:
     - name: envoy-external
-      namespace: kube-system
+      namespace: network
   hostnames: ["argo.darkflame.dev"]
   rules:
     - backendRefs:
