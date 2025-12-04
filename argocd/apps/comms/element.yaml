@@ -10,7 +10,7 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/default/element
+      path: apps/comms/element
       targetRevision: main
       ref: repo
     - repoURL: ghcr.io/bjw-s-labs/helm
@@ -19,10 +19,10 @@ spec:
       helm:
         releaseName: element
         valueFiles:
-          - $repo/apps/default/element/values.yaml
+          - $repo/apps/comms/element/values.yaml
   destination:
     name: in-cluster
-    namespace: default
+    namespace: comms
   syncPolicy:
     automated:
       allowEmpty: true
