@@ -10,7 +10,9 @@ route:
       path: /
       pathType: PathPrefix
     parentRefs:
-      - name: envoy-internal
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: envoy-internal
         namespace: network
 cephClusterSpec:
   cephConfig:
