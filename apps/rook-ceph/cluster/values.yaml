@@ -3,17 +3,17 @@ monitoring:
   createPrometheusRules: true
 toolbox:
   enabled: true
-# route:
-#   dashboard:
-#     host:
-#       name: rook.darkflame.dev
-#       path: /
-#       pathType: PathPrefix
-#     parentRefs:
-#       - group: gateway.networking.k8s.io
-#         kind: Gateway
-#         name: envoy-internal
-#         namespace: network
+route:
+  dashboard:
+    host:
+      name: rook.darkflame.dev
+      path: /
+      pathType: PathPrefix
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: envoy-internal
+        namespace: network
 cephClusterSpec:
   cephConfig:
     global:
@@ -29,7 +29,7 @@ cephClusterSpec:
     readAffinity:
       enabled: true
   dashboard:
-    enabled: false
+    enabled: true
     urlPrefix: /
     ssl: false
     # prometheusEndpoint: http://prometheus-operated.observability.svc.cluster.local:9090
@@ -45,6 +45,11 @@ cephClusterSpec:
         enabled: true
   network:
     provider: host
+    addressRanges:
+      public:
+        - 169.254.255.0/24
+      cluster:
+        - 169.254.255.0/24
     connections:
       requireMsgr2: true
   resources:
