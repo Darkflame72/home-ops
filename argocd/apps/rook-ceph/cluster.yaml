@@ -1,43 +1,43 @@
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_cd_kustomize_schema.json
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: rook-ceph-cluster
-  namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: '0'
-spec:
-  project: default
-  sources:
-    - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/rook-ceph/cluster
-      targetRevision: main
-      ref: repo
-    - repoURL: ghcr.io/rook
-      chart: rook-ceph-cluster
-      targetRevision: v1.18.8
-      helm:
-        releaseName: rook-ceph-cluster
-        valueFiles:
-          - $repo/apps/rook-ceph/cluster/values.yaml
-  destination:
-    name: in-cluster
-    namespace: rook-ceph
-  syncPolicy:
-    automated:
-      allowEmpty: true
-      prune: true
-      selfHeal: true
-    retry:
-      limit: 1
-      backoff:
-        duration: 10s
-        factor: 2
-        maxDuration: 3m
-    syncOptions:
-      - CreateNamespace=true
-      - ApplyOutOfSyncOnly=true
-      - ServerSideApply=true
-      - PruneLast=true
-      - RespectIgnoreDifferences=true
+# ---
+# # yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_cd_kustomize_schema.json
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: rook-ceph-cluster
+#   namespace: argocd
+#   annotations:
+#     argocd.argoproj.io/sync-wave: '0'
+# spec:
+#   project: default
+#   sources:
+#     - repoURL: "https://github.com/Darkflame72/home-ops.git"
+#       path: apps/rook-ceph/cluster
+#       targetRevision: main
+#       ref: repo
+#     - repoURL: ghcr.io/rook
+#       chart: rook-ceph-cluster
+#       targetRevision: v1.18.8
+#       helm:
+#         releaseName: rook-ceph-cluster
+#         valueFiles:
+#           - $repo/apps/rook-ceph/cluster/values.yaml
+#   destination:
+#     name: in-cluster
+#     namespace: rook-ceph
+#   syncPolicy:
+#     automated:
+#       allowEmpty: true
+#       prune: true
+#       selfHeal: true
+#     retry:
+#       limit: 1
+#       backoff:
+#         duration: 10s
+#         factor: 2
+#         maxDuration: 3m
+#     syncOptions:
+#       - CreateNamespace=true
+#       - ApplyOutOfSyncOnly=true
+#       - ServerSideApply=true
+#       - PruneLast=true
+#       - RespectIgnoreDifferences=true
