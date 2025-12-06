@@ -6,7 +6,7 @@ controllers:
       app:
         image:
           repository: vectorim/element-web
-          tag: v1.11.105@sha256:13bd3b493cf3ca4771b3256e4cea9262393384fe611ec93e3b20bd81b59bcc45
+          tag: v1.12.6@sha256:a84f294ce46e4327ebacecb78bfc94cf6a45c7ffa5104a28f06b5ac69d0b2548
 service:
   app:
     ports:
