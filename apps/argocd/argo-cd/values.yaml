@@ -1,12 +1,12 @@
 global:
   domain: cd.darkflame.dev
 
-notifications:
-  enabled: true
-  secret:
-    create: false
-    name: argocd-notifications-secret
+# notifications:
+#   enabled: true
+#   secret:
+#     create: false
+#     name: argocd-notifications-secret
 
-configs:
-  params:
-    server.insecure: true
+# configs:
+#   params:
+#     server.insecure: true
