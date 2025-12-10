@@ -36,11 +36,36 @@ repoServer:
 applicationSet:
   replicas: 2
 
-# notifications:
-#   enabled: true
-#   secret:
-#     create: false
-#     name: argocd-notifications-secret
+notifications:
+  enabled: true
+  secret:
+    create: false
+    name: argocd-notifications-secret
+  items:
+    service.github: |
+      appID: $githubAppId
+      installationID: $githubAppInstallationId
+      privateKey: $githubAppPrivateKey
+    templates: |
+      github-status: |
+        message: |
+          repo: Darkflame72/home-ops
+          revision: {{.app.status.sync.revision}}
+          state: '{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else}}pending{{end}}'
+          targetURL: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+    triggers: |
+      on-sync-succeeded: |
+        when: app.status.operationState.phase in ['Succeeded']
+        send:
+          - github-status
+      on-sync-failed: |
+        when: app.status.operationState.phase in ['Error', 'Failed']
+        send:
+          - github-status
+      on-sync-running: |
+        when: app.status.operationState.phase in ['Running']
+        send:
+          - github-status
 
 configs:
   params:

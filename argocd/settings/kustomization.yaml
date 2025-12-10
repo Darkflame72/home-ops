@@ -7,5 +7,5 @@ resources:
   - ./repositories.yaml
   - ./settings.yaml
   # - ./http-route.yaml
-  - ./notifications-cm.yaml
+  # - ./notifications-cm.yaml
   - ./notifications-secret.yaml
