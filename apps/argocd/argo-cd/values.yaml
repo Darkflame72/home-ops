@@ -7,6 +7,6 @@ global:
 #     create: false
 #     name: argocd-notifications-secret
 
-# configs:
-#   params:
-#     server.insecure: true
+configs:
+  params:
+    server.insecure: true
