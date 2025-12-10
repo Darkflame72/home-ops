@@ -9,7 +9,7 @@ metadata:
   labels:
     argocd.argoproj.io/instance: argo
 spec:
-  project: kubernetes
+  project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/argocd/argo-cd
