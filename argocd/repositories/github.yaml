@@ -27,14 +27,23 @@ spec:
   data:
     - secretKey: githubAppPrivateKey
       remoteRef:
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
         key: /argocd/github-app-private-key
     
     - secretKey: githubAppId
       remoteRef:
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
         key: /argocd/github-app-id
 
     - secretKey: githubAppInstallationId
       remoteRef:
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
         key: /argocd/github-app-installation-id
       
     
