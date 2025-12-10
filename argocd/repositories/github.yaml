@@ -1,0 +1,40 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: github-repo-credentials
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+spec:
+  refreshInterval: 15m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+
+  target:
+    name: github-repo-credentials
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      type: Opaque
+      data:
+        url: https://github.com/Darkflame72/home-ops
+        type: git
+        githubAppPrivateKey: "{{ .githubAppPrivateKey }}"
+        githubAppId: "{{ .githubAppId }}"
+        githubAppInstallationId: "{{ .githubAppInstallationId }}"
+
+  data:
+    - secretKey: githubAppPrivateKey
+      remoteRef:
+        key: /argocd/github-app-private-key
+    
+    - secretKey: githubAppId
+      remoteRef:
+        key: /argocd/github-app-id
+
+    - secretKey: githubAppInstallationId
+      remoteRef:
+        key: /argocd/github-app-installation-id
+      
+    

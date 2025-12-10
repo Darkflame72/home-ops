@@ -24,7 +24,6 @@ nodes:
     installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: true
     networkInterfaces:
       - deviceSelector:
@@ -38,13 +37,19 @@ nodes:
         mtu: 1500
         vip:
           ip: "10.0.60.10"
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   - hostname: "k8s-2"
     ipAddress: "10.0.60.22"
     installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: false
     networkInterfaces:
       - deviceSelector:
@@ -56,13 +61,19 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   - hostname: "k8s-3"
     ipAddress: "10.0.60.23"
     installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: true
     networkInterfaces:
       - deviceSelector:
@@ -76,6 +87,13 @@ nodes:
         mtu: 1500
         vip:
           ip: "10.0.60.10"
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   # PSU not Working
   # - hostname: "k8s-4"
@@ -83,7 +101,6 @@ nodes:
   #   installDisk: "/dev/nvme1n1"
   #   machineSpec:
   #     secureboot: false
-  #   talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
   #   controlPlane: true
   #   networkInterfaces:
   #     - deviceSelector:
@@ -95,13 +112,19 @@ nodes:
   #         - network: "0.0.0.0/0"
   #           gateway: "10.0.60.1"
   #       mtu: 1500
+  #   schematic:
+  #     customization:
+  #       systemExtensions:
+  #         officialExtensions:
+  #           - siderolabs/i915
+  #           - siderolabs/intel-ucode
+  #           - siderolabs/mei
 
   - hostname: "k8s-5"
     ipAddress: "10.0.60.25"
     installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: true
     networkInterfaces:
       - deviceSelector:
@@ -115,13 +138,19 @@ nodes:
         mtu: 1500
         vip:
           ip: "10.0.60.10"
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   - hostname: "k8s-6"
     ipAddress: "10.0.60.26"
     installDisk: "/dev/nvme0n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: false
     networkInterfaces:
       - deviceSelector:
@@ -133,13 +162,19 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   - hostname: "k8s-7"
     ipAddress: "10.0.60.27"
     installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: false
     networkInterfaces:
       - deviceSelector:
@@ -151,13 +186,19 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   - hostname: "k8s-8"
     ipAddress: "10.0.60.28"
     installDisk: "/dev/nvme0n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: false
     networkInterfaces:
       - deviceSelector:
@@ -169,13 +210,19 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   - hostname: "k8s-9"
     ipAddress: "10.0.60.29"
     installDisk: "/dev/nvme0n1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: false
     networkInterfaces:
       - deviceSelector:
@@ -187,6 +234,13 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/mei
 
   # Not starting
   # - hostname: "k8s-10"
@@ -194,7 +248,6 @@ nodes:
   #   installDisk: "/dev/nvme1n1"
   #   machineSpec:
   #     secureboot: false
-  #   talosImageURL: factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
   #   controlPlane: false
   #   networkInterfaces:
   #     - deviceSelector:
@@ -206,6 +259,13 @@ nodes:
   #         - network: "0.0.0.0/0"
   #           gateway: "10.0.60.1"
   #       mtu: 1500
+  #   schematic:
+  #     customization:
+  #       systemExtensions:
+  #         officialExtensions:
+  #           - siderolabs/i915
+  #           - siderolabs/intel-ucode
+  #           - siderolabs/mei
 
 
 # Global patches

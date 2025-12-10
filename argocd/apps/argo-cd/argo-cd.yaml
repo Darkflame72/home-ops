@@ -1,0 +1,47 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+  labels:
+    argocd.argoproj.io/instance: argo
+spec:
+  project: kubernetes
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/argocd/argo-cd
+      targetRevision: main
+      ref: repo
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: argocd
+      targetRevision: main
+    - repoURL: ghcr.io/argoproj/argo-helm
+      chart: argo-cd
+      targetRevision: 9.1.7
+      helm:
+        releaseName: argo-cd
+        valueFiles:
+          - $repo/apps/argocd/argo-cd/values.yaml
+  destination:
+    name: in-cluster
+    namespace: argocd
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 1
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
