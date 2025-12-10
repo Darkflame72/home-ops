@@ -6,6 +6,6 @@ resources:
   - ./applications.yaml
   - ./repositories.yaml
   - ./settings.yaml
-  - ./http-route.yaml
+  # - ./http-route.yaml
   - ./notifications-cm.yaml
   - ./notifications-secret.yaml

@@ -1,6 +1,41 @@
 global:
   domain: cd.darkflame.dev
 
+redis-ha:
+  enabled: true
+
+controller:
+  replicas: 1
+
+server:
+  httproute:
+    enabled: true
+    parentRefs:
+      - name: envoy-external
+        namespace: network
+    hostnames:
+      - "cd.darkflame.dev"
+    rules:
+      - backendRefs:
+          - name: argocd-server
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+
+repoServer:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+
+applicationSet:
+  replicas: 2
+
 # notifications:
 #   enabled: true
 #   secret:
