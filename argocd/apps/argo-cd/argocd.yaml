@@ -12,7 +12,7 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/argocd/argo-cd
+      path: apps/argocd/argocd
       targetRevision: main
       ref: repo
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
@@ -22,9 +22,9 @@ spec:
       chart: argo-cd
       targetRevision: 9.1.7
       helm:
-        releaseName: argo-cd
+        releaseName: argocd
         valueFiles:
-          - $repo/apps/argocd/argo-cd/values.yaml
+          - $repo/apps/argocd/argocd/values.yaml
   destination:
     name: in-cluster
     namespace: argocd

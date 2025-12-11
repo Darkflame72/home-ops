@@ -33,9 +33,9 @@ releases:
     values: ['../apps/external-secrets/external-secrets/values.yaml']
     needs: ['kube-system/coredns']
 
-  - name: argo-cd
+  - name: argocd
     namespace: argocd
     chart: oci://ghcr.io/argoproj/argo-helm/argo-cd
     version: 9.1.7
-    values: ['../apps/argocd/argo-cd/values.yaml']
+    values: ['../apps/argocd/argocd/values.yaml']
     needs: ['external-secrets/external-secrets']

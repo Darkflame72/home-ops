@@ -31,7 +31,7 @@ spec:
         decodingStrategy: None
         metadataPolicy: None
         key: /argocd/github-app-private-key
-    
+
     - secretKey: githubAppId
       remoteRef:
         conversionStrategy: Default
@@ -45,5 +45,3 @@ spec:
         decodingStrategy: None
         metadataPolicy: None
         key: /argocd/github-app-installation-id
-      
-    
