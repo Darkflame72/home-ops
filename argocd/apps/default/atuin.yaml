@@ -15,9 +15,6 @@ spec:
       path: apps/default/atuin
       targetRevision: main
       ref: repo
-    - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: components/volsync
-      targetRevision: main
     - repoURL: ghcr.io/bjw-s-labs/helm
       chart: app-template
       targetRevision: 4.4.0

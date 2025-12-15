@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ${APP}
+  name: atuin
 spec:
   accessModes:
     - ${VOLSYNC_ACCESSMODES:=ReadWriteOnce}
   dataSourceRef:
     kind: ReplicationDestination
     apiGroup: volsync.backube
-    name: ${APP}-dst
+    name: atuin-dst
   resources:
     requests:
       storage: ${VOLSYNC_CAPACITY:=5Gi}
