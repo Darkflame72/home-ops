@@ -53,7 +53,7 @@ service:
 route:
   app:
     hostnames:
-      - "{{ .Release.Name }}.turbo.ac"
+      - "{{ .Release.Name }}.darkflame.dev"
     parentRefs:
       - name: envoy-internal
         namespace: network
