@@ -6,7 +6,7 @@ controllers:
     containers:
       app:
         image:
-          repository: ghcr.io/alam00000/bentopdf:sha-f667616
+          repository: ghcr.io/alam00000/bentopdf
           tag: 1.11.2@sha256:5273e0ce98a3fb3eba735cf973712351a6c9593930114431db10b180c2c9b6cb
         probes:
           liveness:
