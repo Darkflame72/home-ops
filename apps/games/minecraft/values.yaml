@@ -14,7 +14,7 @@ serviceAnnotations:
 minecraftServer:
   difficulty: "normal"
   eula: "true"
-  memory: 6G
+  memory: 12G
   motd: "Testing"
   ops: "Darkflame72"
   overrideServerProperties: true
@@ -38,7 +38,7 @@ extraEnv:
   SYNC_CHUNK_WRITES: "false"
 resources:
   requests:
-    cpu: 500m
-    memory: &mem 8Gi
+    cpu: 1
+    memory: &mem 14Gi
   limits:
     memory: *mem
