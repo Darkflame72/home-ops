@@ -10,7 +10,7 @@
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "ignorePaths": ["**/*.sops.*"],
   "argocd": {
-    "managerFilePatterns": ["(^|/)kubernetes/.+\\.ya?ml(?:\\.j2)?$"]
+    "managerFilePatterns": ["(^|/)argocd/.+\\.ya?ml(?:\\.j2)?$"]
   },
   "helmfile": {
     "managerFilePatterns": [
@@ -19,10 +19,10 @@
     ]
   },
   "helm-values": {
-    "managerFilePatterns": ["/(^|/)kubernetes/.+\\/values\\.ya?ml(?:\\.j2)?$/"]
+    "managerFilePatterns": ["/(^|/)apps/.+\\/values\\.ya?ml(?:\\.j2)?$/"]
   },
   "kubernetes": {
-    "managerFilePatterns": ["(^|/)kubernetes/.+\\.ya?ml(?:\\.j2)?$"]
+    "managerFilePatterns": ["(^|/)apps/.+\\.ya?ml(?:\\.j2)?$"]
   },
   "kustomize": {
     "managerFilePatterns": ["/^kustomization\\.ya?ml(?:\\.j2)?$/"]
