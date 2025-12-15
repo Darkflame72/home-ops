@@ -52,6 +52,24 @@ Detailed documentation is available in the `docs/` directory:
 - **[Setup Guide](./docs/setup.md)**: Step-by-step installation and bootstrapping instructions
 - **[Architecture](./docs/architecture.md)**: Comprehensive cluster architecture, networking, and design decisions
 
+## External Services
+
+### Self Hosted Services
+
+- [MailCow](https://mailcow.email/): Self-hosted email server suite.
+- [Pi-hole](https://pi-hole.net/): Network-wide ad blocker and DNS sink
+- [OpnSense](https://opnsense.org/): Firewall and routing platform.
+- [Truenas](https://www.truenas.com/): Network-attached storage (NAS) operating system.
+
+My Home Automation stack is hosted separately on dedicated hardware and is a combination of [Home Assistant](https://www.home-assistant.io/), [Frigate](https://frigate.video/), and [Music Assistant](https://music-assistant.github.io/).
+
+### Saas Services
+
+- [Cloudflare](https://cloudflare.com): DNS/DDoS management and tunneling services.
+- [Infisical](https://infisical.com): Secrets management platform.
+- [GitHub](https://github.com): Source code hosting and CI/CD with GitHub Actions.
+- [Backblaze B2](https://www.backblaze.com/b2/cloud-storage.html): Cloud storage for offsite backups.
+
 ## <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f64f/512.gif" alt="🙏" width="16" height="16"> Gratitude and Thanks
 
 Thanks to all the people who donate their time to the [Kubernetes @Home](https://github.com/k8s-at-home/) community.
