@@ -13,3 +13,4 @@ talosconfig
 .DS_Store
 Thumbs.db
 .direnv
+infisical-credentials.yaml
