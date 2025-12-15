@@ -5,12 +5,12 @@ metadata:
   name: atuin
 spec:
   accessModes:
-    - ${VOLSYNC_ACCESSMODES:=ReadWriteOnce}
+    - ReadWriteOnce
   dataSourceRef:
     kind: ReplicationDestination
     apiGroup: volsync.backube
     name: atuin-dst
   resources:
     requests:
-      storage: ${VOLSYNC_CAPACITY:=5Gi}
-  storageClassName: ${VOLSYNC_STORAGECLASS:=ceph-block}
+      storage: 5Gi
+  storageClassName: ceph-block
