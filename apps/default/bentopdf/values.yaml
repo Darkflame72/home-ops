@@ -1,0 +1,45 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+controllers:
+  excalidraw:
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/alam00000/bentopdf:sha-f667616
+          tag: 1.11.2@sha256:5273e0ce98a3fb3eba735cf973712351a6c9593930114431db10b180c2c9b6cb
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            memory: 50Mi
+service:
+  app:
+    ports:
+      http:
+        port: &port 8080
+serviceMonitor:
+  app:
+    endpoints:
+      - port: http
+route:
+  app:
+    hostnames: ["pdf.darkflame.dev"]
+    parentRefs:
+      - name: envoy-external
+        namespace: network
+        sectionName: https
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
