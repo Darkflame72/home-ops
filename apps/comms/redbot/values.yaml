@@ -6,7 +6,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/phasecorex/red-discordbot
-          tag: full@sha256:314a3bb90f961b5805f06a75945ec9c133caa5e14c157ae84c743f4e37f7e174
+          tag: extra-audio
         env:
           PREFIX: "?"
           TZ: Pacific/Auckland
