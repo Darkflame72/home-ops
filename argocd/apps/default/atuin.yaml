@@ -18,7 +18,6 @@ spec:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: components/volsync
       targetRevision: main
-      ref: repo
     - repoURL: ghcr.io/bjw-s-labs/helm
       chart: app-template
       targetRevision: 4.4.0
