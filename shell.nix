@@ -23,6 +23,9 @@ pkgs.mkShell {
     pkgs.kubectl-view-secret
     pkgs.infisical
     pkgs.yq-go
+    pkgs.pre-commit
+    pkgs.yamllint
+    pkgs.kopia
   ];
 
   KUBECONFIG = "${toString ./.}/kubeconfig";
