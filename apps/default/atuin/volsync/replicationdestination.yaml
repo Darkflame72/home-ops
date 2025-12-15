@@ -11,7 +11,7 @@ spec:
     manual: restore-once
   kopia:
     accessModes:
-      - ReadWriteOnce}
+      - ReadWriteOnce
     cacheAccessModes:
       - ReadWriteOnce
     cacheCapacity: 5Gi
