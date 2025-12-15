@@ -19,22 +19,23 @@ This guide walks through setting up a Kubernetes cluster using Talos Linux and A
 
 ## Installation Steps
 
-### 1. Install Talos Linux
+### 1. Setup Talos and Nodes
 
 Ensure Talos is installed on your local machine by following the [official installation instructions](https://www.talos.dev/latest/introduction/getting-started/).
 
-### 2. Generate Talos Configuration
+All commands are run from the `talos/` directory.
+
+#### 1. Generate Talos Configuration
 
 Generate the Talos machine configurations from the `talconfig.yaml`:
 
 ```bash
-cd talos
 talhelper genconfig
 ```
 
 This creates configuration files for all nodes in the `clusterconfig/` directory.
 
-### 3. Apply Talos Configuration to Nodes
+#### 2. Apply Talos Configuration to Nodes
 
 Apply the generated configurations to each node. The `--insecure` flag is needed for initial installation:
 
@@ -42,7 +43,7 @@ Apply the generated configurations to each node. The `--insecure` flag is needed
 talhelper gencommand apply --extra-flags "--insecure" | bash
 ```
 
-### 4. Bootstrap the Cluster
+#### 3. Bootstrap the Cluster
 
 Bootstrap the Kubernetes control plane on the first control plane node:
 
@@ -56,7 +57,9 @@ Wait for the cluster to initialize. You can check the status with:
 kubectl get nodes
 ```
 
-### 5. Configure External Secrets (only manual secret)
+### 2. Bootstrap Cluster
+
+#### 1. Configure External Secrets (only manual secret)
 
 Create the `external-secrets` namespace (helm will also create it, but this ensures the manual secret can be applied first):
 
@@ -84,21 +87,21 @@ Apply the credentials:
 kubectl apply -f infisical-credentials.yaml
 ```
 
-### 6. Install Custom Resource Definitions (CRDs)
+#### 2. Install Custom Resource Definitions (CRDs)
 
 Extract and install CRDs for components like Envoy Gateway and monitoring:
 
 ```bash
 cd bootstrap
-helmfile -f crds.yaml template -q | kubectl apply --server-side --field-manager bootstrap --force-conflicts -f -
+helmfile -f bootstrap/crds.yaml template -q | kubectl apply --server-side --field-manager bootstrap --force-conflicts -f -
 ```
 
-### 7. Bootstrap Core Applications
+#### 3. Bootstrap Core Applications
 
 Install core cluster components (Cilium, CoreDNS, Spegel, External Secrets):
 
 ```bash
-helmfile -f helmfile.yaml sync
+helmfile -f bootstrap/helmfile.yaml sync
 ```
 
 Wait for all core components to be ready:
@@ -107,33 +110,20 @@ Wait for all core components to be ready:
 kubectl get pods -A
 ```
 
-Wait for ArgoCD to be ready:
+#### 4. Setup external secrets
 
 ```bash
-kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
+kubectl apply -f apps/external-secrets/external-secrets/config/infisical.yaml
 ```
 
-### 9. Verify Deployment
-
-Once ArgoCD is running, it will automatically sync all applications defined in `argocd/apps/`.
-
-Check ArgoCD application status:
+#### 5. Install ArgoCD
 
 ```bash
-kubectl get applications -n argocd
-```
-
-Access the ArgoCD UI through the configured gateway or port-forward:
-
-```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+helmfile -f bootstrap/argocd.yaml sync
+kubectl apply -n argocd -k argocd/
 ```
 
 ## Post-Installation
-
-### Accessing the Cluster
-
-The cluster API is accessible at `https://10.0.60.10:6443`. The kubeconfig is available at `clusterconfig/talosconfig`.
 
 ### Managing Applications
 

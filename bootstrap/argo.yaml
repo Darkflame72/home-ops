@@ -1,0 +1,13 @@
+---
+
+helmDefaults:
+  cleanupOnFail: true
+  wait: true
+  waitForJobs: true
+
+releases:
+  - name: argocd
+    namespace: argocd
+    chart: oci://ghcr.io/argoproj/argo-helm/argo-cd
+    version: 9.1.7
+    values: ['../apps/argocd/argocd/values.yaml']
