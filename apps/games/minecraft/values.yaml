@@ -14,7 +14,7 @@ serviceAnnotations:
 minecraftServer:
   difficulty: "normal"
   eula: "true"
-  memory: 12G
+  memory: 8G
   motd: "Testing"
   ops: "Darkflame72"
   overrideServerProperties: true
@@ -32,13 +32,12 @@ extraEnv:
   RCON_CMDS_STARTUP: |-
     gamerule doFireTick false
     gamerule playersSleepingPercentage 0
-    scoreboard objectives setdisplay list ts_Deaths
   SIMULATION_DISTANCE: "4"
   SNOOPER_ENABLED: "false"
   SYNC_CHUNK_WRITES: "false"
 resources:
   requests:
     cpu: 1
-    memory: &mem 14Gi
+    memory: 8Gi
   limits:
-    memory: *mem
+    memory: 10Gi
