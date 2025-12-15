@@ -1,0 +1,44 @@
+fullnameOverride: &app minecraft
+deploymentAnnotations:
+  reloader.stakater.com/auto: "true"
+image:
+  repository: ghcr.io/itzg/minecraft-server
+  tag: 2025.12.0-java21
+  pullPolicy: IfNotPresent
+livenessProbe:
+  initialDelaySeconds: 120
+serviceAnnotations:
+  external-dns.alpha.kubernetes.io/hostname: mc.darkflame.dev
+  external-dns.alpha.kubernetes.io/target: mc-router.darkflame.dev
+  mc-router.itzg.me/externalServerName: mc.darkflame.dev
+minecraftServer:
+  difficulty: "normal"
+  eula: "true"
+  memory: 6G
+  motd: "Testing"
+  ops: "Darkflame72"
+  overrideServerProperties: true
+  spawnProtection: 0
+  type: "PAPER"
+  version: "1.21.11"
+  viewDistance: 8
+persistence:
+  dataDir:
+    enabled: true
+    existingClaim: *app
+extraEnv:
+  ENABLE_ROLLING_LOGS: "true"
+  ENFORCE_WHITELIST: "true"
+  RCON_CMDS_STARTUP: |-
+    gamerule doFireTick false
+    gamerule playersSleepingPercentage 0
+    scoreboard objectives setdisplay list ts_Deaths
+  SIMULATION_DISTANCE: "4"
+  SNOOPER_ENABLED: "false"
+  SYNC_CHUNK_WRITES: "false"
+resources:
+  requests:
+    cpu: 500m
+    memory: &mem 8Gi
+  limits:
+    memory: *mem

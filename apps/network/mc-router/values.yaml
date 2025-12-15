@@ -1,0 +1,20 @@
+image:
+  repository: ghcr.io/itzg/mc-router
+  tag: 1.37.0
+  pullPolicy: IfNotPresent
+minecraftRouter:
+  connectionRateLimit: 10
+services:
+  minecraft:
+    type: LoadBalancer
+    annotations:
+      lbipam.cilium.io/ips: 10.0.60.16
+      external-dns.alpha.kubernetes.io/hostname: mc-router.darkflame.dev
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities: { drop: ["ALL"] }
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
