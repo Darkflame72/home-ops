@@ -42,4 +42,3 @@ spec:
       - ServerSideApply=true
       - PruneLast=true
       - RespectIgnoreDifferences=true
-      - Replace=true
