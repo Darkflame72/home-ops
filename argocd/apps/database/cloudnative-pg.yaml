@@ -1,0 +1,44 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnative-pg
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/database/cloudnative-pg
+      targetRevision: main
+      ref: repo
+    - repoURL: ghcr.io/cloudnative-pg/charts
+      chart: cloudnative-pg
+      targetRevision: 0.27.0
+      helm:
+        releaseName: cloudnative-pg
+        valueFiles:
+          - $repo/apps/database/cloudnative-pg/values.yaml
+  destination:
+    name: in-cluster
+    namespace: database
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 1
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
