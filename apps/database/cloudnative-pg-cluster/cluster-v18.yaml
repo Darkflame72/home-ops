@@ -3,11 +3,11 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: postgres-v17
+  name: postgres-v18
   namespace: database
 spec:
   instances: 3
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.4
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
   primaryUpdateStrategy: unsupervised
   storage:
     size: 20Gi
@@ -37,7 +37,7 @@ spec:
         maxParallel: 8
       destinationPath: s3://cloudnative-pg/
       endpointURL: http://10.0.60.15:30188
-      serverName: postgres-v17
+      serverName: postgres-v18
       s3Credentials:
         accessKeyId:
           name: cloudnative-pg-secret
