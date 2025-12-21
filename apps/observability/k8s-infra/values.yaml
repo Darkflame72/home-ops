@@ -2,7 +2,7 @@ global:
   cloud: others
   clusterName: home-ops
   deploymentEnvironment: production
-otelCollectorEndpoint: signoz.observability.svc.cluster.local:4317
+otelCollectorEndpoint: signoz-otel-collector.observability.svc.cluster.local:4317
 otelInsecure: true
 presets:
   otlpExporter:
