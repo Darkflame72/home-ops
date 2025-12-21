@@ -16,7 +16,7 @@ spec:
       targetRevision: main
       ref: repo
     - repoURL: https://charts.signoz.io
-      chart: signok8s-infra
+      chart: k8s-infra
       targetRevision: 0.15.0
       helm:
         releaseName: k8s-infra
