@@ -1,7 +1,5 @@
 leaderElect: true
 serviceMonitor:
   enabled: true
-grafanaDashboard:
-  enabled: true
 webhook:
   replicaCount: 2
