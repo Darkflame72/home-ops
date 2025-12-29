@@ -57,7 +57,7 @@ configMaps:
         }
         target.smtp remote_smtp {
             debug
-            attempt_starttls yes
+            starttls yes
             require_tls yes
             auth plain {env:SMTP_RELAY_USERNAME} {env:SMTP_RELAY_PASSWORD}
             targets tls://{env:SMTP_RELAY_SERVER}:465
