@@ -27,7 +27,7 @@ controllers:
           - name: SMTP_HOST
             value: smtp-relay.default.svc.cluster.local
           - name: SMTP_FROM
-            value: vault@darkflame.dev
+            value: noreply@darkflame.dev
           - name: SMTP_FROM_NAME
             value: Vaultwarden
           - name: SMTP_PORT
