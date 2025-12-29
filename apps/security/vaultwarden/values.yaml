@@ -1,0 +1,76 @@
+controllers:
+  vaultwarden:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    pod:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+    containers:
+      app:
+        image:
+          repository: vaultwarden/server
+          tag: 1.35.0@sha256:a66735efe15d3a7ea63b5b3fe6913058756771349f6056e1be1ab7b4ef244b21
+        env:
+          - name: DOMAIN
+            value: "https://vw.darkflame.dev"
+          - name: TZ
+            value: "Pacific/Auckland"
+          - name: SIGNUPS_ALLOWED
+            value: "false"
+          - name: WEBSOCKET_ENABLED
+            value: "true"
+          - name: SMTP_HOST
+            value: smtp-relay.default.svc.cluster.local
+          - name: SMTP_FROM
+            value: vault@darkflame.dev
+          - name: SMTP_FROM_NAME
+            value: Vaultwarden
+          - name: SMTP_PORT
+            value: "25"
+          - name: SMTP_SECURITY
+            value: "off"
+          - name: SIGNUPS_VERIFY
+            value: "true"
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: vaultwarden-postgres
+                key: uri
+        envFrom:
+          - secretRef:
+              name: vaultwarden-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+          limits:
+            memory: 500Mi
+service:
+  app:
+    ports:
+      http:
+        port: 80
+      websocket:
+        enabled: true
+        port: 3012
+route:
+  app:
+    hostnames:
+      - "vw.darkflame.dev"
+    parentRefs:
+      - name: envoy-external
+        namespace: network
+persistence:
+  config:
+    existingClaim: vaultwarden
+    globalMounts:
+      - path: /data
