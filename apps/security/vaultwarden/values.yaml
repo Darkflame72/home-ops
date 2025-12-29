@@ -39,11 +39,11 @@ controllers:
           - name: DATABASE_URL
             valueFrom:
               secretKeyRef:
-                name: vaultwarden-postgres
+                name: vaultwarden-postgres-app
                 key: uri
         envFrom:
           - secretRef:
-              name: vaultwarden-secret-app
+              name: vaultwarden-secret
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
