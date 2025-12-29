@@ -42,6 +42,7 @@ configMaps:
         state_dir /cache/state
         runtime_dir /cache/run
         tls off
+        debug true
         hostname {env:SMTP_RELAY_HOSTNAME}
         smtp tcp://0.0.0.0:{env:SMTP_RELAY_SMTP_PORT} {
             default_source {
