@@ -53,7 +53,6 @@ configMaps:
         }
         target.queue remote_queue {
             debug
-            io_debug
             target &remote_smtp
         }
         target.smtp remote_smtp {
