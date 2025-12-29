@@ -43,7 +43,7 @@ configMaps:
         runtime_dir /cache/run
         tls off
         debug true
-        hostname {env:SMTP_RELAY_HOSTNAME}
+        hostname smtp-relay.default.svc.cluster.local
         smtp tcp://0.0.0.0:{env:SMTP_RELAY_SMTP_PORT} {
             debug
             io_debug
