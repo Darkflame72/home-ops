@@ -11,7 +11,7 @@ controllers:
           repository: ghcr.io/foxcpp/maddy
           tag: 0.8.1@sha256:55636d8a29588eea62d81d51acdafe38e0f694fb91801ab12dc1ed8c47b6439d
         env:
-          SMTP_RELAY_SMTP_PORT: 25
+          SMTP_RELAY_SMTP_PORT: &port 25
         envFrom:
           - secretRef:
               name: "smtp-relay-secret"
@@ -29,6 +29,12 @@ defaultPodOptions:
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000
+service:
+  app:
+    type: LoadBalancer
+    ports:
+      smtp:
+        port: *port
 configMaps:
   config:
     data:
