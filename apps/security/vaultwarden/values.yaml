@@ -43,7 +43,7 @@ controllers:
                 key: uri
         envFrom:
           - secretRef:
-              name: vaultwarden-secret
+              name: vaultwarden-secret-app
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
