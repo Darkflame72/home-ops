@@ -1,0 +1,102 @@
+controllers:
+  miniflux:
+    replicas: 2
+    strategy: RollingUpdate
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/miniflux/miniflux
+          tag: 2.2.15
+        env:
+          - name: BASE_URL
+            value: https://miniflux.darkflame.dev
+          - name: CREATE_ADMIN
+            value: "1"
+          - name: LOG_DATE_TIME
+            value: "1"
+          - name: METRICS_ALLOWED_NETWORKS
+            value: 10.42.0.0/16
+          - name: METRICS_COLLECTOR
+            value: "1"
+          - name: OAUTH2_CLIENT_ID
+            value: miniflux
+          - name: OAUTH2_USER_CREATION
+            value: "1"
+          - name: OAUTH2_OIDC_DISCOVERY_ENDPOINT
+            value: https://auth.darkflame.dev
+          - name: OAUTH2_PROVIDER
+            value: oidc
+          - name: OAUTH2_REDIRECT_URL
+            value: https://miniflux.darkflame.dev/oauth2/oidc/callback
+          - name: POLLING_SCHEDULER
+            value: entry_frequency
+          - name: POLLING_FREQUENCY
+            value: "15"
+          - name: PORT
+            value: &port 80
+          - name: RUN_MIGRATIONS
+            value: "1"
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: miniflux-postgres-app
+                key: uri
+        envFrom:
+          - secretRef:
+              name: miniflux-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthcheck
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+    pod:
+      securityContext:
+        runAsUser: 1022
+        runAsGroup: 1022
+        runAsNonRoot: true
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: miniflux
+service:
+  app:
+    controller: miniflux
+    ipFamilyPolicy: PreferDualStack
+    ports:
+      http:
+        port: *port
+serviceMonitor:
+  app:
+    serviceName: miniflux
+    endpoints:
+      - port: http
+route:
+  app:
+    hostnames: ["{{ .Release.Name }}.darkflame.dev"]
+    parentRefs:
+      - name: envoy-internal
+        namespace: network
+        sectionName: https
