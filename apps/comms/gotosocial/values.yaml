@@ -11,7 +11,7 @@ controllers:
           TZ: "Pacific/Auckland"
           GTS_HOST: &host social.darkflame.dev
           GTS_ACCOUNT_DOMAIN: darkflame.dev
-          GTS_LANDING_PAGE_USER: "darkflame72"
+          GTS_LANDING_PAGE_USER: "leon"
           GTS_ACCOUNTS_REGISTRATION_OPEN: "false"
           GTS_APPLICATION_NAME: "My corner of the fediverse"
           GTS_PROTOCOL: "https" # not HTTP server listen mode, but used for generating URLs etc
