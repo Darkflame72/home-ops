@@ -1,0 +1,90 @@
+image:
+  rootless: true
+resources:
+  requests:
+    cpu: 10m
+    memory: 100Mi
+  limits:
+    memory: 2Gi
+persistence:
+  enabled: true
+  claimName: forgejo
+gitea:
+  admin:
+    password: notUsed
+    passwordMode: initialOnlyNoReset
+  metrics:
+    enabled: true
+  config:
+    APP_NAME: "Forgejo Darkflame72"
+    oauth:
+    - name: "authentik"
+      provider: "openidConnect"
+      existingSecret: forgejo-secret
+      autoDiscoverUrl: "https://auth.darkflame.dev/application/o/forgejo/.well-known/openid-configuration"
+      iconUrl: "https://goauthentik.io/img/icon.png"
+      scopes: "email profile"
+    service:
+      ALLOW_ONLY_EXTERNAL_REGISTRATION: true
+      DISABLE_REGISTRATION: false
+      ENABLE_NOTIFY_MAIL: true
+      SHOW_REGISTRATION_BUTTON: false
+    oauth2:
+      ACCOUNT_LINKING: auto
+      ENABLE_AUTO_REGISTRATION: true
+      OPENID_CONNECT_SCOPES: 'openid email'
+      UPDATE_AVATAR: true
+      USERNAME: nickname
+    mailer:
+      ENABLED: true
+      FROM: "Forgejo <noreply@darkflame.dev>"
+      PROTOCOL: smtp
+      SMTP_ADDR: smtp-relay.default.svc.cluster.local
+      SMTP_PORT: 25
+    queue:
+      TYPE: redis
+      CONN_STR: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+    cache:
+      ADAPTER: redis
+      HOST: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+    session:
+      PROVIDER: redis
+      PROVIDER_CONFIG: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+    database:
+      DB_TYPE: postgres
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+    additionalConfigSources:
+    - name: FORGEJO__DATABASE__HOST
+      valueFrom:
+        secretKeyRef:
+          name: forgejo-postgres-app
+          key: host
+    - name: FORGEJO__DATABASE__NAME
+      valueFrom:
+        secretKeyRef:
+          name: miniflux-postgres-app
+          key: dbname
+    - name: FORGEJO__DATABASE__USER
+      valueFrom:
+        secretKeyRef:
+          name: miniflux-postgres-app
+    - name: FORGEJO__DATABASE__PASSWD
+      valueFrom:
+        secretKeyRef:
+          name: forgejo-postgres-app
+          key: password
+strategy:
+  type: Recreate
+httproute:
+  enabled: true
+  hostnames:
+    - forgejo.darkflame.dev
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-internal
+      namespace: network
+      sectionName: https
