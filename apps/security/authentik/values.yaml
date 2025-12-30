@@ -46,16 +46,13 @@ prometheus:
     enabled: true
 server:
   replicas: 1
-  ingress:
-    enabled: true
-    ingressClassName: envoy-external
-    hosts:
-      - auth.darkflame.dev
-    paths:
-      - "/"
-    tls:
-      - hosts:
-          - auth.darkflame.dev
+  route:
+    app:
+      hostnames: ["auth.darkflame.dev"]
+      parentRefs:
+        - name: envoy-external
+          namespace: network
+          sectionName: https
   metrics:
     enabled: true
     serviceMonitor:
