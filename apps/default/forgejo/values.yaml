@@ -12,6 +12,9 @@ persistence:
 gitea:
   config:
     APP_NAME: "Forgejo Darkflame72"
+    server:
+      DOMAIN: git.darkflame.dev
+      ROOT_URL: "https://git.darkflame.dev/"
     service:
       ALLOW_ONLY_EXTERNAL_REGISTRATION: true
       DISABLE_REGISTRATION: false
