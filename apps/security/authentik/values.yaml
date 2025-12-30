@@ -2,8 +2,6 @@ values:
   global:
     podAnnotations:
       reloader.stakater.com/auto: "true"
-    deploymentStrategy:
-      type: RollingUpdate
     env:
       - name: AUTHENTIK_POSTGRESQL__HOST
         valueFrom:
