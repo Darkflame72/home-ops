@@ -66,6 +66,7 @@ gitea:
       valueFrom:
         secretKeyRef:
           name: forgejo-postgres-app
+          key: user
     - name: FORGEJO__DATABASE__PASSWD
       valueFrom:
         secretKeyRef:
