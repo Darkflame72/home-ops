@@ -31,11 +31,6 @@ controllers:
           CACHE_DRIVER: redis
           SESSION_DRIVER: redis
           ALLOW_REGISTRATION: false
-        securityContext:
-          runAsGroup: 33
-          runAsUser: 33
-          fsGroup: 33
-          runAsNonRoot: true
       search:
         image:
           repository: docker.io/getmeili/meilisearch
@@ -49,11 +44,6 @@ controllers:
                 key: meili-master-key
           MEILI_NO_ANALYTICS: true
           MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE: true
-        securityContext:
-          runAsGroup: 33
-          runAsUser: 33
-          fsGroup: 33
-          runAsNonRoot: true
   frontend:
     containers:
       salt-rim:
@@ -63,11 +53,6 @@ controllers:
         env:
           API_URL: *api-url
           MEILISEARCH_URL: "https://bar.darkflame.dev/search"
-        securityContext:
-          runAsGroup: 33
-          runAsUser: 33
-          fsGroup: 33
-          runAsNonRoot: true
 service:
   backend:
     controller: bar-assistant
@@ -137,3 +122,9 @@ persistence:
       bar-assistant:
         search:
           - path: /meili_data
+defaultPodOptions:
+  securityContext:
+    runAsGroup: 33
+    runAsUser: 33
+    fsGroup: 33
+    runAsNonRoot: true
