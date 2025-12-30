@@ -14,18 +14,18 @@ controllers:
           AUTHENTIK_CLIENT_ID:
             valueFrom:
               secretKeyRef:
-                name: "bar-config"
+                name: "bar-assistant-secret"
                 key: AUTHENTIK_CLIENT_ID
           AUTHENTIK_CLIENT_SECRET:
             valueFrom:
               secretKeyRef:
-                name: "bar-config"
+                name: "bar-assistant-secret"
                 key: AUTHENTIK_CLIENT_SECRET
           AUTHENTIK_REDIRECT_URI: "https://bar.darkflame.dev/bar/oauth/callback"
           MEILISEARCH_KEY:
             valueFrom:
               secretKeyRef:
-                name: "bar-config"
+                name: "bar-assistant-secret"
                 key: MEILISEARCH_KEY
           REDIS_HOST: bar-assistant-dragonfly.default.svc.cluster.local
           CACHE_DRIVER: redis
