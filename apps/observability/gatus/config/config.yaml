@@ -27,10 +27,10 @@ endpoints:
       - "[CONNECTED] == true"
 
   - name: TrueNAS
-    url: https://10.0.60.15
+    url: icmp://10.0.60.15
     interval: 5m
     conditions:
-      - "[STATUS] == 200"
+      - "[CONNECTED] == true"
 
 metrics: true
 
