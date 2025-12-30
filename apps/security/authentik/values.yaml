@@ -5,22 +5,22 @@ global:
     - name: AUTHENTIK_POSTGRESQL__HOST
       valueFrom:
         secretKeyRef:
-          name: authentik-postgres
+          name: authentik-postgres-app
           key: host
     - name: AUTHENTIK_POSTGRESQL__NAME
       valueFrom:
         secretKeyRef:
-          name: authentik-postgres
+          name: authentik-postgres-app
           key: dbname
     - name: AUTHENTIK_POSTGRESQL__USER
       valueFrom:
         secretKeyRef:
-          name: authentik-postgres
+          name: authentik-postgres-app
           key: user
     - name: AUTHENTIK_POSTGRESQL__PASSWORD
       valueFrom:
         secretKeyRef:
-          name: authentik-postgres
+          name: authentik-postgres-app
           key: password
     - name: AUTHENTIK_SECRET_KEY
       valueFrom:
