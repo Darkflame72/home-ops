@@ -48,9 +48,7 @@ server:
   replicas: 1
   ingress:
     enabled: true
-    ingressClassName:
-    - secretRef:
-        name: authentik-secret envoy-external
+    ingressClassName: envoy-external
     hosts:
       - auth.darkflame.dev
     paths:
