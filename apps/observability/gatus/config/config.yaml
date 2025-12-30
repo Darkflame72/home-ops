@@ -27,6 +27,7 @@ endpoints:
       - "[CONNECTED] == true"
 
   - name: TrueNAS
+    group: internal
     url: icmp://10.0.60.15
     interval: 5m
     conditions:
