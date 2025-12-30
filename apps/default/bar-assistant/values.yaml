@@ -1,6 +1,17 @@
 controllers:
   bar-assistant:
     type: statefulset
+    initContainers:
+      chown-app:
+        image:
+          repository: docker.io/library/alpine
+          tag: "3.23"
+        command:
+          - /bin/sh
+          - -c
+        args:
+          - |
+              chown -R 33:33 /var/www/cocktails/storage/bar-assistant
     containers:
       api:
         image:
