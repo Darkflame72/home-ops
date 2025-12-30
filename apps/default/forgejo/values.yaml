@@ -77,7 +77,7 @@ strategy:
 httpRoute:
   enabled: true
   hostnames:
-    - forgejo.darkflame.dev
+    - git.darkflame.dev
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
