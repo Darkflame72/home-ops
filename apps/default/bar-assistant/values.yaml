@@ -30,6 +30,7 @@ controllers:
           CACHE_DRIVER: redis
           SESSION_DRIVER: redis
           ALLOW_REGISTRATION: false
+          ENABLE_PASSWORD_LOGIN: false
       search:
         image:
           repository: docker.io/getmeili/meilisearch
