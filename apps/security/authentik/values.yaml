@@ -9,22 +9,22 @@ values:
         valueFrom:
           secretKeyRef:
             name: authentik-postgres
-            key: uri
+            key: host
       - name: AUTHENTIK_POSTGRESQL__NAME
         valueFrom:
           secretKeyRef:
             name: authentik-postgres
-            key: uri
+            key: dbname
       - name: AUTHENTIK_POSTGRESQL__USER
         valueFrom:
           secretKeyRef:
             name: authentik-postgres
-            key: uri
+            key: user
       - name: AUTHENTIK_POSTGRESQL__PASSWORD
         valueFrom:
           secretKeyRef:
             name: authentik-postgres
-            key: uri
+            key: password
     envFrom:
       - secretRef:
           name: authentik-secret
@@ -42,7 +42,7 @@ values:
       host: smtp-relay.default.svc.cluster.local
       use_tls: false
       port: 25
-      from: "Authentik <${NOREPLY_EMAIL}>"
+      from: "Authentik <noreply@darkflame.dev>"
   postgresql:
     enabled: false
   redis:
