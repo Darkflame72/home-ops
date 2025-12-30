@@ -25,6 +25,11 @@ values:
           secretKeyRef:
             name: authentik-postgres
             key: password
+      - name: AUTHENTIK_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: authentik-secret
+            key: secret-key
   authentik:
     log_level: info
     postgresql:
@@ -46,7 +51,9 @@ values:
     replicas: 1
     ingress:
       enabled: true
-      ingressClassName: envoy-external
+      ingressClassName:
+      - secretRef:
+          name: authentik-secret envoy-external
       hosts:
         - auth.darkflame.dev
       paths:
@@ -60,8 +67,3 @@ values:
         enabled: true
   worker:
     replicas: 2
-valuesFrom:
-  - kind: Secret
-    name: authentik-secret
-    valuesKey: SECRET_KEY
-    targetPath: authentik.secret_key
