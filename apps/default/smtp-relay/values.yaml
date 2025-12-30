@@ -42,21 +42,16 @@ configMaps:
         state_dir /cache/state
         runtime_dir /cache/run
         tls off
-        debug true
         hostname smtp-relay.default.svc.cluster.local
         smtp tcp://0.0.0.0:{env:SMTP_RELAY_SMTP_PORT} {
-            debug
-            io_debug
             default_source {
                 deliver_to &remote_queue
             }
         }
         target.queue remote_queue {
-            debug
             target &remote_smtp
         }
         target.smtp remote_smtp {
-            debug
             starttls no
             require_tls no
             auth plain {env:SMTP_RELAY_USERNAME} {env:SMTP_RELAY_PASSWORD}
