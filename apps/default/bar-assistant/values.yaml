@@ -124,7 +124,4 @@ persistence:
           - path: /meili_data
 defaultPodOptions:
   securityContext:
-    runAsGroup: 33
-    runAsUser: 33
     fsGroup: 33
-    runAsNonRoot: true
