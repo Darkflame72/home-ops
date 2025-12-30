@@ -135,3 +135,7 @@ persistence:
       bar-assistant:
         search:
           - path: /meili_data
+securityContext:
+  runAsGroup: 33
+  runAsUser: 33
+  runAsNonRoot: true
