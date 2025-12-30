@@ -22,6 +22,7 @@ gitea:
       DISABLE_REGISTRATION: false
       ENABLE_NOTIFY_MAIL: true
       SHOW_REGISTRATION_BUTTON: false
+      ENABLE_INTERNAL_SIGNIN: true
     oauth2:
       ACCOUNT_LINKING: auto
       ENABLE_AUTO_REGISTRATION: true
