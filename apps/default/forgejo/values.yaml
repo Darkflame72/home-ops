@@ -74,7 +74,7 @@ gitea:
           key: password
 strategy:
   type: Recreate
-httproute:
+httpRoute:
   enabled: true
   hostnames:
     - forgejo.darkflame.dev
