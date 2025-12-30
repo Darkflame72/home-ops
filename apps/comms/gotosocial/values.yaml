@@ -21,6 +21,7 @@ controllers:
           GTS_OIDC_IDP_NAME: "Authentik"
           GTS_OIDC_SKIP_VERIFICATION: "false"
           GTS_OIDC_ISSUER: https://auth.darkflame.dev/application/o/gotosocial/
+          GTS_TRUSTED_PROXIES: "10.42.0.0/16"
           GTS_DB_TYPE: postgres
           GTS_DB_POSTGRES_CONNECTION_STRING:
             valueFrom:
