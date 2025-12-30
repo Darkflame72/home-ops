@@ -48,6 +48,7 @@ server:
   replicas: 1
   route:
     main:
+      enabled: true
       hostnames: ["auth.darkflame.dev"]
       parentRefs:
         - group: gateway.networking.k8s.io
