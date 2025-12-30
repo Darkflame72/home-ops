@@ -25,9 +25,6 @@ values:
           secretKeyRef:
             name: authentik-postgres
             key: password
-    envFrom:
-      - secretRef:
-          name: authentik-secret
   authentik:
     log_level: info
     postgresql:
@@ -35,17 +32,12 @@ values:
       name: ""
       user: ""
       password: ""
-    redis:
-      host: dragonfly.database.svc.cluster.local
-      password: ""
     email:
       host: smtp-relay.default.svc.cluster.local
       use_tls: false
       port: 25
       from: "Authentik <noreply@darkflame.dev>"
   postgresql:
-    enabled: false
-  redis:
     enabled: false
   prometheus:
     rules:
@@ -68,3 +60,8 @@ values:
         enabled: true
   worker:
     replicas: 2
+valuesFrom:
+  - kind: Secret
+    name: authentik-secret
+    valuesKey: SECRET_KEY
+    targetPath: authentik.secret_key
