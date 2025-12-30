@@ -15,6 +15,8 @@ gitea:
     server:
       DOMAIN: git.darkflame.dev
       ROOT_URL: "https://git.darkflame.dev/"
+      DISABLE_SSH: true
+      # SECRET_KEY will be set from external secret
     service:
       ALLOW_ONLY_EXTERNAL_REGISTRATION: true
       DISABLE_REGISTRATION: false
@@ -53,7 +55,11 @@ gitea:
     existingSecret: forgejo-secret
     autoDiscoverUrl: "https://auth.darkflame.dev/application/o/forgejo/.well-known/openid-configuration"
     iconUrl: "https://goauthentik.io/img/icon.png"
-    scopes: "email profile"
+    scopes: "email profile forgejo"
+    requiredClaimName: "forgejo"
+    groupClaimName: "forgejo"
+    adminGroup: admin
+    restrictedGroup: restricted
   additionalConfigFromEnvs:
     - name: FORGEJO__DATABASE__HOST
       valueFrom:
