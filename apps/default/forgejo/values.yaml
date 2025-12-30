@@ -56,26 +56,26 @@ gitea:
       enabled: true
       serviceMonitor:
         enabled: true
-    additionalConfigSources:
-    - name: FORGEJO__DATABASE__HOST
-      valueFrom:
-        secretKeyRef:
-          name: forgejo-postgres-app
-          key: host
-    - name: FORGEJO__DATABASE__NAME
-      valueFrom:
-        secretKeyRef:
-          name: miniflux-postgres-app
-          key: dbname
-    - name: FORGEJO__DATABASE__USER
-      valueFrom:
-        secretKeyRef:
-          name: miniflux-postgres-app
-    - name: FORGEJO__DATABASE__PASSWD
-      valueFrom:
-        secretKeyRef:
-          name: forgejo-postgres-app
-          key: password
+    additionalConfigFromEnvs:
+      - name: FORGEJO__DATABASE__HOST
+        valueFrom:
+          secretKeyRef:
+            name: forgejo-postgres-app
+            key: host
+      - name: FORGEJO__DATABASE__NAME
+        valueFrom:
+          secretKeyRef:
+            name: forgejo-postgres-app
+            key: dbname
+      - name: FORGEJO__DATABASE__USER
+        valueFrom:
+          secretKeyRef:
+            name: forgejo-postgres-app
+      - name: FORGEJO__DATABASE__PASSWD
+        valueFrom:
+          secretKeyRef:
+            name: forgejo-postgres-app
+            key: password
 strategy:
   type: Recreate
 httproute:
