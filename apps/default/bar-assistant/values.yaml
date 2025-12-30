@@ -7,9 +7,8 @@ controllers:
           repository: ghcr.io/karlomikus/barassistant
           tag: 5.11.2@sha256:0f2b1a8cd148e4a5ec24e8fa601b48a9d63f935942ca0b1ab8e4d5d348dfbb5d
         env:
-          TZ: Pacific/Auckland
           APP_URL: &api-url "https://bar.darkflame.dev/bar"
-          MEILISEARCH_HOST: http://search:7700
+          MEILISEARCH_HOST: http://localhost:7700
           AUTHENTIK_BASE_URL: "https://auth.darkflame.dev/"
           AUTHENTIK_CLIENT_ID:
             valueFrom:
