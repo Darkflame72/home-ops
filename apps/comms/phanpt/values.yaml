@@ -1,0 +1,34 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+controllers:
+  element:
+    containers:
+      app:
+        image:
+          repository: ghcr.io/yitsushi/phanpy-docker
+          tag: 2025.11.26.ac85274
+service:
+  app:
+    ports:
+      http:
+        port: &port 80
+serviceMonitor:
+  app:
+    endpoints:
+      - port: http
+route:
+  app:
+    hostnames:
+      - phanpy.darkflame.dev
+    parentRefs:
+      - name: envoy-external
+        namespace: network
+        sectionName: https
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
