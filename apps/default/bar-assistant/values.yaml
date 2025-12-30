@@ -1,0 +1,137 @@
+controllers:
+  bar-assistant:
+    type: statefulset
+    containers:
+      api:
+        image:
+          repository: ghcr.io/karlomikus/barassistant
+          tag: 5.11.2@sha256:0f2b1a8cd148e4a5ec24e8fa601b48a9d63f935942ca0b1ab8e4d5d348dfbb5d
+        env:
+          TZ: Pacific/Auckland
+          APP_URL: &api-url "https://bar.darkflame.dev/bar"
+          MEILISEARCH_HOST: http://localhost:7700
+          AUTHENTIK_BASE_URL: "https://auth.darkflame.dev/"
+          AUTHENTIK_CLIENT_ID:
+            valueFrom:
+              secretKeyRef:
+                name: "bar-config"
+                key: AUTHENTIK_CLIENT_ID
+          AUTHENTIK_CLIENT_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: "bar-config"
+                key: AUTHENTIK_CLIENT_SECRET
+          AUTHENTIK_REDIRECT_URI: "https://bar.darkflame.dev/bar/oauth/callback"
+          MEILISEARCH_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: "bar-config"
+                key: MEILISEARCH_KEY
+          REDIS_HOST: bar-assistant-dragonfly.default.svc.cluster.local
+          CACHE_DRIVER: redis
+          SESSION_DRIVER: redis
+          ALLOW_REGISTRATION: false
+      cache:
+        image:
+          repository: public.ecr.aws/docker/library/redis
+          tag: 8.4.0@sha256:bbb8fbcc29cc4c12ef123a35d7de34d374e3ba7f7763ed42eddfb3746dddc393
+        command: redis-server
+        env:
+          REDIS_REPLICATION_MODE: master
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
+            memory: 50Mi
+      search:
+        image:
+          repository: docker.io/getmeili/meilisearch
+          tag: v1.31.0@sha256:1af40ecce0b3a21f9a4ff14defaa80da602af3d456ef40a81e83e20043e97485
+        env:
+          MEILI_ENV: production
+          MEILI_MASTER_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: "bar-assistant-secret"
+                key: meili-master-key
+          MEILI_NO_ANALYTICS: true
+          MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE: true
+  frontend:
+    containers:
+      salt-rim:
+        image:
+          repository: ghcr.io/karlomikus/salt-rim
+          tag: 4.12.1@sha256:3176d9eb2b904509f343c1b4c27c125b5fa028432942ca4f5c54e0b5ffc3883b
+        env:
+          API_URL: *api-url
+          MEILISEARCH_URL: "https://bar.darkflame.dev/search"
+service:
+  backend:
+    controller: bar-assistant
+    ports:
+      api:
+        port: &port 8080
+      search:
+        port: &search-port 7700
+  frontend:
+    controller: frontend
+    ports:
+      http:
+        port: *port
+route:
+  internal:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: envoy-internal
+        namespace: networking
+        sectionName: https
+    hostnames:
+      - "bar.darkflame.dev"
+    rules:
+      - matches:
+        - path:
+            value: "/bar"
+        filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: "/"
+        backendRefs:
+        - name: bar-assistant-backend
+          port: *port
+      - matches:
+        - path:
+            value: "/search"
+        filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: "/"
+        backendRefs:
+        - name: bar-assistant-backend
+          port: *search-port
+      - backendRefs:
+        - name: bar-assistant-frontend
+          port: *port
+persistence:
+  data:
+    existingClaim: "bar"
+    advancedMounts:
+      bar-assistant:
+        api:
+          - path: /var/www/cocktails/storage/bar-assistant
+  search:
+    suffix: search
+    enabled: true
+    retain: true
+    storageClass: openebs-hostpath
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    advancedMounts:
+      bar-assistant:
+        search:
+          - path: /meili_data
