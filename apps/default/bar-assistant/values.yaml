@@ -20,7 +20,7 @@ controllers:
               secretKeyRef:
                 name: "bar-assistant-secret"
                 key: AUTHENTIK_CLIENT_SECRET
-          AUTHENTIK_REDIRECT_URI: "https://bar.darkflame.dev/bar/oauth/callback"
+          AUTHENTIK_REDIRECT_URI: "https://bar.darkflame.dev/oauth/callback"
           MEILISEARCH_KEY:
             valueFrom:
               secretKeyRef:
