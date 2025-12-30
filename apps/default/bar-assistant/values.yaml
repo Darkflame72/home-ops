@@ -31,19 +31,11 @@ controllers:
           CACHE_DRIVER: redis
           SESSION_DRIVER: redis
           ALLOW_REGISTRATION: false
-      cache:
-        image:
-          repository: public.ecr.aws/docker/library/redis
-          tag: 8.4.0@sha256:bbb8fbcc29cc4c12ef123a35d7de34d374e3ba7f7763ed42eddfb3746dddc393
-        command: redis-server
-        env:
-          REDIS_REPLICATION_MODE: master
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-          limits:
-            memory: 50Mi
+        securityContext:
+          runAsGroup: 33
+          runAsUser: 33
+          fsGroup: 33
+          runAsNonRoot: true
       search:
         image:
           repository: docker.io/getmeili/meilisearch
@@ -57,6 +49,11 @@ controllers:
                 key: meili-master-key
           MEILI_NO_ANALYTICS: true
           MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE: true
+        securityContext:
+          runAsGroup: 33
+          runAsUser: 33
+          fsGroup: 33
+          runAsNonRoot: true
   frontend:
     containers:
       salt-rim:
@@ -66,6 +63,11 @@ controllers:
         env:
           API_URL: *api-url
           MEILISEARCH_URL: "https://bar.darkflame.dev/search"
+        securityContext:
+          runAsGroup: 33
+          runAsUser: 33
+          fsGroup: 33
+          runAsNonRoot: true
 service:
   backend:
     controller: bar-assistant
@@ -135,8 +137,3 @@ persistence:
       bar-assistant:
         search:
           - path: /meili_data
-securityContext:
-  runAsGroup: 33
-  runAsUser: 33
-  fsGroup: 33
-  runAsNonRoot: true
