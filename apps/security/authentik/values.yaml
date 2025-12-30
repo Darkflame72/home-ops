@@ -47,7 +47,7 @@ prometheus:
 server:
   replicas: 1
   route:
-    app:
+    main:
       hostnames: ["auth.darkflame.dev"]
       parentRefs:
         - group: gateway.networking.k8s.io
