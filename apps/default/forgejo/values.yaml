@@ -10,20 +10,8 @@ persistence:
   enabled: true
   claimName: forgejo
 gitea:
-  admin:
-    password: notUsed
-    passwordMode: initialOnlyNoReset
-  metrics:
-    enabled: true
   config:
     APP_NAME: "Forgejo Darkflame72"
-    oauth:
-    - name: "authentik"
-      provider: "openidConnect"
-      existingSecret: forgejo-secret
-      autoDiscoverUrl: "https://auth.darkflame.dev/application/o/forgejo/.well-known/openid-configuration"
-      iconUrl: "https://goauthentik.io/img/icon.png"
-      scopes: "email profile"
     service:
       ALLOW_ONLY_EXTERNAL_REGISTRATION: true
       DISABLE_REGISTRATION: false
@@ -52,10 +40,17 @@ gitea:
       PROVIDER_CONFIG: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
     database:
       DB_TYPE: postgres
-    metrics:
+  metrics:
+    enabled: true
+    serviceMonitor:
       enabled: true
-      serviceMonitor:
-        enabled: true
+  oauth:
+  - name: "authentik"
+    provider: "openidConnect"
+    existingSecret: forgejo-secret
+    autoDiscoverUrl: "https://auth.darkflame.dev/application/o/forgejo/.well-known/openid-configuration"
+    iconUrl: "https://goauthentik.io/img/icon.png"
+    scopes: "email profile"
   additionalConfigFromEnvs:
     - name: FORGEJO__DATABASE__HOST
       valueFrom:
