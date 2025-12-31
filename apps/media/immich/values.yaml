@@ -101,7 +101,7 @@ server:
                 value: /
           backendRefs:
             - name: immich-server
-              port: port
+              port: 80
       parentRefs:
         - name: envoy-internal
           namespace: kube-system
