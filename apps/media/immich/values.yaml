@@ -45,7 +45,7 @@ machine-learning:
       storageClass: "ceph-block"
     external:
       enabled: true
-      existingClaim: immich
+      existingClaim: immich-nfs
       readOnly: true
 server:
   controllers:
@@ -88,7 +88,7 @@ server:
   persistence:
     external:
       enabled: true
-      existingClaim: immich
+      existingClaim: immich-nfs
       readOnly: true
   route:
     main:
