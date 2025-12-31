@@ -1,0 +1,110 @@
+immich:
+  metrics:
+    enabled: "true"
+  persistence:
+    library:
+      existingClaim: immich
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          # renovate: datasource=github-releases depName=immich-app/immich
+          tag: v2.4.1
+        env:
+          REDIS_HOSTNAME: dragonfly.database.svc.cluster.local
+          REDIS_PORT: "6379"
+          TZ: "Pacific/Auckland"
+          OAUTH_ENABLED: "false"
+          OAUTH_ISSUER_URL: "https://auth.darkflame.dev/application/o/immich/.well-known/openid-configuration"
+          OAUTH_CLIENT_ID:
+            valueFrom:
+              secretKeyRef:
+                name: immich
+                key: oauth2-client-id
+          OAUTH_CLIENT_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: immich
+                key: oauth2-client-secret
+          OAUTH_AUTO_REGISTER: "true"
+          OAUTH_BUTTON_TEXT: "Login with Authentik"
+          DB_URL:
+            valueFrom:
+              secretKeyRef:
+                name: immich-postgres-app
+                key: uri
+machine-learning:
+  controllers:
+    main:
+      strategy: Recreate
+  persistence:
+    cache:
+      type: persistentVolumeClaim
+      accessMode: ReadWriteOnce
+      storageClass: "ceph-block"
+    external:
+      enabled: true
+      existingClaim: immich
+      readOnly: true
+server:
+  controllers:
+    main:
+      strategy: Recreate
+  probes:
+    liveness:
+      enabled: true
+      custom: true
+      spec:
+        httpGet:
+          path: /ping
+          port: http
+        initialDelaySeconds: 0
+        periodSeconds: 10
+        timeoutSeconds: 1
+        failureThreshold: 3
+    readiness:
+      enabled: true
+      custom: true
+      spec:
+        httpGet:
+          path: /ping
+          port: http
+        initialDelaySeconds: 0
+        periodSeconds: 10
+        timeoutSeconds: 1
+        failureThreshold: 3000
+    startup:
+      enabled: true
+      custom: true
+      spec:
+        httpGet:
+          path: /ping
+          port: http
+        initialDelaySeconds: 0
+        periodSeconds: 10
+        timeoutSeconds: 1
+        failureThreshold: 60
+  persistence:
+    external:
+      enabled: true
+      existingClaim: immich
+      readOnly: true
+    route:
+      main:
+        enabled: true
+        hostnames: ["immich.mafyuh.dev"]
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /
+            backendRefs:
+              - name: immich-server
+                port: port
+        parentRefs:
+          - name: envoy-internal
+            namespace: kube-system
+            sectionName: https
+valkey:
+  enabled: false

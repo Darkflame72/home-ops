@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich
+  namespace: media
+spec:
+  storageClassName: ceph-block
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 150Gi
