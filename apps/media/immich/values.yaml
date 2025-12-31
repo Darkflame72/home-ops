@@ -43,7 +43,7 @@ machine-learning:
       type: persistentVolumeClaim
       accessMode: ReadWriteOnce
       storageClass: "ceph-block"
-    external:
+    data:
       enabled: true
       existingClaim: immich-nfs
       readOnly: true
@@ -86,7 +86,7 @@ server:
         timeoutSeconds: 1
         failureThreshold: 60
   persistence:
-    external:
+    data:
       enabled: true
       existingClaim: immich-nfs
       readOnly: true
@@ -101,7 +101,7 @@ server:
                 value: /
           backendRefs:
             - name: immich-server
-              port: 80
+              port: http
       parentRefs:
         - name: envoy-internal
           namespace: network
