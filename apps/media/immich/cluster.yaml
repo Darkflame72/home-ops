@@ -4,36 +4,36 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: immich-postgres
-  namespace: media
 spec:
+  enableSuperuserAccess: true
   instances: 3
-  # renovate: datasource=docker depName=ghcr.io/tensorchord/cloudnative-vectorchord versioning=loose
-  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:18.0-0.5.3@sha256:267f6cbb32af6e109e138a143c7e9dd5d44d68433ec2303f0c30e745c788d1a9
-  primaryUpdateStrategy: unsupervised
-  storage:
-    size: 20Gi
-    storageClass: openebs-hostpath
+  # renovate: datasource=docker depName=ghcr.io/cloudnative-pg/postgresql
+  imageCatalogRef:
+    apiGroup: postgresql.cnpg.io
+    kind: ClusterImageCatalog
+    major: 18
+    name: postgresql-standard-trixie
   postgresql:
     parameters:
-      max_connections: "300"
-      shared_buffers: 512MB
-      pg_stat_statements.max: "10000"
-      pg_stat_statements.track: all
+      max_connections: "600"
+    extensions:
+      - name: vchord
+        image:
+          # renovate: datasource=docker depName=ghcr.io/tensorchord/vchord-scratch
+          reference: ghcr.io/tensorchord/vchord-scratch:pg18-v0.5.3
+        dynamic_library_path:
+          - /usr/lib/postgresql/18/lib
+        extension_control_path:
+          - /usr/share/postgresql/18/
     shared_preload_libraries:
       - "vchord.so"
-  monitoring:
-    enablePodMonitor: true
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "250m"
+      cpu: 500m
     limits:
-      memory: "4Gi"
-  bootstrap:
-    initdb:
-      database: immich
-      owner: immich
-      postInitSQL:
-        - CREATE EXTENSION IF NOT EXISTS vchord CASCADE
-        - CREATE EXTENSION IF NOT EXISTS vector CASCADE
-        - CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE
+      memory: 8Gi
+  storage:
+    size: 25Gi
+    storageClass: openebs-hostpath
