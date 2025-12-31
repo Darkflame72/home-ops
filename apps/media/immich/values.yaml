@@ -90,21 +90,21 @@ server:
       enabled: true
       existingClaim: immich
       readOnly: true
-    route:
-      main:
-        enabled: true
-        hostnames: ["immich.mafyuh.dev"]
-        rules:
-          - matches:
-              - path:
-                  type: PathPrefix
-                  value: /
-            backendRefs:
-              - name: immich-server
-                port: port
-        parentRefs:
-          - name: envoy-internal
-            namespace: kube-system
-            sectionName: https
+  route:
+    main:
+      enabled: true
+      hostnames: ["immich.mafyuh.dev"]
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          backendRefs:
+            - name: immich-server
+              port: port
+      parentRefs:
+        - name: envoy-internal
+          namespace: kube-system
+          sectionName: https
 valkey:
   enabled: false
