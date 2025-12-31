@@ -104,7 +104,7 @@ server:
               port: 80
       parentRefs:
         - name: envoy-internal
-          namespace: kube-system
+          namespace: network
           sectionName: https
 valkey:
   enabled: false
