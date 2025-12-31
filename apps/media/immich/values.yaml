@@ -93,7 +93,7 @@ server:
   route:
     main:
       enabled: true
-      hostnames: ["immich.mafyuh.dev"]
+      hostnames: ["immich.darkflame.dev"]
       rules:
         - matches:
             - path:
