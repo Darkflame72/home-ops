@@ -7,7 +7,7 @@ controllers:
     containers:
       app:
         image:
-          repository: ghcr.io/paperless/paperless
+          repository: ghcr.io/paperless-ngx/paperless-ngx
           tag: 2.20.3
         env:
           # Configure application
