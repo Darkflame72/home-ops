@@ -1,0 +1,11 @@
+falcosidekick:
+  enabled: true
+  webui:
+    enabled: true
+  config:
+    extraEnv:
+      - name: DISCORD_WEBHOOK_URL
+        valueFrom:
+          secretKeyRef:
+            name: falco-secret
+            key: discord-webhook
