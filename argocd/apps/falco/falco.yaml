@@ -15,7 +15,7 @@ spec:
       path: apps/falco/falco
       targetRevision: main
       ref: repo
-    - repoURL: ghcr.io/falcofalco/charts
+    - repoURL: ghcr.io/falcosecurity/charts
       chart: falco
       targetRevision: 7.0.2
       helm:
