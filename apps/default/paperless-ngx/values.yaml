@@ -1,0 +1,114 @@
+---
+controllers:
+  paperless:
+    forceRename: paperless
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/paperless-ngx/paperless-ngx
+          tag: 2.20.3
+        env:
+          # Configure application
+          PAPERLESS_SECRET_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: paperless-ngx-secret
+                key: PAPERLESS_SECRET_KEY
+          PAPERLESS_URL: https://paperless.darkflame.dev
+          PAPERLESS_PORT: "8000"
+          PAPERLESS_TIME_ZONE: "Pacific/Auckland"
+          PAPERLESS_TASK_WORKERS: "2"
+          # Configure folders
+          PAPERLESS_CONSUMPTION_DIR: /data/nas/incoming
+          PAPERLESS_DATA_DIR: /data/local/data
+          PAPERLESS_EXPORT_DIR: /data/nas/export
+          PAPERLESS_MEDIA_ROOT: /data/local/media
+          # Configure OCR
+          PAPERLESS_OCR_LANGUAGE: eng
+          # Configure redis integration
+          PAPERLESS_REDIS: redis://dragonfly.database.svc.cluster.local:6379
+          # Configure postgres integration
+          PAPERLESS_DBENGINE: postgresql
+          PAPERLESS_DBHOST:
+            valueFrom:
+              secretKeyRef:
+                name: paperless-ngx-postgres-app
+                key: host
+          PAPERLESS_DBNAME:
+            valueFrom:
+              secretKeyRef:
+                name: paperless-ngx-postgres-app
+                key: dbname
+          PAPERLESS_DBUSER:
+            valueFrom:
+              secretKeyRef:
+                name: paperless-ngx-postgres-app
+                key: user
+          PAPERLESS_DBPASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: paperless-ngx-postgres-app
+                key: password
+          # Configure authentik OIDC integration
+          PAPERLESS_ENABLE_ALLAUTH: true
+          PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
+          PAPERLESS_AUTO_LOGIN: true
+          PAPERLESS_AUTO_CREATE: true
+          PAPERLESS_LOGOUT_REDIRECT_URL: "https://auth.darkflame.dev/application/o/paperless/end-session/"
+          PAPERLESS_SOCIALACCOUNT_PROVIDERS:
+            valueFrom:
+              secretKeyRef:
+                name: paperless-ngx-secret
+                key: PAPERLESS_SOCIALACCOUNT_PROVIDERS
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+        resources:
+          requests:
+            cpu: 25m
+            memory: 2Gi
+          limits:
+            memory: 6Gi
+service:
+  app:
+    forceRename: paperless
+    primary: true
+    controller: paperless
+    ports:
+      http:
+        port: &port 8000
+persistence:
+  data:
+    existingClaim: paperless-data
+    advancedMounts:
+      paperless:
+        app:
+          - path: /data/local
+  nas:
+    type: nfs
+    path: /mnt/Main/Paperless
+    server: 10.0.60.15
+    advancedMounts:
+      paperless:
+        app:
+          - path: /data/nas
+route:
+  app:
+    hostnames:
+      - paperless.darkflame.dev
+    parentRefs:
+      - name: envoy-internal
+        namespace: network
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
