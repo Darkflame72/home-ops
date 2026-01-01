@@ -15,7 +15,7 @@ controllers:
           REDIS_HOSTNAME: dragonfly.database.svc.cluster.local
           REDIS_PORT: "6379"
           TZ: "Pacific/Auckland"
-          OAUTH_ENABLED: "false"
+          OAUTH_ENABLED: "true"
           OAUTH_ISSUER_URL: "https://auth.darkflame.dev/application/o/immich/.well-known/openid-configuration"
           OAUTH_CLIENT_ID:
             valueFrom:
