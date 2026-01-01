@@ -84,13 +84,3 @@ gitea:
           key: password
 strategy:
   type: Recreate
-httpRoute:
-  enabled: true
-  hostnames:
-    - git.darkflame.dev
-  parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: envoy-internal
-      namespace: network
-      sectionName: https

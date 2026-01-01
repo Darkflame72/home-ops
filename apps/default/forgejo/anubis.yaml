@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anubis-forgejo
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: anubis-forgejo
+  template:
+    metadata:
+      labels:
+        app: anubis-forgejo
+    spec:
+      containers:
+        - name: anubis
+          image: ghcr.io/techarohq/anubis:main
+          imagePullPolicy: Always
+          env:
+            - name: "BIND"
+              value: ":80"
+            - name: "DIFFICULTY"
+              value: "4"
+            - name: ED25519_PRIVATE_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-secret
+                  key: anubis-key
+            - name: "METRICS_BIND"
+              value: ":9090"
+            - name: "SERVE_ROBOTS_TXT"
+              value: "true"
+            - name: "TARGET"
+              value: "http://forgejo-http.default.svc.cluster.local:3000"
+            - name: "OG_PASSTHROUGH"
+              value: "true"
+            - name: "OG_EXPIRY_TIME"
+              value: "24h"
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 128Mi
+          securityContext:
+            runAsUser: 912
+            runAsGroup: 912
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anubis-forgejo
+  namespace: forgejo
+spec:
+  type: ClusterIP
+  selector:
+    app: anubis-forgejo
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Httproute
+metadata:
+  name: forgejo
+spec:
+  hostnames:
+    - photos.darkflame.dev
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-external
+      namespace: network
+      sectionName: https
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: anubis-forgejo
+          namespace: default
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
