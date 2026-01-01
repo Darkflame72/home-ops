@@ -7,3 +7,4 @@ resources:
   - ./require-drop-all.yaml
   - ./require-pod-requests-limits.yaml
   - ./require-ro-rootfs.yaml
+  - ./verify-image-slsa.yaml
