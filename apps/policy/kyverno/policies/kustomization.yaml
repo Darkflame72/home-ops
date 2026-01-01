@@ -6,4 +6,4 @@ resources:
   - ./disallow-latest-tag.yaml
   - ./require-drop-all.yaml
   - ./require-pod-requests-limits.yaml
-  - ./require-readonly-root-filesystem.yaml
+  - ./require-ro-rootfs.yaml
