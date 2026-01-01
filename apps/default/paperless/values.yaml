@@ -53,6 +53,7 @@ controllers:
                 key: password
           # Configure authentik OIDC integration
           PAPERLESS_ENABLE_ALLAUTH: true
+          PAPERLESS_DISABLE_REGULAR_LOGIN: true
           PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
           PAPERLESS_AUTO_LOGIN: true
           PAPERLESS_AUTO_CREATE: true
