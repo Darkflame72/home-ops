@@ -46,3 +46,12 @@ ui:
 
 web:
   port: ${GATUS_WEB_PORT}
+
+alerting:
+  discord:
+    webhook-url: "${DISCORD_WEBHOOK_URL}"
+    default-alert:
+      enabled: true
+      failure-threshold: 2
+      success-threshold: 2
+      send-on-resolved: true

@@ -28,6 +28,11 @@ controllers:
           GATUS_CONFIG_PATH: /config
           GATUS_WEB_PORT: &port 80
           TZ: Pacific/Auckland
+          DISCORD_WEBHOOK_URL:
+            valueFrom:
+                secretKeyRef:
+                  name: gatus-secret
+                  key: discord-webhook
           POSTGRES_PATH:
             valueFrom:
               secretKeyRef:
