@@ -9,3 +9,10 @@ falcosidekick:
             key: discord-webhook
       - name: DISCORD_MINIMUMPRIORITY
         value: critical
+
+customRules:
+  customized-local-rules.yaml: |-
+    - list: known_drop_and_execute_executables
+      items: [/opt/cni/bin/cilium-cni]
+    # - rule: Drop and execute new binary in container
+    #   condition: and not proc.exepath in (known_drop_and_execute_executables)
