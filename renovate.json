@@ -97,10 +97,15 @@
     },
     {
       "matchDatasources": ["docker"],
+      "matchManagers": ["kubernetes", "helmfile", "helm-values"],
       "addLabels": ["renovate/container"]
     },
     {
       "matchDatasources": ["helm"],
+      "addLabels": ["renovate/helm"]
+    },
+    {
+      "matchManagers": ["argocd"],
       "addLabels": ["renovate/helm"]
     },
     {
