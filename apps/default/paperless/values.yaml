@@ -7,14 +7,14 @@ controllers:
     containers:
       app:
         image:
-          repository: ghcr.io/paperless-ngx/paperless-ngx
+          repository: ghcr.io/paperless/paperless
           tag: 2.20.3
         env:
           # Configure application
           PAPERLESS_SECRET_KEY:
             valueFrom:
               secretKeyRef:
-                name: paperless-ngx-secret
+                name: paperless-secret
                 key: PAPERLESS_SECRET_KEY
           PAPERLESS_URL: https://paperless.darkflame.dev
           PAPERLESS_PORT: "8000"
@@ -34,22 +34,22 @@ controllers:
           PAPERLESS_DBHOST:
             valueFrom:
               secretKeyRef:
-                name: paperless-ngx-postgres-app
+                name: paperless-postgres-app
                 key: host
           PAPERLESS_DBNAME:
             valueFrom:
               secretKeyRef:
-                name: paperless-ngx-postgres-app
+                name: paperless-postgres-app
                 key: dbname
           PAPERLESS_DBUSER:
             valueFrom:
               secretKeyRef:
-                name: paperless-ngx-postgres-app
+                name: paperless-postgres-app
                 key: user
           PAPERLESS_DBPASSWORD:
             valueFrom:
               secretKeyRef:
-                name: paperless-ngx-postgres-app
+                name: paperless-postgres-app
                 key: password
           # Configure authentik OIDC integration
           PAPERLESS_ENABLE_ALLAUTH: true
@@ -60,7 +60,7 @@ controllers:
           PAPERLESS_SOCIALACCOUNT_PROVIDERS:
             valueFrom:
               secretKeyRef:
-                name: paperless-ngx-secret
+                name: paperless-secret
                 key: PAPERLESS_SOCIALACCOUNT_PROVIDERS
         probes:
           liveness:

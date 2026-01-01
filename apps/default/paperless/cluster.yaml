@@ -3,7 +3,7 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: paperless-ngx-postgres
+  name: paperless-postgres
   namespace: default
 spec:
   instances: 3
