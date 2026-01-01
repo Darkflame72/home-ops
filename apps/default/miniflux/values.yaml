@@ -20,12 +20,14 @@ controllers:
             value: 10.42.0.0/16
           - name: METRICS_COLLECTOR
             value: "1"
+          - name: DISABLE_LOCAL_AUTH
+            value: "1"
           - name: OAUTH2_CLIENT_ID
             value: miniflux
           - name: OAUTH2_USER_CREATION
             value: "1"
           - name: OAUTH2_OIDC_DISCOVERY_ENDPOINT
-            value: https://auth.darkflame.dev
+            value: https://auth.darkflame.dev/application/o/miniflux/
           - name: OAUTH2_PROVIDER
             value: oidc
           - name: OAUTH2_REDIRECT_URL
