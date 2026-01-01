@@ -1,39 +1,35 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/cluster_v1.json
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: immich-postgres
+  name: immich
+  namespace: media
 spec:
-  enableSuperuserAccess: true
   instances: 3
-  # renovate: datasource=docker depName=ghcr.io/cloudnative-pg/postgresql
-  imageCatalogRef:
-    apiGroup: postgresql.cnpg.io
-    kind: ClusterImageCatalog
-    major: 18
-    name: postgresql-standard-trixie
-  postgresql:
-    parameters:
-      max_connections: "600"
-    extensions:
-      - name: vchord
-        image:
-          # renovate: datasource=docker depName=ghcr.io/tensorchord/vchord-scratch
-          reference: ghcr.io/tensorchord/vchord-scratch:pg18-v0.5.3
-        dynamic_library_path:
-          - /usr/lib/postgresql/18/lib
-        extension_control_path:
-          - /usr/share/postgresql/18/
-    shared_preload_libraries:
-      - "vchord.so"
   primaryUpdateStrategy: unsupervised
-  primaryUpdateMethod: switchover
-  resources:
-    requests:
-      cpu: 500m
-    limits:
-      memory: 8Gi
+
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16-0.3.0
+
   storage:
     size: 25Gi
     storageClass: openebs-hostpath
+
+  managed:
+    roles:
+    - name: immich
+      superuser: true
+      login: true
+
+  bootstrap:
+    initdb:
+      database: immich
+      owner: immich
+      secret:
+        name: immich-db-url
+      postInitSQL:
+        - CREATE EXTENSION IF NOT EXISTS cube CASCADE;
+        - CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;
+
+  postgresql:
+    shared_preload_libraries:
+    - vchord.so

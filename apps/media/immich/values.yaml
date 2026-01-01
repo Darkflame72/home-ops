@@ -32,8 +32,8 @@ controllers:
           DB_URL:
             valueFrom:
               secretKeyRef:
-                name: immich-postgres-app
-                key: uri
+                name: immich-db-url
+                key: url
 machine-learning:
   controllers:
     main:
