@@ -1,0 +1,44 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: falco
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/falco/falco
+      targetRevision: main
+      ref: repo
+    - repoURL: ghcr.io/falcofalco/charts
+      chart: falco
+      targetRevision: 7.0.2
+      helm:
+        releaseName: falco
+        valueFiles:
+          - $repo/apps/falco/falco/values.yaml
+  destination:
+    name: in-cluster
+    namespace: falco
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 1
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
