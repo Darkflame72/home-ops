@@ -12,8 +12,6 @@ controllers:
         env:
           - name: BASE_URL
             value: https://miniflux.darkflame.dev
-          - name: CREATE_ADMIN
-            value: "1"
           - name: LOG_DATE_TIME
             value: "1"
           - name: METRICS_ALLOWED_NETWORKS
