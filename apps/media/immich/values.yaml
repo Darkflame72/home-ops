@@ -15,20 +15,19 @@ controllers:
           REDIS_HOSTNAME: dragonfly.database.svc.cluster.local
           REDIS_PORT: "6379"
           TZ: "Pacific/Auckland"
-          OAUTH_ENABLED: "true"
-          OAUTH_ISSUER_URL: "https://auth.darkflame.dev/application/o/immich/.well-known/openid-configuration"
-          OAUTH_CLIENT_ID:
+          IMMICH_OAUTH_ENABLED: "true"
+          IMMICH_OAUTH_ISSUER_URL: "https://auth.darkflame.dev/application/o/immich/.well-known/openid-configuration"
+          IMMICH_OAUTH_CLIENT_ID:
             valueFrom:
               secretKeyRef:
                 name: immich
                 key: oauth2-client-id
-          OAUTH_CLIENT_SECRET:
+          IMMICH_OAUTH_CLIENT_SECRET:
             valueFrom:
               secretKeyRef:
                 name: immich
                 key: oauth2-client-secret
-          OAUTH_AUTO_REGISTER: "true"
-          OAUTH_BUTTON_TEXT: "Login with Authentik"
+          IMMICH_OAUTH_BUTTON_TEXT: "Login with Authentik"
           DB_URL:
             valueFrom:
               secretKeyRef:
