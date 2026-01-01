@@ -93,7 +93,7 @@ server:
   route:
     main:
       enabled: true
-      hostnames: ["immich.darkflame.dev"]
+      hostnames: ["photos.darkflame.dev"]
       rules:
         - matches:
             - path:
@@ -101,7 +101,7 @@ server:
                 value: /
           backendRefs:
             - name: immich-server
-              port: http
+              port: 2283
       parentRefs:
         - name: envoy-internal
           namespace: network
