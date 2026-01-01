@@ -12,7 +12,7 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/falco/falco
+      path: apps/policy/falco
       targetRevision: main
       ref: repo
     - repoURL: ghcr.io/falcosecurity/charts
@@ -21,10 +21,10 @@ spec:
       helm:
         releaseName: falco
         valueFiles:
-          - $repo/apps/falco/falco/values.yaml
+          - $repo/apps/policy/falco/values.yaml
   destination:
     name: in-cluster
-    namespace: falco
+    namespace: policy
   syncPolicy:
     automated:
       allowEmpty: true
