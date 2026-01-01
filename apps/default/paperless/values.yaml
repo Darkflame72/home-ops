@@ -46,7 +46,7 @@ controllers:
               secretKeyRef:
                 name: paperless-postgres-app
                 key: user
-          PAPERLESS_DBPASSWORD:
+          PAPERLESS_DBPASS:
             valueFrom:
               secretKeyRef:
                 name: paperless-postgres-app
