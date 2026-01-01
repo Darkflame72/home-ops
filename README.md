@@ -2,6 +2,8 @@
 
 <img width="144px" height="144px" src="https://raw.githubusercontent.com/mchestr/home-cluster/main/docs/src/assets/logo.png"/>
 
+[![App Status](https://cd.darkflame.dev/api/badge?name=apps&revision=true&showAppName=true)](https://cd.darkflame.dev/applications/apps) [![Available](https://status.darkflame.dev/api/v1/endpoints/external_argocd-server/health/badge.svg)](https://status.darkflame.dev/)
+
 ## My Home Kubernetes Cluster
 
 ... managed with ArgoCD and Renovate
