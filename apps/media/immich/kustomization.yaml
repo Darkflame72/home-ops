@@ -4,4 +4,4 @@ kind: Kustomization
 resources:
   - ./external-secret.yaml
   - ./pvc.yaml
-  - ./cluster.yaml
+  # - ./cluster.yaml
