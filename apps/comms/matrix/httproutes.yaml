@@ -1,0 +1,122 @@
+---
+# HTTP Route for Synapse (Matrix homeserver)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: matrix-synapse
+  namespace: comms
+spec:
+  hostnames: ["matrix.darkflame.dev"]
+  parentRefs:
+    - name: envoy-external
+      namespace: kube-system
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: matrix-synapse
+          namespace: comms
+          port: 8008
+
+---
+# HTTP Route for Matrix Authentication Service (MAS)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: matrix-auth-service
+  namespace: comms
+spec:
+  hostnames: ["mas.darkflame.dev"]
+  parentRefs:
+    - name: envoy-external
+      namespace: kube-system
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: matrix-matrix-authentication-service
+          namespace: comms
+          port: 8080
+
+---
+# HTTP Route for Matrix RTC (Real-Time Communication)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: matrix-rtc
+  namespace: comms
+spec:
+  hostnames: ["mrtc.darkflame.dev"]
+  parentRefs:
+    - name: envoy-external
+      namespace: kube-system
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /sfu/get
+      backendRefs:
+        - name: matrix-matrix-rtc-authorisation-service
+          namespace: comms
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: matrix-matrix-rtc-sfu
+          namespace: comms
+          port: 7880
+
+---
+# HTTP Route for Element Admin
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: matrix-admin
+  namespace: comms
+spec:
+  hostnames: ["admin.darkflame.dev"]
+  parentRefs:
+    - name: envoy-internal
+      namespace: kube-system
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: matrix-element-admin
+          namespace: comms
+          port: 8080
+
+---
+# HTTP Route for Element Web
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: matrix-element
+  namespace: comms
+spec:
+  hostnames: ["chat.darkflame.dev"]
+  parentRefs:
+    - name: envoy-external
+      namespace: kube-system
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: matrix-element-web
+          namespace: comms
+          port: 80

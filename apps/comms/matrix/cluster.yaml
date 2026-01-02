@@ -1,0 +1,34 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: matrix-cluster
+  namespace: comms
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
+  primaryUpdateStrategy: unsupervised
+  storage:
+    size: 30Gi
+    storageClass: openebs-hostpath
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: element-synapse
+  namespace: comms
+spec:
+  name: element-synapse
+  owner: app
+  cluster:
+    name: matrix-cluster
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: element-auth
+  namespace: comms
+spec:
+  name: element-auth
+  owner: app
+  cluster:
+    name: matrix-cluster

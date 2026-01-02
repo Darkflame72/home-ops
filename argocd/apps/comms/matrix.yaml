@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: element
+  name: matrix
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -12,16 +12,16 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/comms/element
+      path: apps/comms/matrix
       targetRevision: main
       ref: repo
-    - repoURL: ghcr.io/bjw-s-labs/helm
-      chart: app-template
-      targetRevision: 4.5.0
+    - repoURL: ghcr.io/element-hq/ess-helm
+      chart: matrix-stack
+      targetRevision: 25.12.2
       helm:
-        releaseName: element
+        releaseName: matrix
         valueFiles:
-          - $repo/apps/comms/element/values.yaml
+          - $repo/apps/comms/matrix/values.yaml
   destination:
     name: in-cluster
     namespace: comms
