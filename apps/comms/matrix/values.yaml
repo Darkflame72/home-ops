@@ -15,7 +15,7 @@ synapse:
     runAsUser: 666
   media:
     storage:
-      storageClassName: rook-ceph
+      storageClassName: ceph-block
       size: 100Gi
   ingress:
     host: matrix.darkflame.dev
