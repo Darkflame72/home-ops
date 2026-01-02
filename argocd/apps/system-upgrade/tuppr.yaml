@@ -21,7 +21,7 @@ spec:
       helm:
         releaseName: tuppr
         valueFiles:
-          - $repo/pps/system-upgrade/tuppr/values.yaml
+          - $repo/apps/system-upgrade/tuppr/values.yaml
   destination:
     name: in-cluster
     namespace: system-upgrade
