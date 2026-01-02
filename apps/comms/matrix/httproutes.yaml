@@ -9,7 +9,7 @@ spec:
   hostnames: ["matrix.darkflame.dev"]
   parentRefs:
     - name: envoy-external
-      namespace: kube-system
+      namespace: network
       sectionName: https
   rules:
     - matches:
@@ -32,7 +32,7 @@ spec:
   hostnames: ["mas.darkflame.dev"]
   parentRefs:
     - name: envoy-external
-      namespace: kube-system
+      namespace: network
       sectionName: https
   rules:
     - matches:
@@ -55,7 +55,7 @@ spec:
   hostnames: ["mrtc.darkflame.dev"]
   parentRefs:
     - name: envoy-external
-      namespace: kube-system
+      namespace: network
       sectionName: https
   rules:
     - matches:
@@ -86,7 +86,7 @@ spec:
   hostnames: ["admin.darkflame.dev"]
   parentRefs:
     - name: envoy-internal
-      namespace: kube-system
+      namespace: network
       sectionName: https
   rules:
     - matches:
@@ -109,7 +109,7 @@ spec:
   hostnames: ["chat.darkflame.dev"]
   parentRefs:
     - name: envoy-external
-      namespace: kube-system
+      namespace: network
       sectionName: https
   rules:
     - matches:
