@@ -15,13 +15,13 @@ spec:
       path: apps/comms/matrix
       targetRevision: main
       ref: repo
-    - repoURL: ghcr.io/element-hq/ess-helm
-      chart: matrix-stack
-      targetRevision: 25.12.2
-      helm:
-        releaseName: matrix
-        valueFiles:
-          - $repo/apps/comms/matrix/values.yaml
+    # - repoURL: ghcr.io/element-hq/ess-helm
+    #   chart: matrix-stack
+    #   targetRevision: 25.12.2
+    #   helm:
+    #     releaseName: matrix
+    #     valueFiles:
+    #       - $repo/apps/comms/matrix/values.yaml
   destination:
     name: in-cluster
     namespace: comms
