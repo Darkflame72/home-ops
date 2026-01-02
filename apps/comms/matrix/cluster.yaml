@@ -14,10 +14,10 @@ spec:
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
-  name: element-synapse
+  name: matrix-synapse
   namespace: comms
 spec:
-  name: element-synapse
+  name: matrix-synapse
   owner: app
   cluster:
     name: matrix-cluster
@@ -25,10 +25,10 @@ spec:
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
-  name: element-auth
+  name: matrix-auth
   namespace: comms
 spec:
-  name: element-auth
+  name: matrix-auth
   owner: app
   cluster:
     name: matrix-cluster
