@@ -83,7 +83,7 @@ metadata:
   name: matrix-admin
   namespace: comms
 spec:
-  hostnames: ["admin.darkflame.dev"]
+  hostnames: ["matrix-admin.darkflame.dev"]
   parentRefs:
     - name: envoy-internal
       namespace: network

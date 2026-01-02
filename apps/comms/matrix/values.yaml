@@ -111,7 +111,7 @@ matrixRTC:
 elementAdmin:
   enabled: true
   ingress:
-    host: admin.darkflame.dev
+    host: matrix-admin.darkflame.dev
     className: disabled
     tlsEnabled: false
 
