@@ -85,15 +85,16 @@ matrixAuthenticationService:
       secret: matrix-cluster-app
       secretKey: password
   additional:
-    config.yaml: |
-      branding:
-        service_name: "Darkflame Matrix Authentication Service"
-      passwords:
-        enabled: false
-        minimum_length: 12
-      account:
-        email_change_allowed: true
-        displayname_change_allowed: true
+    config.yaml:
+      config: |
+        branding:
+          service_name: "Darkflame Matrix Authentication Service"
+        passwords:
+          enabled: false
+          minimum_length: 12
+        account:
+          email_change_allowed: true
+          displayname_change_allowed: true
     oidc.yaml:
       configSecret: oidc-config
       configSecretKey: oidc.yaml
