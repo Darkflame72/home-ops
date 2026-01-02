@@ -13,12 +13,6 @@ synapse:
     fsGroup: 666
     runAsGroup: 666
     runAsUser: 666
-  securityContext:
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
-    runAsNonRoot: true
-    runAsUser: 100
-    capabilities: { drop: ["ALL"] }
   ingress:
     host: matrix.darkflame.dev
     className: disabled
