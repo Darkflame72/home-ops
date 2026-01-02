@@ -13,6 +13,10 @@ synapse:
     fsGroup: 666
     runAsGroup: 666
     runAsUser: 666
+  media:
+    storage:
+      storageClassName: rook-ceph
+      size: 100Gi
   ingress:
     host: matrix.darkflame.dev
     className: disabled
@@ -125,8 +129,3 @@ wellKnownDelegation:
 
 postgres:
   enabled: false
-
-persistence:
-  enabled: true
-  storageClass: ceph-block
-  size: 100Gi
