@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/home-operations/charts-mirror
       chart: volsync-perfectra1n
-      targetRevision: 0.17.15
+      targetRevision: 0.18.0
       helm:
         releaseName: volsync
         valueFiles:
