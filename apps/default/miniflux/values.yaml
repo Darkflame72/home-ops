@@ -8,7 +8,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/miniflux/miniflux
-          tag: 2.2.15
+          tag: 2.2.16@sha256:1f37163a178189eba09bf0a1c96d7335aa1fa474d4f958f51e0c5ad9f8136979
         env:
           - name: BASE_URL
             value: https://miniflux.darkflame.dev
