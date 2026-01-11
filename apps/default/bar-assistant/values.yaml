@@ -49,7 +49,7 @@ controllers:
       salt-rim:
         image:
           repository: ghcr.io/karlomikus/salt-rim
-          tag: 4.12.1@sha256:3176d9eb2b904509f343c1b4c27c125b5fa028432942ca4f5c54e0b5ffc3883b
+          tag: 4.13.0@sha256:29902e855153766216360e40f5c100169d9da57dd277644ca32da15be6cdcf38
         env:
           API_URL: *api-url
           MEILISEARCH_URL: "https://bar.darkflame.dev/search"
