@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/falcosecurity/charts
       chart: falco
-      targetRevision: 7.0.5
+      targetRevision: 7.1.1
       helm:
         releaseName: falco
         valueFiles:
