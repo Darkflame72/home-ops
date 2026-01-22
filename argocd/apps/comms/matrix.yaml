@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/element-hq/ess-helm
       chart: matrix-stack
-      targetRevision: 26.1.0
+      targetRevision: 26.1.1
       helm:
         releaseName: matrix
         valueFiles:
