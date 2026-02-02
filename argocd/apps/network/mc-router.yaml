@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/itzg/minecraft-server-charts
       chart: mc-router
-      targetRevision: 1.4.0
+      targetRevision: 1.4.1
       helm:
         releaseName: mc-router
         valueFiles:
