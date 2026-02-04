@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: https://kubescape.github.io/helm-charts
       chart: kubescape-operator
-      targetRevision: 1.30.2
+      targetRevision: 1.30.3
       helm:
         releaseName: kubescape
         valueFiles:
