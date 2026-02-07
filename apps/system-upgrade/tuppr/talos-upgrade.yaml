@@ -5,7 +5,7 @@ metadata:
 spec:
   talos:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-    version: v1.12.2  # Required - target Talos version
+    version: v1.12.3  # Required - target Talos version
 
   # Custom health checks (optional)
   healthChecks:
