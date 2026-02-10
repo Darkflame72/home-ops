@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/itzg/minecraft-server-charts
       chart: minecraft
-      targetRevision: 5.1.0
+      targetRevision: 5.1.1
       helm:
         releaseName: minecraft
         valueFiles:
