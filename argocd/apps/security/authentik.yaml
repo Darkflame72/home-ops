@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/goauthentik/helm-charts
       chart: authentik
-      targetRevision: 2025.12.3
+      targetRevision: 2025.12.4
       helm:
         releaseName: authentik
         valueFiles:
