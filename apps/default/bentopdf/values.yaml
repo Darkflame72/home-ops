@@ -32,7 +32,7 @@ route:
   app:
     hostnames: ["pdf.darkflame.dev"]
     parentRefs:
-      - name: envoy-internal
+      - name: envoy-external
         namespace: network
         sectionName: https
     rules:
