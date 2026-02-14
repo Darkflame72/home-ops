@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki
+  name: alloy
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -12,16 +12,16 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/observability/loki
+      path: apps/observability/alloy
       targetRevision: main
       ref: repo
-    - repoURL: ghcr.io/home-operations/charts-mirror/alloy
-      chart: loki
+    - repoURL: ghcr.io/home-operations/charts-mirror
+      chart: alloy
       targetRevision: 1.6.0
       helm:
-        releaseName: loki
+        releaseName: alloy
         valueFiles:
-          - $repo/apps/observability/loki/values.yaml
+          - $repo/apps/observability/alloy/values.yaml
   destination:
     name: in-cluster
     namespace: observability
