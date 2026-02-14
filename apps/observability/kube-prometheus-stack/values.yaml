@@ -17,7 +17,7 @@ alertmanager:
       hostnames:
         - "alertmanager.darkflame.dev"
       parentRefs:
-        - name: internal
+        - name: envoy-internal
           namespace: network
 
   alertmanagerSpec:
@@ -45,14 +45,10 @@ prometheus:
       hostnames:
         - "prometheus.darkflame.dev"
       parentRefs:
-        - name: internal
+        - name: envoy-internal
           namespace: network
 
   prometheusSpec:
-    image:
-      registry: docker.io
-      repository: prompp/prompp
-      tag: 2.53.2-0.2.5
     securityContext:
       runAsNonRoot: true
       runAsUser: 64535
