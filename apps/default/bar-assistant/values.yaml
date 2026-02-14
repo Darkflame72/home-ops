@@ -71,7 +71,7 @@ route:
     enabled: true
     kind: HTTPRoute
     parentRefs:
-      - name: envoy-external
+      - name: envoy-internal
         namespace: network
         sectionName: https
     hostnames:
