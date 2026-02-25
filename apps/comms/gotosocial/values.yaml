@@ -6,7 +6,7 @@ controllers:
       app:
         image:
           repository: "docker.io/superseriousbusiness/gotosocial"
-          tag: "0.20.3@sha256:b8abfbc615ec2fab5a8c6fb9938d9654c993d843b0af1dd6234b330144d46ab2"
+          tag: "0.21.0@sha256:b84e8c1b1df1ee275c615abb72b4fecc0b317664d89c72187c16a7ef22c961e8"
         env:
           TZ: "Pacific/Auckland"
           GTS_HOST: &host social.darkflame.dev
