@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/alam00000/bentopdf
-          tag: 2.4.0@sha256:a6e8ea0ff59c0154f7e54f28e0fac4b28b03e0c57fe67d2d79fdeab8b90805ff
+          tag: 2.5.0@sha256:c3729000f885059680cee9d49df50b21410cf80896be06f7e070de8f85a37816
         probes:
           liveness:
             enabled: true
