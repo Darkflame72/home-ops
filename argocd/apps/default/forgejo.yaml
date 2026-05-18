@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: code.forgejo.org/forgejo-helm
       chart: forgejo
-      targetRevision: 17.0.1
+      targetRevision: 17.1.0
       helm:
         releaseName: forgejo
         valueFiles:
