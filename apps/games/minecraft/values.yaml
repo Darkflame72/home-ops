@@ -3,7 +3,7 @@ deploymentAnnotations:
   reloader.stakater.com/auto: "true"
 image:
   repository: ghcr.io/itzg/minecraft-server
-  tag: 2026.5.2-java21@sha256:3abc3239c3565915aa26a4dc6bd9aa2944dc2ac4e2c485f496b58456620478b8
+  tag: 2026.5.4-java21@sha256:0c461abea3f54be906efab6c3e8f1dd568d32d58547474af3405c4813d2217c4
   pullPolicy: IfNotPresent
 livenessProbe:
   initialDelaySeconds: 120
