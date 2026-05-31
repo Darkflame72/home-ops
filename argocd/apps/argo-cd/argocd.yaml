@@ -5,6 +5,7 @@ metadata:
   name: argo
   namespace: argocd
   annotations:
+    link.argocd.argoproj.io/external-link: https://cd.darkflame.dev
     argocd.argoproj.io/sync-wave: '0'
   labels:
     argocd.argoproj.io/instance: argo
