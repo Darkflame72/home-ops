@@ -7,7 +7,8 @@ controllers:
         image:
           repository: ghcr.io/dragonflydb/operator
           tag: v1.5.0@sha256:2ceb0128302cd7756b743cc5d56ec9479fb08163b5c563897045a4e5e1555f02
-        command: [/manager]
+        command:
+          - "/manager"
         args:
           - --health-probe-bind-address=:8081
           - --metrics-bind-address=:8080
@@ -42,21 +43,22 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities: { drop: [ALL] }
-    pod:
-      labels:
-        control-plane: controller-manager
-      securityContext:
-        runAsUser: 65534
-        runAsGroup: 65534
-        runAsNonRoot: true
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: &app dragonfly-operator
+          capabilities: {drop: ["ALL"]}
+defaultPodOptions:
+  automountServiceAccountToken: true
+  labels:
+    control-plane: controller-manager
+  securityContext:
+    runAsUser: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: &app dragonfly-operator
 service:
   app:
     controller: *app
@@ -74,5 +76,3 @@ serviceMonitor:
         path: /metrics
         interval: 1m
         scrapeTimeout: 10s
-serviceAccount:
-  dragonfly-operator: {}
