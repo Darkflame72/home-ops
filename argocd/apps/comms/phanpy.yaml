@@ -7,6 +7,7 @@ metadata:
   finalizers:
   - resources-finalizer.argocd.argoproj.io
   annotations:
+    link.argocd.argoproj.io/external-link: https://phanpy.darkflame.dev
     argocd.argoproj.io/sync-wave: '0'
 spec:
   project: default
