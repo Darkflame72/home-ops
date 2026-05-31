@@ -15,6 +15,7 @@ extraArgs:
   # Change this to the actual address of your Pi-hole web server
   - --pihole-server=https://192.168.1.2
   - --pihole-tls-skip-verify
+  - --label-filter=home-operations.com/pihole!=ignore
 triggerLoopOnEvent: true
 # IMPORTANT: If you have records that you manage manually in Pi-hole, set
 # the policy to upsert-only so they do not get deleted.
