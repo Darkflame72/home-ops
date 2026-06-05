@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/openebs/charts
       chart: openebs
-      targetRevision: 4.4.0
+      targetRevision: 4.5.0
       helm:
         releaseName: openebs
         valueFiles:
