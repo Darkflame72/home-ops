@@ -8,7 +8,7 @@ synapse:
       cpu: 10m
       memory: 1000Mi
     limits:
-      memory: 2500Mi
+      memory: 4Gi
   podSecurityContext:
     fsGroup: 666
     runAsGroup: 666
