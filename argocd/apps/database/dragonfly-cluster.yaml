@@ -14,7 +14,6 @@ spec:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/database/dragonfly-cluster
       targetRevision: main
-      ref: repo
   destination:
     name: in-cluster
     namespace: database
