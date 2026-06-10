@@ -19,7 +19,7 @@ spec:
       signout_redirect_url: "https://auth.darkflame.dev/application/o/grafana/end-session/"
       oauth_auto_login: "true"
     auth.basic:
-      enabled: "false"
+      enabled: "true"
     auth.generic_oauth:
       name: authentik
       enabled: "true"
