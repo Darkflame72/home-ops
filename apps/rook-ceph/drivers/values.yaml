@@ -1,0 +1,18 @@
+operatorConfig:
+  driverSpecDefaults:
+    clusterName: rook-ceph
+drivers:
+  cephfs:
+    enabled: true
+    name: rook-ceph.cephfs.csi.ceph.com
+    snapshotPolicy: volumeGroupSnapshot
+    kernelMountOptions:
+      ms_mode: prefer-crc
+  nfs:
+    enabled: false
+  nvmeof:
+    enabled: false
+  rbd:
+    enabled: true
+    name: rook-ceph.rbd.csi.ceph.com
+    snapshotPolicy: volumeSnapshot
