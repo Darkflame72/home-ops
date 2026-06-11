@@ -8,7 +8,7 @@ synapse:
       cpu: 10m
       memory: 1000Mi
     limits:
-      memory: 4Gi
+      memory: 8Gi
   podSecurityContext:
     fsGroup: 666
     runAsGroup: 666
@@ -34,6 +34,9 @@ synapse:
     1-base-config:
       config: |
         public_baseurl: https://matrix.darkflame.dev
+        caches:
+          global_factor: 0.5
+          sync_response_cache_duration: 2m
         presence:
           enabled: true
         enable_metrics: true
