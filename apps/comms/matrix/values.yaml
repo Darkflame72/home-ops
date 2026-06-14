@@ -37,6 +37,10 @@ synapse:
         caches:
           global_factor: 0.5
           sync_response_cache_duration: 2m
+          cache_autotuning:
+            max_cache_memory_usage: 4096M
+            target_cache_memory_usage: 2048M
+            min_cache_ttl: 5m
         presence:
           enabled: true
         enable_metrics: true
