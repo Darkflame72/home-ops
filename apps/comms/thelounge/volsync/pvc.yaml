@@ -2,6 +2,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  labels:
+    volsync.io/backup: "true"
+  annotations:
+    volsync.io/cache-capacity: "10Gi"
   name: thelounge
 spec:
   accessModes:

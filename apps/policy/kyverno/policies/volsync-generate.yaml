@@ -1,0 +1,98 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: volsync-generate
+  annotations:
+    policies.kyverno.io/title: VolSync Auto Backup
+    policies.kyverno.io/category: VolSync
+    policies.kyverno.io/description: >-
+      Generates a ReplicationSource and ReplicationDestination for every
+      PersistentVolumeClaim labeled volsync.io/backup=true.
+      Override defaults with annotations:
+        volsync.io/schedule (default: 0 * * * *)
+        volsync.io/cache-capacity (default: 5Gi)
+        volsync.io/run-as-user / run-as-group / fs-group (default: 1000)
+spec:
+  generateExisting: true
+  rules:
+  - name: generate-replication-source
+    match:
+      any:
+      - resources:
+          kinds:
+          - PersistentVolumeClaim
+          selector:
+            matchLabels:
+              volsync.io/backup: "true"
+    generate:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      name: "{{request.object.metadata.name}}"
+      namespace: "{{request.object.metadata.namespace}}"
+      synchronize: true
+      data:
+        spec:
+          sourcePVC: "{{request.object.metadata.name}}"
+          trigger:
+            schedule: "{{request.object.metadata.annotations.\"volsync.io/schedule\" || '0 * * * *'}}"
+          kopia:
+            accessModes:
+            - ReadWriteOnce
+            cacheAccessModes:
+            - ReadWriteOnce
+            cacheCapacity: "{{request.object.metadata.annotations.\"volsync.io/cache-capacity\" || '5Gi'}}"
+            cacheStorageClassName: openebs-hostpath
+            compression: zstd-fastest
+            copyMethod: Snapshot
+            moverSecurityContext:
+              runAsUser: "{{to_number(request.object.metadata.annotations.\"volsync.io/run-as-user\" || '1000')}}"
+              runAsGroup: "{{to_number(request.object.metadata.annotations.\"volsync.io/run-as-group\" || '1000')}}"
+              fsGroup: "{{to_number(request.object.metadata.annotations.\"volsync.io/fs-group\" || '1000')}}"
+            parallelism: 2
+            repository: volsync-s3-secret
+            retain:
+              hourly: 24
+              daily: 7
+            storageClassName: ceph-block
+            volumeSnapshotClassName: csi-ceph-blockpool
+  - name: generate-replication-destination
+    match:
+      any:
+      - resources:
+          kinds:
+          - PersistentVolumeClaim
+          selector:
+            matchLabels:
+              volsync.io/backup: "true"
+    generate:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      name: "{{request.object.metadata.name}}-dst"
+      namespace: "{{request.object.metadata.namespace}}"
+      synchronize: true
+      data:
+        spec:
+          trigger:
+            manual: restore-once
+          kopia:
+            accessModes:
+            - ReadWriteOnce
+            cacheAccessModes:
+            - ReadWriteOnce
+            cacheCapacity: "{{request.object.metadata.annotations.\"volsync.io/cache-capacity\" || '5Gi'}}"
+            cacheStorageClassName: openebs-hostpath
+            capacity: "{{request.object.spec.resources.requests.storage}}"
+            cleanupCachePVC: true
+            cleanupTempPVC: true
+            copyMethod: Snapshot
+            enableFileDeletion: true
+            moverSecurityContext:
+              runAsUser: "{{to_number(request.object.metadata.annotations.\"volsync.io/run-as-user\" || '1000')}}"
+              runAsGroup: "{{to_number(request.object.metadata.annotations.\"volsync.io/run-as-group\" || '1000')}}"
+              fsGroup: "{{to_number(request.object.metadata.annotations.\"volsync.io/fs-group\" || '1000')}}"
+            repository: volsync-s3-secret
+            sourceIdentity:
+              sourceName: "{{request.object.metadata.name}}"
+            storageClassName: ceph-block
+            volumeSnapshotClassName: csi-ceph-blockpool

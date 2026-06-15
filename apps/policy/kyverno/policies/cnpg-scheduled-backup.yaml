@@ -1,0 +1,38 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: cnpg-scheduled-backup
+  annotations:
+    policies.kyverno.io/title: CNPG Auto Scheduled Backup
+    policies.kyverno.io/category: CloudNative-PG
+    policies.kyverno.io/description: >-
+      Automatically generates a ScheduledBackup resource for every CNPG Cluster
+      that has a barmanObjectStore backup configuration.
+spec:
+  generateExisting: true
+  rules:
+  - name: generate-scheduled-backup
+    match:
+      any:
+      - resources:
+          kinds:
+          - postgresql.cnpg.io/v1/Cluster
+    preconditions:
+      all:
+      - key: "{{request.object.spec.backup.barmanObjectStore | length(@)}}"
+        operator: GreaterThan
+        value: 0
+    generate:
+      apiVersion: postgresql.cnpg.io/v1
+      kind: ScheduledBackup
+      name: "{{request.object.metadata.name}}-backup"
+      namespace: "{{request.object.metadata.namespace}}"
+      synchronize: true
+      data:
+        spec:
+          schedule: "0 2 * * *"
+          backupOwnerReference: self
+          cluster:
+            name: "{{request.object.metadata.name}}"
+          method: barmanObjectStore

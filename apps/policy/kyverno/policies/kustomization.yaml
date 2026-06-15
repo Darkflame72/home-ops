@@ -8,3 +8,6 @@ resources:
   - ./require-pod-requests-limits.yaml
   - ./require-ro-rootfs.yaml
   - ./verify-image-slsa.yaml
+  - ./cnpg-scheduled-backup.yaml
+  - ./volsync-generate.yaml
+  - ./volsync-label-pvcs.yaml

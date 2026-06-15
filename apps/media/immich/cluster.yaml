@@ -17,12 +17,18 @@ spec:
   managed:
     roles:
     - name: immich
+      connectionLimit: -1
+      ensure: present
+      inherit: true
       superuser: true
       login: true
 
   bootstrap:
     initdb:
       database: immich
+      encoding: UTF8
+      localeCType: C
+      localeCollate: C
       owner: immich
       secret:
         name: immich-db-url
@@ -33,3 +39,21 @@ spec:
   postgresql:
     shared_preload_libraries:
     - vchord.so
+
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://cnpg/immich
+      endpointURL: http://10.0.60.15:30188
+      region: garage
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-backup-secret
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-backup-secret
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"

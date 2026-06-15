@@ -26,3 +26,21 @@ spec:
       cpu: "250m"
     limits:
       memory: "4Gi"
+
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://cnpg/paperless-postgres
+      endpointURL: http://10.0.60.15:30188
+      region: garage
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-backup-secret
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-backup-secret
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"

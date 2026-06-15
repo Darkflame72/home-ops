@@ -13,7 +13,7 @@ controllers:
           TZ: Pacific/Auckland
         envFrom:
           - secretRef:
-              name: kopia-secret
+              name: volsync-s3-secret
         args:
           - --without-password
         probes:
@@ -63,9 +63,12 @@ configMaps:
       repository.config: |-
         {
           "storage": {
-            "type": "filesystem",
+            "type": "s3",
             "config": {
-              "path": "/repository"
+              "bucket": "kopia",
+              "endpoint": "10.0.60.15:30188",
+              "region": "garage",
+              "doNotUseTLS": true
             }
           },
           "hostname": "volsync.{{ .Release.Namespace }}.svc.cluster.local",
@@ -80,12 +83,6 @@ persistence:
     globalMounts:
       - path: /config/repository.config
         subPath: repository.config
-  repository:
-    type: nfs
-    server: 10.0.60.15
-    path: /mnt/Main/VolsyncKopia
-    globalMounts:
-      - path: /repository
   tmpfs:
     type: emptyDir
     advancedMounts:

@@ -1,0 +1,70 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: volsync-label-pvcs
+  annotations:
+    policies.kyverno.io/title: VolSync Label Helm-managed PVCs
+    policies.kyverno.io/category: VolSync
+    policies.kyverno.io/description: >-
+      Adds volsync.io/backup=true to PVCs created by Helm charts or StatefulSets
+      that cannot be labeled via their pvc.yaml. Add annotations here to override
+      backup schedule, cache size, or security context per PVC.
+spec:
+  rules:
+  - name: label-matrix-synapse-media
+    match:
+      any:
+      - resources:
+          kinds: [PersistentVolumeClaim]
+          names: [matrix-synapse-media]
+          namespaces: [comms]
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          labels:
+            volsync.io/backup: "true"
+          annotations:
+            volsync.io/schedule: "0 2 * * *"
+            volsync.io/cache-capacity: "10Gi"
+            volsync.io/run-as-user: "666"
+            volsync.io/run-as-group: "666"
+            volsync.io/fs-group: "666"
+  - name: label-forgejo
+    match:
+      any:
+      - resources:
+          kinds: [PersistentVolumeClaim]
+          names: [forgejo]
+          namespaces: [default]
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          labels:
+            volsync.io/backup: "true"
+  - name: label-immich-machine-learning
+    match:
+      any:
+      - resources:
+          kinds: [PersistentVolumeClaim]
+          names: [immich-machine-learning]
+          namespaces: [media]
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          labels:
+            volsync.io/backup: "true"
+          annotations:
+            volsync.io/schedule: "0 3 * * *"
+  - name: label-config-gatus-0
+    match:
+      any:
+      - resources:
+          kinds: [PersistentVolumeClaim]
+          names: [config-gatus-0]
+          namespaces: [observability]
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          labels:
+            volsync.io/backup: "true"
