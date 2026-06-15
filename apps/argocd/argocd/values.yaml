@@ -13,6 +13,18 @@ configs:
     server.insecure: true
   cm:
     statusbadge.enabled: "true"
+    resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
+      jqPathExpressions:
+        - .spec.refreshInterval
+        - .spec.target.creationPolicy
+        - .spec.target.deletionPolicy
+        - '.spec.data[]?.remoteRef.nullBytePolicy'
+    resource.customizations.ignoreDifferences.gateway.networking.k8s.io_HTTPRoute: |
+      jqPathExpressions:
+        - '.spec.rules[]?.backendRefs[]?.weight'
+    resource.customizations.ignoreDifferences.apps_StatefulSet: |
+      jqPathExpressions:
+        - '.spec.volumeClaimTemplates[]?.status'
 
 server:
   httproute:
