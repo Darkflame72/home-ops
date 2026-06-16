@@ -52,6 +52,7 @@ spec:
         - .spec.rules[].skipBackgroundRequests
         - .spec.rules[].validate.allowExistingViolations
         - .spec.rules[].validate.foreach[].allowExistingViolations
+        - .spec.rules[].verifyImages[].useCache
       managedFieldsManagers:
         - kyverno
     - group: apiextensions.k8s.io
