@@ -30,7 +30,8 @@ spec:
             kinds:
               - Pod
       verifyImages:
-      - imageReferences:
+      - mutateDigest: false
+        imageReferences:
         - "*"
         attestations:
         - predicateType: https://slsa.dev/provenance/v0.2
