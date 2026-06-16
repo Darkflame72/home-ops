@@ -53,6 +53,9 @@ spec:
         - .spec.rules[].validate.allowExistingViolations
         - .spec.rules[].validate.foreach[].allowExistingViolations
         - .spec.rules[].verifyImages[].useCache
+        - .spec.rules[].verifyImages[].required
+        - .spec.rules[].verifyImages[].verifyDigest
+        - .spec.rules[].verifyImages[].attestations[].attestors[].entries[].signatureAlgorithm
       managedFieldsManagers:
         - kyverno
     - group: apiextensions.k8s.io
