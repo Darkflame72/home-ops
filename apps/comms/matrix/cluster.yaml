@@ -7,6 +7,18 @@ spec:
   instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:18.1
   primaryUpdateStrategy: unsupervised
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - k8s-2
+            - k8s-6
+            - k8s-7
+            - k8s-9
   storage:
     size: 200Gi
     storageClass: openebs-hostpath
