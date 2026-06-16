@@ -98,3 +98,11 @@ route:
       - name: envoy-internal
         namespace: network
         sectionName: https
+    rules:
+      - backendRefs:
+          - name: miniflux
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

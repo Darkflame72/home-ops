@@ -95,6 +95,14 @@ route:
     parentRefs:
       - name: envoy-external
         namespace: network
+    rules:
+      - backendRefs:
+          - name: gatus
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 rbac:
   roles:
     gatus:

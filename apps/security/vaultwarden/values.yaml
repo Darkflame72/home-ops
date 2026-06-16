@@ -69,6 +69,14 @@ route:
     parentRefs:
       - name: envoy-external
         namespace: network
+    rules:
+      - backendRefs:
+          - name: vaultwarden
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   config:
     existingClaim: vaultwarden

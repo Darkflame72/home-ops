@@ -54,6 +54,14 @@ route:
       - name: envoy-internal
         namespace: network
         sectionName: https
+    rules:
+      - backendRefs:
+          - name: jellyfin
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   config:
     existingClaim: jellyfin

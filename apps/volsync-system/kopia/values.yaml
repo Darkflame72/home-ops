@@ -57,6 +57,14 @@ route:
     parentRefs:
       - name: envoy-internal
         namespace: network
+    rules:
+      - backendRefs:
+          - name: kopia
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 configMaps:
   config:
     data:

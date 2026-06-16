@@ -79,6 +79,7 @@ route:
     rules:
       - matches:
         - path:
+            type: PathPrefix
             value: "/bar"
         filters:
         - type: URLRewrite
@@ -91,6 +92,7 @@ route:
           port: *port
       - matches:
         - path:
+            type: PathPrefix
             value: "/search"
         filters:
         - type: URLRewrite
@@ -101,7 +103,11 @@ route:
         backendRefs:
         - name: bar-assistant-backend
           port: *search-port
-      - backendRefs:
+      - matches:
+        - path:
+            type: PathPrefix
+            value: /
+        backendRefs:
         - name: bar-assistant-frontend
           port: *port
 persistence:

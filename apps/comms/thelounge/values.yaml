@@ -42,6 +42,14 @@ route:
       - name: envoy-internal
         namespace: network
         sectionName: https
+    rules:
+      - backendRefs:
+          - name: thelounge
+            port: 9000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   config:
     existingClaim: thelounge
