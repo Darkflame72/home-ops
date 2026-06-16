@@ -47,11 +47,17 @@ spec:
       kind: ClusterPolicy
       jsonPointers:
         - /status
+      jqPathExpressions:
+        - .spec.background
+        - .spec.rules[].skipBackgroundRequests
+        - .spec.rules[].validate.allowExistingViolations
+        - .spec.rules[].validate.foreach[].allowExistingViolations
       managedFieldsManagers:
         - kyverno
     - group: apiextensions.k8s.io
       kind: CustomResourceDefinition
       jsonPointers:
         - /metadata/labels
+        - /metadata/annotations
         - /spec/conversion
         - /status
