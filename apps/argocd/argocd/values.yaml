@@ -19,11 +19,24 @@ configs:
         - .spec.target.creationPolicy
         - .spec.target.deletionPolicy
         - '.spec.data[]?.remoteRef.nullBytePolicy'
+    resource.customizations.ignoreDifferences.external-secrets.io_ClusterExternalSecret: |
+      jqPathExpressions:
+        - .spec.externalSecretSpec.refreshInterval
+        - .spec.externalSecretSpec.target.creationPolicy
+        - .spec.externalSecretSpec.target.deletionPolicy
+        - '.spec.externalSecretSpec.data[]?.remoteRef.nullBytePolicy'
     resource.customizations.ignoreDifferences.gateway.networking.k8s.io_HTTPRoute: |
       jqPathExpressions:
+        - '.spec.parentRefs[]?.group'
+        - '.spec.parentRefs[]?.kind'
+        - '.spec.rules[]?.backendRefs[]?.group'
+        - '.spec.rules[]?.backendRefs[]?.kind'
+        - '.spec.rules[]?.backendRefs[]?.namespace'
         - '.spec.rules[]?.backendRefs[]?.weight'
     resource.customizations.ignoreDifferences.apps_StatefulSet: |
       jqPathExpressions:
+        - '.spec.volumeClaimTemplates[]?.apiVersion'
+        - '.spec.volumeClaimTemplates[]?.kind'
         - '.spec.volumeClaimTemplates[]?.status'
 
 server:
