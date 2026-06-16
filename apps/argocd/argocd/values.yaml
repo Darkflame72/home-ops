@@ -33,6 +33,7 @@ configs:
         - '.spec.rules[]?.backendRefs[]?.kind'
         - '.spec.rules[]?.backendRefs[]?.namespace'
         - '.spec.rules[]?.backendRefs[]?.weight'
+        - '.spec.rules[]?.matches[]?.path.type'
     resource.customizations.ignoreDifferences.apps_StatefulSet: |
       jqPathExpressions:
         - '.spec.volumeClaimTemplates[]?.apiVersion'
