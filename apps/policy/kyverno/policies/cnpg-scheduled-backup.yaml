@@ -10,6 +10,8 @@ metadata:
       Automatically generates a ScheduledBackup resource for every CNPG Cluster
       that has a barmanObjectStore backup configuration.
 spec:
+  admission: true
+  emitWarning: false
   generateExisting: true
   rules:
   - name: generate-scheduled-backup

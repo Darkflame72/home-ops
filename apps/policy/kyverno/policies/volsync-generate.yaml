@@ -14,6 +14,8 @@ metadata:
         volsync.io/cache-capacity (default: 5Gi)
         volsync.io/run-as-user / run-as-group / fs-group (default: 1000)
 spec:
+  admission: true
+  emitWarning: false
   generateExisting: true
   rules:
   - name: generate-replication-source

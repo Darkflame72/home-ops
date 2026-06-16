@@ -16,6 +16,8 @@ metadata:
       This policy validates that all containers have something specified for memory and CPU
       requests and memory limits.
 spec:
+  admission: true
+  emitWarning: false
   validationFailureAction: Audit
   background: true
   rules:

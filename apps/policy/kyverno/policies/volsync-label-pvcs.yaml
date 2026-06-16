@@ -11,6 +11,8 @@ metadata:
       that cannot be labeled via their pvc.yaml. Add annotations here to override
       backup schedule, cache size, or security context per PVC.
 spec:
+  admission: true
+  emitWarning: false
   rules:
   - name: label-matrix-synapse-media
     match:
