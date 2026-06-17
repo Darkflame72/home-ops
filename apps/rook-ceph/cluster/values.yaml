@@ -45,15 +45,6 @@ cephClusterSpec:
     urlPrefix: /
     ssl: false
     # prometheusEndpoint: http://prometheus-operated.observability.svc.cluster.local:9090
-  mon:
-    count: 3
-    allowMultiplePerNode: false
-    volumeClaimTemplate:
-      spec:
-        storageClassName: ceph-block
-        resources:
-          requests:
-            storage: 10Gi
   mgr:
     modules:
       - name: diskprediction_local
