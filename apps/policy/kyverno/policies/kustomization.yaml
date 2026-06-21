@@ -2,12 +2,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./check-deprecated-apis.yaml
-  - ./disallow-latest-tag.yaml
-  - ./require-drop-all.yaml
-  - ./require-pod-requests-limits.yaml
-  - ./require-ro-rootfs.yaml
-  - ./verify-image-slsa.yaml
   - ./cnpg-scheduled-backup.yaml
   - ./volsync-generate.yaml
   - ./volsync-label-pvcs.yaml
