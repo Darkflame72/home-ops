@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/scheduledbackup_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: gatus-postgres-backup
+  namespace: observability
+spec:
+  schedule: "0 0 2 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: gatus-postgres
+  method: barmanObjectStore

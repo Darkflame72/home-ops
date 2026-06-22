@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/scheduledbackup_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: vaultwarden-postgres-backup
+  namespace: security
+spec:
+  schedule: "0 0 2 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: vaultwarden-postgres
+  method: barmanObjectStore
