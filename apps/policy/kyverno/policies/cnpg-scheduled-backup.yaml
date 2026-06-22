@@ -33,7 +33,7 @@ spec:
       synchronize: true
       data:
         spec:
-          schedule: "0 2 * * *"
+          schedule: "0 0 2 * * *"
           backupOwnerReference: self
           cluster:
             name: "{{request.object.metadata.name}}"
