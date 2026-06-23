@@ -44,7 +44,6 @@ spec:
     barmanObjectStore:
       destinationPath: s3://cnpg/immich
       endpointURL: http://10.0.60.15:30188
-      region: garage
       s3Credentials:
         accessKeyId:
           name: cnpg-backup-secret
@@ -52,6 +51,9 @@ spec:
         secretAccessKey:
           name: cnpg-backup-secret
           key: ACCESS_SECRET_KEY
+        region:
+          name: cnpg-backup-secret
+          key: REGION
       wal:
         compression: gzip
       data:
