@@ -37,7 +37,7 @@ spec:
         compression: gzip
       data:
         compression: gzip
-    retentionPolicy: "5d"
+    retentionPolicy: "3d"
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
