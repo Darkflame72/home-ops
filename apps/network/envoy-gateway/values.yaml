@@ -1,3 +1,4 @@
+# No yaml-language-server schema available: envoyproxy/gateway-helm (no values.schema.json)
 global:
   imageRegistry: mirror.gcr.io
 config:

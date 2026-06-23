@@ -1,3 +1,4 @@
+# No yaml-language-server schema available: home-operations/charts-mirror/volsync (no values.schema.json)
 fullnameOverride: volsync # Required for volsync-perfectra1n fork
 image: &image
   repository: ghcr.io/perfectra1n/volsync

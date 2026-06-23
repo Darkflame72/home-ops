@@ -1,4 +1,5 @@
 ---
+# No yaml-language-server schema available: coredns/helm (no values.schema.json)
 fullnameOverride: coredns
 image:
   repository: mirror.gcr.io/coredns/coredns

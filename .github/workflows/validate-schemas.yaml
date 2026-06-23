@@ -1,0 +1,54 @@
+name: Validate Schemas
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  kubeconform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Install kubeconform
+        run: |
+          # renovate: datasource=github-releases depName=yannh/kubeconform
+          curl -sL "https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz" \
+            | tar xz -C /usr/local/bin kubeconform
+
+      - name: Validate Kubernetes manifests
+        env:
+          # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+          KUBERNETES_VERSION: v1.36.2
+        run: |
+          find apps -name '*.yaml' -not -name 'values.yaml' \
+            | xargs grep -l '^apiVersion:' \
+            | xargs kubeconform \
+                -strict \
+                -ignore-missing-schemas \
+                -kubernetes-version "${KUBERNETES_VERSION#v}" \
+                -schema-location default \
+                -schema-location 'https://kubernetes-schemas.pages.dev/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+                -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+                -output pretty
+
+  helm-values:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - uses: astral-sh/setup-uv@bd01e18f51369d5a26f1651c3cb451d3417e3199 # v6
+
+      - name: Validate Helm values against schemas
+        run: |
+          set -euo pipefail
+          failures=0
+          while IFS= read -r file; do
+            schema=$(grep -m1 '# yaml-language-server: $schema=' "$file" | sed 's/.*$schema=//')
+            [ -z "$schema" ] && continue
+            echo "Checking $file against $schema"
+            uvx check-jsonschema --schemafile "$schema" "$file" || failures=$((failures + 1))
+          done < <(find apps -name 'values.yaml' | sort)
+          [ "$failures" -eq 0 ] || { echo "::error::$failures file(s) failed schema validation"; exit 1; }

@@ -1,4 +1,5 @@
 ---
+# No yaml-language-server schema available: kubernetes-sigs/metrics-server (no values.schema.json)
 args:
   - --kubelet-insecure-tls
   - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname

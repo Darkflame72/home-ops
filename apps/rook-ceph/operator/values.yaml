@@ -1,3 +1,4 @@
+# No yaml-language-server schema available: rook/rook-ceph (no values.schema.json)
 csi:
   cephFSKernelMountOptions: ms_mode=prefer-crc
   enableLiveness: true

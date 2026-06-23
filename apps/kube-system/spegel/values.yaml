@@ -1,4 +1,5 @@
 ---
+# No yaml-language-server schema available: spegel-org/spegel (no values.schema.json)
 spegel:
   containerdSock: /run/containerd/containerd.sock
   containerdRegistryConfigPath: /etc/cri/conf.d/hosts

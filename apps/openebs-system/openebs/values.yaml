@@ -1,3 +1,4 @@
+# No yaml-language-server schema available: openebs/openebs (no values.schema.json)
 preUpgradeHook:
   enabled: false
 localpv-provisioner:

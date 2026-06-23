@@ -1,3 +1,4 @@
+# No yaml-language-server schema available: forgejo-contrib/forgejo-helm (codeberg, no schema published)
 image:
   rootless: true
 resources:

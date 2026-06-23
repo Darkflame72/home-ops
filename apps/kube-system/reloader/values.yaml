@@ -1,4 +1,5 @@
 ---
+# No yaml-language-server schema available: stakater/Reloader (no values.schema.json)
 fullnameOverride: reloader
 reloader:
   readOnlyRootFileSystem: true

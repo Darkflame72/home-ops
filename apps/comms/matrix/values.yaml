@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/element-hq/ess-helm/refs/heads/main/charts/matrix-stack/values.schema.json
 serverName: darkflame.dev
 
 synapse:
