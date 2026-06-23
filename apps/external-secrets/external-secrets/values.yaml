@@ -1,7 +1,2 @@
 # renovate: datasource=github-releases depName=external-secrets/external-secrets
-# yaml-language-server: $schema=https://raw.githubusercontent.com/external-secrets/external-secrets/v2.6.0/deploy/charts/external-secrets/values.schema.json
-leaderElect: true
-serviceMonitor:
-  enabled: true
-webhook:
-  replicaCount: 2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/external-secrets/external-secrets/v2.6.0/deploy/charts/external-secrets/v2.6.0
