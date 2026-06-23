@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
-      - uses: astral-sh/setup-uv@bd01e18f51369d5a26f1651c3cb451d3417e3199 # v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
 
       - name: Validate Helm values against schemas
         run: |
