@@ -15,10 +15,12 @@ jobs:
       - name: Install ArgoCD CLI
         run: |
           # renovate: datasource=github-releases depName=argoproj/argo-cd
-          ARGOCD_VERSION=v3.4.4
-          curl -sSL -o /usr/local/bin/argocd \
+          ARGOCD_VERSION="v3.4.4"
+          mkdir -p "$HOME/.local/bin"
+          curl -sSL -o "$HOME/.local/bin/argocd" \
             "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
-          chmod +x /usr/local/bin/argocd
+          chmod +x "$HOME/.local/bin/argocd"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Generate diff
         env:
