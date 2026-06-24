@@ -62,14 +62,14 @@ jobs:
               --server "$ARGOCD_SERVER" \
               --auth-token "$ARGOCD_AUTH_TOKEN" \
               --plaintext \
+              --exit-code=false \
               2>&1); then
               DIFF_EXIT=0
             else
               DIFF_EXIT=$?
             fi
 
-            # exit 0 = no diff, exit 1 = error, exit 2 = diff found
-            if [[ $DIFF_EXIT -eq 1 ]]; then
+            if [[ $DIFF_EXIT -ne 0 ]]; then
               echo "::warning::Error diffing $app: $APP_DIFF"
               continue
             fi
@@ -83,7 +83,7 @@ jobs:
             --server "$ARGOCD_SERVER" \
             --auth-token "$ARGOCD_AUTH_TOKEN" \
             --plaintext \
-            --output name 2>/dev/null)
+            --output name)
 
           if [[ "$HAS_DIFF" == false ]]; then
             printf 'No ArgoCD changes detected.' > "$DIFF_FILE"
