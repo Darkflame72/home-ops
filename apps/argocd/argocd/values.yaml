@@ -94,11 +94,11 @@ notifications:
         repoURLPath: "{{.app.spec.source.repoURL}}"
         revisionPath: "{{.app.status.operationState.syncResult.revision}}"
         status:
-          state: "{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}pending{{end}}"
+          state: '{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}pending{{end}}'
           label: "continuous-delivery/{{.app.metadata.name}}"
           targetURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
         deployment:
-          state: "{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}in_progress{{end}}"
+          state: '{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}in_progress{{end}}'
           environment: production
           environmentURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
           logURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
