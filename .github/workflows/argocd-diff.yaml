@@ -15,7 +15,7 @@ jobs:
       - name: Install ArgoCD CLI
         run: |
           # renovate: datasource=github-releases depName=argoproj/argo-cd
-          ARGOCD_VERSION="v2.14.13"
+          ARGOCD_VERSION=v2.14.21
           curl -sSL -o /usr/local/bin/argocd \
             "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
           chmod +x /usr/local/bin/argocd
