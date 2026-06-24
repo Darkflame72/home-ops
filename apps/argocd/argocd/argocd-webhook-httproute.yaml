@@ -6,6 +6,10 @@ metadata:
   name: argocd-webhook-external
   labels:
     home-operations.com/pihole: ignore
+  annotations:
+    gatus.home-operations.com/endpoint: |-
+      conditions:
+        - "[STATUS] < 500"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

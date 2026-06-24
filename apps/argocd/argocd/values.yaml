@@ -50,6 +50,11 @@ server:
         namespace: network
     hostnames:
       - "cd.darkflame.dev"
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        url: http://argocd-server.argocd.svc.cluster.local/
+        conditions:
+          - "[STATUS] == 200"
     rules:
       - backendRefs:
           - name: argocd-server
