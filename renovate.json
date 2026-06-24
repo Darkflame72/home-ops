@@ -30,7 +30,8 @@
       "description": "Override Helmfile Dependency Name",
       "matchDatasources": ["docker"],
       "matchManagers": ["helmfile"],
-      "overrideDepName": "{{packageName}}"
+      "overrideDepName": "{{packageName}}",
+      "pinDigests": false
     },
     {
       "description": "Auto-merge GitHub Actions",
