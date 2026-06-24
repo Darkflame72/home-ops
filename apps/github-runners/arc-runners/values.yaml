@@ -1,0 +1,5 @@
+githubConfigUrl: "https://github.com/Darkflame72/home-ops"
+githubConfigSecret: arc-github-secret
+
+minRunners: 0
+maxRunners: 3

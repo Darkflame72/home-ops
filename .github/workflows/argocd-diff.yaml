@@ -1,0 +1,126 @@
+name: ArgoCD Diff
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  diff:
+    name: Diff
+    runs-on: arc-home-ops
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          # renovate: datasource=github-releases depName=argoproj/argo-cd
+          ARGOCD_VERSION="v2.14.13"
+          curl -sSL -o /usr/local/bin/argocd \
+            "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
+          chmod +x /usr/local/bin/argocd
+
+      - name: Generate diff
+        env:
+          ARGOCD_SERVER: argocd-server.argocd:80
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          DIFF_FILE=/tmp/argocd-diff.md
+          : > "$DIFF_FILE"
+          HAS_DIFF=false
+
+          while IFS= read -r app; do
+            [[ -z "$app" ]] && continue
+
+            APP_JSON=$(argocd app get "$app" \
+              --server "$ARGOCD_SERVER" \
+              --auth-token "$ARGOCD_AUTH_TOKEN" \
+              --plaintext \
+              --output json 2>/dev/null) || {
+              echo "::warning::Could not get app: $app"
+              continue
+            }
+
+            SOURCE_COUNT=$(echo "$APP_JSON" | jq '.spec.sources | length // 0')
+
+            REVISION_FLAGS=()
+            if [[ "$SOURCE_COUNT" -gt 1 ]]; then
+              while IFS= read -r rev; do
+                REVISION_FLAGS+=(--revisions "$rev")
+              done < <(echo "$APP_JSON" | jq -r --arg sha "$PR_SHA" \
+                '.spec.sources[] | if (.repoURL | test("github\\.com")) then $sha else .targetRevision end')
+            else
+              REVISION_FLAGS=(--revision "$PR_SHA")
+            fi
+
+            if APP_DIFF=$(argocd app diff "$app" \
+              "${REVISION_FLAGS[@]}" \
+              --server "$ARGOCD_SERVER" \
+              --auth-token "$ARGOCD_AUTH_TOKEN" \
+              --plaintext \
+              2>&1); then
+              DIFF_EXIT=0
+            else
+              DIFF_EXIT=$?
+            fi
+
+            # exit 0 = no diff, exit 1 = error, exit 2 = diff found
+            if [[ $DIFF_EXIT -eq 1 ]]; then
+              echo "::warning::Error diffing $app: $APP_DIFF"
+              continue
+            fi
+
+            [[ -z "$APP_DIFF" ]] && continue
+
+            HAS_DIFF=true
+            printf '<details><summary><b>%s</b></summary>\n\n```diff\n%s\n```\n</details>\n\n' \
+              "$app" "$APP_DIFF" >> "$DIFF_FILE"
+          done < <(argocd app list \
+            --server "$ARGOCD_SERVER" \
+            --auth-token "$ARGOCD_AUTH_TOKEN" \
+            --plaintext \
+            --output name 2>/dev/null)
+
+          if [[ "$HAS_DIFF" == false ]]; then
+            printf 'No ArgoCD changes detected.' > "$DIFF_FILE"
+          fi
+
+          if [[ $(wc -c < "$DIFF_FILE") -gt 64000 ]]; then
+            truncate -s 64000 "$DIFF_FILE"
+            printf '\n\n> [!WARNING]\n> Output truncated due to GitHub comment size limit.' >> "$DIFF_FILE"
+          fi
+
+      - name: Post comment
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- argocd-diff -->';
+            const diffContent = fs.readFileSync('/tmp/argocd-diff.md', 'utf8');
+            const body = `${marker}\n## ArgoCD Diff\n\n${diffContent}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body.startsWith(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
