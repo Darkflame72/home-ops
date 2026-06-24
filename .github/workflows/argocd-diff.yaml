@@ -22,6 +22,16 @@ jobs:
           chmod +x "$HOME/.local/bin/argocd"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
+      - name: Debug connectivity
+        env:
+          ARGOCD_SERVER: argocd-server.argocd:80
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+        run: |
+          echo "argocd: $(which argocd 2>/dev/null || echo NOT FOUND)"
+          argocd version --server "$ARGOCD_SERVER" --auth-token "$ARGOCD_AUTH_TOKEN" --plaintext --client || true
+          echo "app list output:"
+          argocd app list --server "$ARGOCD_SERVER" --auth-token "$ARGOCD_AUTH_TOKEN" --plaintext --output name || true
+
       - name: Generate diff
         env:
           ARGOCD_SERVER: argocd-server.argocd:80
