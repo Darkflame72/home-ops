@@ -46,7 +46,7 @@ jobs:
           set -euo pipefail
           failures=0
           while IFS= read -r file; do
-            schema=$(grep -m1 '# yaml-language-server: $schema=' "$file" | sed 's/.*$schema=//')
+            schema=$(grep -m1 -F '# yaml-language-server: $schema=' "$file" | sed 's/.*$schema=//') || true
             [ -z "$schema" ] && continue
             echo "Checking $file against $schema"
             uvx check-jsonschema --schemafile "$schema" "$file" || failures=$((failures + 1))
