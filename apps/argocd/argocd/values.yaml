@@ -91,8 +91,8 @@ notifications:
   templates:
     template.github-commit-status: |
       github:
-        repoURLPath: "{{.app.spec.source.repoURL}}"
-        revisionPath: "{{.app.status.operationState.syncResult.revision}}"
+        repoURLPath: '{{if .app.spec.source}}{{.app.spec.source.repoURL}}{{else}}{{(index .app.spec.sources 0).repoURL}}{{end}}'
+        revisionPath: '{{if .app.status.operationState.syncResult.revision}}{{.app.status.operationState.syncResult.revision}}{{else}}{{index .app.status.operationState.syncResult.revisions 0}}{{end}}'
         status:
           state: '{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}pending{{end}}'
           label: "continuous-delivery/{{.app.metadata.name}}"
