@@ -99,7 +99,7 @@ notifications:
           targetURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
         deployment:
           state: '{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}in_progress{{end}}'
-          environment: production
+          environment: "{{.app.metadata.name}}"
           environmentURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
           logURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
           requiredContexts: []
