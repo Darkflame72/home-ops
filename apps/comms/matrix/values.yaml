@@ -9,7 +9,7 @@ synapse:
       cpu: 10m
       memory: 2Gi
     limits:
-      memory: 6Gi
+      memory: 8Gi
   podSecurityContext:
     fsGroup: 666
     runAsGroup: 666
@@ -39,8 +39,8 @@ synapse:
           global_factor: 0.5
           sync_response_cache_duration: 2m
           cache_autotuning:
-            max_cache_memory_usage: 2048M
-            target_cache_memory_usage: 1024M
+            max_cache_memory_usage: 1024M
+            target_cache_memory_usage: 512M
             min_cache_ttl: 5m
         presence:
           enabled: true
