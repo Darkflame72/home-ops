@@ -3,3 +3,7 @@ githubConfigSecret: arc-github-secret
 
 minRunners: 0
 maxRunners: 3
+
+controllerServiceAccount:
+  namespace: arc-system
+  name: arc-controller-gha-rs-controller
