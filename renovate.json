@@ -34,6 +34,11 @@
       "pinDigests": false
     },
     {
+      "description": "Disable digest pinning for custom regex manager (version-only fields like talosVersion break on @sha256 appends)",
+      "matchManagers": ["regex"],
+      "pinDigests": false
+    },
+    {
       "description": "Auto-merge GitHub Actions",
       "matchManagers": ["github-actions"],
       "automerge": true,
