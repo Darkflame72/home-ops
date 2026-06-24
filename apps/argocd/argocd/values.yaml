@@ -12,6 +12,9 @@ configs:
   params:
     # It isn't actually insecure as the gateway handles TLS termination
     server.insecure: true
+  rbac:
+    policy.csv: |
+      g, ci, role:readonly
   cm:
     statusbadge.enabled: "true"
     accounts.ci: apiKey
