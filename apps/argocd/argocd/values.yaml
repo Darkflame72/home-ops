@@ -83,28 +83,42 @@ notifications:
   secret:
     create: false
     name: argocd-notifications-secret
-  items:
+  notifiers:
     service.github: |
       appID: $github-appId
       installationID: $github-installationId
       privateKey: $github-privateKey
-    templates: |
-      github-status: |
-        message: |
-          repo: Darkflame72/home-ops
-          revision: {{.app.status.sync.revision}}
-          state: '{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else}}pending{{end}}'
-          targetURL: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
-    triggers: |
-      on-sync-succeeded: |
-        when: app.status.operationState.phase in ['Succeeded']
-        send:
-          - github-status
-      on-sync-failed: |
-        when: app.status.operationState.phase in ['Error', 'Failed']
-        send:
-          - github-status
-      on-sync-running: |
-        when: app.status.operationState.phase in ['Running']
-        send:
-          - github-status
+  templates:
+    template.github-commit-status: |
+      github:
+        repoURLPath: "{{.app.spec.source.repoURL}}"
+        revisionPath: "{{.app.status.operationState.syncResult.revision}}"
+        status:
+          state: "{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}pending{{end}}"
+          label: "continuous-delivery/{{.app.metadata.name}}"
+          targetURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+        deployment:
+          state: "{{if eq .app.status.operationState.phase "Succeeded"}}success{{else if eq .app.status.operationState.phase "Failed"}}failure{{else if eq .app.status.operationState.phase "Error"}}error{{else}}in_progress{{end}}"
+          environment: production
+          environmentURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+          logURL: "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+          requiredContexts: []
+          autoMerge: false
+          transientEnvironment: false
+  triggers:
+    trigger.on-sync-running: |
+      - when: app.status.operationState.phase in ['Running']
+        send: [github-commit-status]
+    trigger.on-sync-succeeded: |
+      - when: app.status.operationState.phase in ['Succeeded']
+        send: [github-commit-status]
+    trigger.on-sync-failed: |
+      - when: app.status.operationState.phase in ['Error', 'Failed']
+        send: [github-commit-status]
+  subscriptions:
+    - recipients:
+        - github
+      triggers:
+        - on-sync-running
+        - on-sync-succeeded
+        - on-sync-failed
