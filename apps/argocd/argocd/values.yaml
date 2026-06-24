@@ -14,6 +14,7 @@ configs:
     server.insecure: true
   cm:
     statusbadge.enabled: "true"
+    accounts.ci: apiKey
     resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
       jqPathExpressions:
         - .spec.refreshInterval
