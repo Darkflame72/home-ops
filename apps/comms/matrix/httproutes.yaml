@@ -52,6 +52,9 @@ kind: HTTPRoute
 metadata:
   name: matrix-rtc
   namespace: comms
+  annotations:
+    gatus.home-operations.com/endpoint: |-
+      path: ""
 spec:
   hostnames: ["mrtc.darkflame.dev"]
   parentRefs:

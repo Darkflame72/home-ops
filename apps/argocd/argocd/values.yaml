@@ -52,9 +52,8 @@ server:
       - "cd.darkflame.dev"
     annotations:
       gatus.home-operations.com/endpoint: |-
-        url: http://argocd-server.argocd.svc.cluster.local/
         conditions:
-          - "[STATUS] == 200"
+          - "len([BODY]) > 0"
     rules:
       - backendRefs:
           - name: argocd-server
