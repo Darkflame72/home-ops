@@ -1,38 +1,38 @@
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_cd_kustomize_schema.json
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: excalidraw
+  name: opentelemetry-kube-stack
   namespace: argocd
   finalizers:
-  - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io
   annotations:
-    link.argocd.argoproj.io/external-link: https://draw.darkflame.dev
-    argocd.argoproj.io/sync-wave: '3'
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/default/excalidraw
+      path: apps/observability/opentelemetry-kube-stack
       targetRevision: main
       ref: repo
-    - repoURL: ghcr.io/bjw-s-labs/helm
-      chart: app-template
-      targetRevision: 5.0.1
+    - repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+      chart: opentelemetry-kube-stack
+      targetRevision: 0.18.0
       helm:
-        releaseName: excalidraw
+        releaseName: opentelemetry-kube-stack
         valueFiles:
-          - $repo/apps/default/excalidraw/values.yaml
+          - $repo/apps/observability/opentelemetry-kube-stack/values.yaml
   destination:
     name: in-cluster
-    namespace: default
+    namespace: observability
   syncPolicy:
     automated:
       allowEmpty: true
       prune: true
       selfHeal: true
     retry:
-      limit: 5
+      limit: 1
       backoff:
         duration: 10s
         factor: 2

@@ -8,7 +8,7 @@ metadata:
   - resources-finalizer.argocd.argoproj.io
   annotations:
     link.argocd.argoproj.io/external-link: https://thelounge.darkflame.dev
-    argocd.argoproj.io/sync-wave: '0'
+    argocd.argoproj.io/sync-wave: '3'
 spec:
   project: default
   sources:
@@ -32,7 +32,7 @@ spec:
       prune: true
       selfHeal: true
     retry:
-      limit: 1
+      limit: 5
       backoff:
         duration: 10s
         factor: 2

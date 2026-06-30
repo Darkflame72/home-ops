@@ -6,7 +6,7 @@ metadata:
   namespace: argocd
   annotations:
     link.argocd.argoproj.io/external-link: https://cd.darkflame.dev
-    argocd.argoproj.io/sync-wave: '0'
+    argocd.argoproj.io/sync-wave: '3'
   labels:
     argocd.argoproj.io/instance: argo
 spec:
@@ -35,7 +35,7 @@ spec:
       prune: true
       selfHeal: true
     retry:
-      limit: 1
+      limit: 5
       backoff:
         duration: 10s
         factor: 2
