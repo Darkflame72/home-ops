@@ -1,0 +1,83 @@
+# No yaml-language-server schema available: grafana/mimir-distributed
+# Running in minimal single-replica mode (monolithic-like).
+# OBC secret "mimir-bucket" and configmap "mimir-bucket" are injected via global.extraEnvFrom.
+# config.expand-env is set automatically by the chart — no need to set it in extraArgs.
+
+fullnameOverride: mimir
+
+global:
+  extraEnvFrom:
+    - secretRef:
+        name: mimir-bucket
+    - configMapRef:
+        name: mimir-bucket
+
+mimir:
+  structuredConfig:
+    multitenancy_enabled: false
+    common:
+      storage:
+        backend: s3
+        s3:
+          endpoint: ${BUCKET_HOST}:${BUCKET_PORT}
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+          insecure: true
+    blocks_storage:
+      s3:
+        bucket_name: ${BUCKET_NAME}
+    ruler_storage:
+      s3:
+        bucket_name: ${BUCKET_NAME}
+        prefix: ruler/
+    alertmanager_storage:
+      s3:
+        bucket_name: ${BUCKET_NAME}
+        prefix: alertmanager/
+    limits:
+      ingestion_rate: 30000
+      ingestion_burst_size: 50000
+
+alertmanager:
+  enabled: true
+  replicas: 1
+  statefulSet:
+    enabled: true
+  zoneAwareReplication:
+    enabled: false
+
+compactor:
+  replicas: 1
+
+distributor:
+  replicas: 1
+
+ingester:
+  replicas: 1
+  zoneAwareReplication:
+    enabled: false
+
+querier:
+  replicas: 1
+
+queryFrontend:
+  replicas: 1
+
+ruler:
+  enabled: true
+  replicas: 1
+
+storeGateway:
+  replicas: 1
+  zoneAwareReplication:
+    enabled: false
+
+nginx:
+  enabled: true
+  replicas: 1
+
+rollout_operator:
+  enabled: false
+
+minio:
+  enabled: false

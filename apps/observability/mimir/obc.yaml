@@ -1,0 +1,9 @@
+---
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: mimir-bucket
+  namespace: observability
+spec:
+  bucketName: mimir
+  storageClassName: ceph-bucket

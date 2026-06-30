@@ -1,0 +1,46 @@
+# No yaml-language-server schema available: grafana-community/tempo
+fullnameOverride: tempo
+
+tempo:
+  reportingEnabled: false
+  multitenancyEnabled: false
+
+  metricsGenerator:
+    enabled: true
+    remoteWriteUrl: "http://mimir-gateway.observability.svc.cluster.local/api/v1/push"
+
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: ${BUCKET_NAME}
+        endpoint: ${BUCKET_HOST}:${BUCKET_PORT}
+        access_key: ${AWS_ACCESS_KEY_ID}
+        secret_key: ${AWS_SECRET_ACCESS_KEY}
+        insecure: true
+      wal:
+        path: /var/tempo/wal
+
+  # OTLP receivers are enabled by default in this chart (grpc: 4317, http: 4318)
+  # Jaeger protocols disabled — only use OTLP
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+  extraArgs:
+    config.expand-env: "true"
+
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-bucket
+    - configMapRef:
+        name: tempo-bucket
+
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: ceph-block

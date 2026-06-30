@@ -1,0 +1,49 @@
+# No yaml-language-server schema available: open-telemetry/opentelemetry-kube-stack
+opentelemetry-operator:
+  manager:
+    collectorImage:
+      repository: otel/opentelemetry-collector-contrib
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+defaultCRConfig:
+  config:
+    exporters:
+      otlphttp/mimir:
+        endpoint: http://mimir-gateway.observability.svc.cluster.local/otlp
+        tls:
+          insecure: true
+      otlphttp/loki:
+        endpoint: http://loki-gateway.observability.svc.cluster.local/otlp
+        tls:
+          insecure: true
+      otlp/tempo:
+        endpoint: tempo.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          exporters: [otlp/tempo]
+        metrics:
+          exporters: [otlphttp/mimir]
+        logs:
+          exporters: [otlphttp/loki]
+
+# Single daemonset collector handles all signals.
+# clusterMetrics and kubernetesEvents use the leader election extension to run only on one node.
+collectors:
+  daemon:
+    enabled: true
+    mode: daemonset
+    presets:
+      logsCollection: true
+      hostMetrics: true
+      kubeletMetrics: true
+      kubernetesAttributes: true
+      kubernetesEvents: true
+      clusterMetrics: true
