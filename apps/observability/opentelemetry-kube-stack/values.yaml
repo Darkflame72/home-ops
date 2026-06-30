@@ -41,9 +41,15 @@ collectors:
     enabled: true
     mode: daemonset
     presets:
-      logsCollection: true
-      hostMetrics: true
-      kubeletMetrics: true
-      kubernetesAttributes: true
-      kubernetesEvents: true
-      clusterMetrics: true
+      logsCollection:
+        enabled: true
+      hostMetrics:
+        enabled: true
+      kubeletMetrics:
+        enabled: true
+      kubernetesAttributes:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
+      clusterMetrics:
+        enabled: true
