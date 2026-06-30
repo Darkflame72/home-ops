@@ -153,4 +153,28 @@ cephFileSystemVolumeSnapshotClass:
   name: csi-ceph-filesystem
   isDefault: false
   deletionPolicy: Delete
-cephObjectStores: []
+cephObjectStores:
+  - name: ceph-objectstore
+    spec:
+      metadataPool:
+        failureDomain: host
+        replicated:
+          size: 3
+      dataPool:
+        failureDomain: host
+        replicated:
+          size: 3
+      preservePoolsOnDelete: true
+      gateway:
+        type: s3
+        port: 80
+        instances: 1
+      healthCheck:
+        bucket:
+          disabled: false
+          interval: 60s
+    storageClass:
+      enabled: true
+      name: ceph-bucket
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
