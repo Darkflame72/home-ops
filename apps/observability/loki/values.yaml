@@ -56,5 +56,11 @@ gateway:
   enabled: true
   replicas: 1
 
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
+
 minio:
   enabled: false
