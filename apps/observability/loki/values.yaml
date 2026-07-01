@@ -15,6 +15,9 @@ loki:
           prefix: loki_index_
           period: 24h
   storage:
+    bucketNames:
+      chunks: ${BUCKET_NAME}
+      ruler: ${BUCKET_NAME}
     use_thanos_objstore: true
     object_store:
       type: s3
