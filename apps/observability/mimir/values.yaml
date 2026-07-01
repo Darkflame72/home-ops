@@ -31,9 +31,11 @@ mimir:
       s3:
         bucket_name: ${BUCKET_NAME}
     ruler_storage:
+      storage_prefix: ruler
       s3:
         bucket_name: ${BUCKET_NAME}
     alertmanager_storage:
+      storage_prefix: alertmanager
       s3:
         bucket_name: ${BUCKET_NAME}
     limits:
