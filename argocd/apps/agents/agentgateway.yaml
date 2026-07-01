@@ -13,7 +13,6 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/agents/agentgateway
       targetRevision: main
       ref: repo
     - repoURL: cr.agentgateway.dev/charts
