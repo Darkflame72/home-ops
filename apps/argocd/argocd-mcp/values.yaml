@@ -5,8 +5,8 @@ controllers:
     containers:
       app:
         image:
-          repository: argoprojlabs/mcp-for-argocd
-          tag: latest
+          repository: ghcr.io/argoproj-labs/mcp-for-argocd
+          tag: v0.8.0
         args: ["http", "--stateless"]
         env:
           ARGOCD_BASE_URL: "http://argocd-server.argocd.svc.cluster.local"

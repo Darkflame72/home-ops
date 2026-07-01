@@ -5,5 +5,3 @@ kind: Kustomization
 resources:
   - ./httproute.yaml
   - ./mcp.yaml
-  - ../../observability/grafana-mcp/grafana-service-account.yaml
-  - ../../argocd/argocd-mcp/external-secret.yaml
