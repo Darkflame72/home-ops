@@ -85,5 +85,4 @@ spec:
         requests:
           storage: 10Gi
       storageClassName: ceph-block
-  allowCrossNamespaceImport: true
   disableDefaultSecurityContext: All

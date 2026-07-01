@@ -33,6 +33,7 @@ spec:
         synchronize: true
         data:
           spec:
+            allowCrossNamespaceImport: true
             instanceSelector:
               matchLabels:
                 grafana.internal/instance: grafana
