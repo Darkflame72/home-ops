@@ -28,7 +28,7 @@ spec:
       - name: argocd
         static:
           host: argocd-mcp.argocd.svc.cluster.local
-          port: 3000
+          port: 3001
           protocol: StreamableHTTP
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/httproute_v1.json
