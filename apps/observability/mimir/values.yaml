@@ -1,5 +1,5 @@
 # No yaml-language-server schema available: grafana/mimir-distributed
-# Running in minimal single-replica mode (monolithic-like).
+# Running in minimal single-replica mode.
 # OBC secret "mimir-bucket" and configmap "mimir-bucket" are injected via global.extraEnvFrom.
 # config.expand-env is set automatically by the chart — no need to set it in extraArgs.
 
@@ -15,6 +15,9 @@ global:
 mimir:
   structuredConfig:
     multitenancy_enabled: false
+    ingester:
+      ring:
+        replication_factor: 1
     common:
       storage:
         backend: s3
@@ -38,6 +41,9 @@ mimir:
       ingestion_rate: 30000
       ingestion_burst_size: 50000
 
+kafka:
+  enabled: false
+
 alertmanager:
   enabled: true
   replicas: 1
@@ -60,20 +66,19 @@ ingester:
 querier:
   replicas: 1
 
-queryFrontend:
+query_frontend:
   replicas: 1
 
 ruler:
   enabled: true
   replicas: 1
 
-storeGateway:
+store_gateway:
   replicas: 1
   zoneAwareReplication:
     enabled: false
 
-nginx:
-  enabled: true
+gateway:
   replicas: 1
 
 rollout_operator:
