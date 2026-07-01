@@ -32,11 +32,9 @@ mimir:
     ruler_storage:
       s3:
         bucket_name: ${BUCKET_NAME}
-        prefix: ruler/
     alertmanager_storage:
       s3:
         bucket_name: ${BUCKET_NAME}
-        prefix: alertmanager/
     limits:
       ingestion_rate: 30000
       ingestion_burst_size: 50000
