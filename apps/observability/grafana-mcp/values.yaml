@@ -1,0 +1,39 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
+controllers:
+  grafana-mcp:
+    containers:
+      app:
+        image:
+          repository: grafana/mcp-grafana
+          tag: latest
+        env:
+          GRAFANA_URL: "http://grafana-service.observability.svc.cluster.local:3000"
+          GRAFANA_SERVICE_ACCOUNT_TOKEN:
+            valueFrom:
+              secretKeyRef:
+                name: grafana-mcp-token
+                key: token
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+service:
+  app:
+    ports:
+      http:
+        port: 8000
+        appProtocol: agentgateway.dev/mcp

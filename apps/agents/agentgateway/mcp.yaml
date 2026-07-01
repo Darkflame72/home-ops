@@ -1,0 +1,52 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gateway_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway-proxy
+  namespace: agents
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: mcp-backend
+  namespace: agents
+spec:
+  mcp:
+    targets:
+      - name: grafana
+        static:
+          host: grafana-mcp.observability.svc.cluster.local
+          port: 8000
+          protocol: SSE
+      - name: argocd
+        static:
+          host: argocd-mcp.argocd.svc.cluster.local
+          port: 3000
+          protocol: StreamableHTTP
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mcp
+  namespace: agents
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /mcp
+      backendRefs:
+        - name: mcp-backend
+          group: agentgateway.dev
+          kind: AgentgatewayBackend

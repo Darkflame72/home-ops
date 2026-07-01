@@ -13,11 +13,11 @@ nodeExporter:
 defaultCRConfig:
   config:
     exporters:
-      otlphttp/mimir:
+      otlp_http/mimir:
         endpoint: http://mimir-gateway.observability.svc.cluster.local/otlp
         tls:
           insecure: true
-      otlphttp/loki:
+      otlp_http/loki:
         endpoint: http://loki-gateway.observability.svc.cluster.local/otlp
         tls:
           insecure: true
@@ -30,9 +30,9 @@ defaultCRConfig:
         traces:
           exporters: [otlp/tempo, debug]
         metrics:
-          exporters: [otlphttp/mimir, debug]
+          exporters: [otlp_http/mimir, debug]
         logs:
-          exporters: [otlphttp/loki, debug]
+          exporters: [otlp_http/loki, debug]
 
 # Single daemonset collector handles all signals.
 # clusterMetrics and kubernetesEvents use the leader election extension to run only on one node.
@@ -46,9 +46,9 @@ collectors:
           traces:
             exporters: [otlp/tempo, debug]
           metrics:
-            exporters: [otlphttp/mimir, debug]
+            exporters: [otlp_http/mimir, debug]
           logs:
-            exporters: [otlphttp/loki, debug]
+            exporters: [otlp_http/loki, debug]
     presets:
       logsCollection:
         enabled: true

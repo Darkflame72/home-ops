@@ -1,0 +1,45 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_cd_kustomize_schema.json
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: agentgateway
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/agents/agentgateway
+      targetRevision: main
+      ref: repo
+    - repoURL: cr.agentgateway.dev/charts
+      chart: agentgateway
+      targetRevision: 1.3.0
+      helm:
+        releaseName: agentgateway
+        valueFiles:
+          - $repo/apps/agents/agentgateway/values.yaml
+  destination:
+    name: in-cluster
+    namespace: agents
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true

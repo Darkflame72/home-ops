@@ -15,9 +15,15 @@ configs:
   rbac:
     policy.csv: |
       g, ci, role:readonly
+      p, role:mcp-agent, applications, get, */*, allow
+      p, role:mcp-agent, applications, sync, */*, allow
+      p, role:mcp-agent, applications, action/*, */*, allow
+      p, role:mcp-agent, logs, get, */*, allow
+      g, argocd-mcp, role:mcp-agent
   cm:
     statusbadge.enabled: "true"
     accounts.ci: apiKey
+    accounts.argocd-mcp: apiKey
     resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
       jqPathExpressions:
         - .spec.refreshInterval

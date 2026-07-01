@@ -1,0 +1,65 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
+controllers:
+  argocd-mcp:
+    containers:
+      app:
+        image:
+          repository: argoprojlabs/mcp-for-argocd
+          tag: latest
+        args: ["http", "--stateless"]
+        env:
+          ARGOCD_BASE_URL: "http://argocd-server.argocd.svc.cluster.local"
+          ARGOCD_API_TOKEN:
+            valueFrom:
+              secretKeyRef:
+                name: argocd-mcp-secret
+                key: api_token
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 3000
+              initialDelaySeconds: 5
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 3000
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+service:
+  app:
+    annotations:
+      agentgateway.dev/mcp-path: /mcp
+    ports:
+      http:
+        port: 3000
+        appProtocol: agentgateway.dev/mcp
