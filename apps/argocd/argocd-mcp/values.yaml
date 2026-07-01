@@ -6,7 +6,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/argoproj-labs/mcp-for-argocd
-          tag: v0.8.0
+          tag: v0.8.0@sha256:64d78cbf808f67e2d197f0a6fffa8650df7e6026d435e6b4a6bacfc3c5fdd837
         command: ["node", "dist/index.js"]
         args: ["http", "--stateless", "--port", "3001"]
         env:
