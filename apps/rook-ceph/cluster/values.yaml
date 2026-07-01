@@ -166,13 +166,8 @@ cephObjectStores:
           size: 3
       preservePoolsOnDelete: true
       gateway:
-        type: s3
         port: 80
         instances: 1
-      healthCheck:
-        bucket:
-          disabled: false
-          interval: 60s
     storageClass:
       enabled: true
       name: ceph-bucket
