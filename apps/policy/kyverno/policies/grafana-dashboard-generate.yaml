@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/clusterpolicy_v1.json
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: grafana-dashboard-generate
+  annotations:
+    policies.kyverno.io/title: Grafana Dashboard Auto Provision
+    policies.kyverno.io/category: Grafana
+    policies.kyverno.io/description: >-
+      Generates a GrafanaDashboard for every ConfigMap labeled
+      grafana_dashboard=1, bridging Helm chart dashboard ConfigMaps
+      to the grafana-operator.
+spec:
+  admission: true
+  emitWarning: false
+  generateExisting: true
+  rules:
+    - name: generate-grafana-dashboard
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              selector:
+                matchLabels:
+                  grafana_dashboard: "1"
+      generate:
+        apiVersion: grafana.integreatly.org/v1beta1
+        kind: GrafanaDashboard
+        name: "{{request.object.metadata.name}}"
+        namespace: "{{request.object.metadata.namespace}}"
+        synchronize: true
+        data:
+          spec:
+            instanceSelector:
+              matchLabels:
+                grafana.internal/instance: grafana
+            configMapRef:
+              name: "{{request.object.metadata.name}}"
+              key: "{{keys(request.object.data)[0]}}"
