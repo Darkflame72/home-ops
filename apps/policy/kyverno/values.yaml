@@ -31,6 +31,18 @@ admissionController:
             - patch
             - update
             - watch
+        - apiGroups:
+            - grafana.integreatly.org
+          resources:
+            - grafanadashboards
+          verbs:
+            - create
+            - delete
+            - get
+            - list
+            - patch
+            - update
+            - watch
 
 backgroundController:
   rbac:
@@ -53,6 +65,18 @@ backgroundController:
             - postgresql.cnpg.io
           resources:
             - scheduledbackups
+          verbs:
+            - create
+            - delete
+            - get
+            - list
+            - patch
+            - update
+            - watch
+        - apiGroups:
+            - grafana.integreatly.org
+          resources:
+            - grafanadashboards
           verbs:
             - create
             - delete
