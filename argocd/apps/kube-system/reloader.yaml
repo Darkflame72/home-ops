@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/stakater/charts
       chart: reloader
-      targetRevision: 2.2.12
+      targetRevision: 2.2.14
       helm:
         releaseName: reloader
         valueFiles:
