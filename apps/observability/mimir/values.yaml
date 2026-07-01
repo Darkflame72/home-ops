@@ -16,6 +16,7 @@ mimir:
   structuredConfig:
     multitenancy_enabled: false
     ingester:
+      push_grpc_method_enabled: true
       ring:
         replication_factor: 1
     common:
@@ -38,6 +39,8 @@ mimir:
     limits:
       ingestion_rate: 30000
       ingestion_burst_size: 50000
+    ingest_storage:
+      enabled: false
 
 kafka:
   enabled: false

@@ -28,11 +28,11 @@ defaultCRConfig:
     service:
       pipelines:
         traces:
-          exporters: [otlp/tempo]
+          exporters: [otlp/tempo, debug]
         metrics:
-          exporters: [otlphttp/mimir]
+          exporters: [otlphttp/mimir, debug]
         logs:
-          exporters: [otlphttp/loki]
+          exporters: [otlphttp/loki, debug]
 
 # Single daemonset collector handles all signals.
 # clusterMetrics and kubernetesEvents use the leader election extension to run only on one node.
@@ -40,6 +40,15 @@ collectors:
   daemon:
     enabled: true
     mode: daemonset
+    config:
+      service:
+        pipelines:
+          traces:
+            exporters: [otlp/tempo, debug]
+          metrics:
+            exporters: [otlphttp/mimir, debug]
+          logs:
+            exporters: [otlphttp/loki, debug]
     presets:
       logsCollection:
         enabled: true
