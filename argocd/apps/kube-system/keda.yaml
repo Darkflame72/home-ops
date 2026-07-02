@@ -2,30 +2,29 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: immich
+  name: keda
   namespace: argocd
   finalizers:
-  - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io
   annotations:
-    link.argocd.argoproj.io/external-link: https://photos.darkflame.dev
-    argocd.argoproj.io/sync-wave: '3'
+    argocd.argoproj.io/sync-wave: '-1'
 spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/media/immich
+      path: apps/kube-system/keda
       targetRevision: main
       ref: repo
-    - repoURL: ghcr.io/immich-app/immich-charts
-      chart: immich
-      targetRevision: 0.12.1
+    - repoURL: https://kedacore.github.io/charts
+      chart: keda
+      targetRevision: 2.20.1
       helm:
-        releaseName: immich
+        releaseName: keda
         valueFiles:
-          - $repo/apps/media/immich/values.yaml
+          - $repo/apps/kube-system/keda/values.yaml
   destination:
     name: in-cluster
-    namespace: media
+    namespace: kube-system
   syncPolicy:
     automated:
       allowEmpty: true
