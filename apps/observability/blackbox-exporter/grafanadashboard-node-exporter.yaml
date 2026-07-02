@@ -10,6 +10,7 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  folderRef: truenas
   grafanaCom:
     id: 1860
     revision: 45
