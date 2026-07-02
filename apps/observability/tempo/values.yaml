@@ -44,3 +44,7 @@ persistence:
   enabled: true
   size: 10Gi
   storageClass: ceph-block
+
+metaMonitoring:
+  dashboards:
+    enabled: true

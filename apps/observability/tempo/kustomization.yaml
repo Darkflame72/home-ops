@@ -5,4 +5,3 @@ kind: Kustomization
 resources:
   - ./obc.yaml
   - ./grafanadatasource.yaml
-  - ./grafanadashboard.yaml
