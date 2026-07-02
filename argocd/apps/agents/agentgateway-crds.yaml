@@ -14,7 +14,7 @@ spec:
   sources:
     - repoURL: cr.agentgateway.dev/charts
       chart: agentgateway-crds
-      targetRevision: v1.3.1
+      targetRevision: v2.2.1
       helm:
         releaseName: agentgateway-crds
   destination:
