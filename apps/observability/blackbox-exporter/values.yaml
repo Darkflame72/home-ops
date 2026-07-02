@@ -1,0 +1,15 @@
+---
+# No yaml-language-server schema available: prometheus-community/prometheus-blackbox-exporter
+fullnameOverride: blackbox-exporter
+
+config:
+  modules:
+    tcp_connect:
+      prober: tcp
+      timeout: 5s
+      tcp:
+        preferred_ip_protocol: ip4
+
+# OTel handles scraping — no ServiceMonitor needed
+serviceMonitor:
+  enabled: false
