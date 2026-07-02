@@ -17,6 +17,7 @@ cgroup:
 # devices: eno+ eth+
 dashboards:
   enabled: true
+  namespace: observability
 endpointRoutes:
   enabled: true
 envoy:

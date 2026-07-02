@@ -1,6 +1,6 @@
 # No yaml-language-server schema available: kyverno/kyverno (no values.schema.json)
 reportsServer:
-  enabled: true
+  enabled: false
 
 grafana:
   enabled: true
