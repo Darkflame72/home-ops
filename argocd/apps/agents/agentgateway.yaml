@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: cr.agentgateway.dev/charts
       chart: agentgateway
-      targetRevision: v1.3.1
+      targetRevision: v2.2.1
       helm:
         releaseName: agentgateway
         valueFiles:
