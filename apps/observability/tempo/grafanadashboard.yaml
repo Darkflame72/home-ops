@@ -1,0 +1,19 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/grafana.integreatly.org/grafanadashboard_v1beta1.json
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: tempo-overview
+  namespace: observability
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  grafanaCom:
+    id: 17489
+    revision: 2
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Mimir"
+    - inputName: "DS_TEMPO"
+      datasourceName: "Tempo"
