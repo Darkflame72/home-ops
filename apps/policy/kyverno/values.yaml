@@ -1,6 +1,9 @@
 # No yaml-language-server schema available: kyverno/kyverno (no values.schema.json)
 reportsServer:
-  enabled: false
+  enabled: true
+
+grafana:
+  enabled: true
 
 admissionController:
   rbac:
