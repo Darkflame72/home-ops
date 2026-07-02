@@ -13,6 +13,7 @@ nodeExporter:
 defaultCRConfig:
   config:
     exporters:
+      debug: {}
       otlp_http/mimir:
         endpoint: http://mimir-gateway.observability.svc.cluster.local/otlp
         tls:
@@ -25,14 +26,6 @@ defaultCRConfig:
         endpoint: tempo.observability.svc.cluster.local:4317
         tls:
           insecure: true
-    service:
-      pipelines:
-        traces:
-          exporters: [otlp/tempo, debug]
-        metrics:
-          exporters: [otlp_http/mimir, debug]
-        logs:
-          exporters: [otlp_http/loki, debug]
 
 # Single daemonset collector handles all signals.
 # clusterMetrics and kubernetesEvents use the leader election extension to run only on one node.
@@ -40,6 +33,12 @@ collectors:
   cluster:
     enabled: true
     mode: deployment
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
     config:
       receivers:
         prometheus:
@@ -71,6 +70,28 @@ collectors:
                     target_label: instance
                   - target_label: __address__
                     replacement: blackbox-exporter.observability.svc.cluster.local:9115
+              - job_name: kube-state-metrics
+                static_configs:
+                  - targets:
+                    - opentelemetry-kube-stack-kube-state-metrics.observability:8080
+              - job_name: coredns
+                kubernetes_sd_configs:
+                  - role: pod
+                    namespaces:
+                      names: [kube-system]
+                relabel_configs:
+                  - source_labels: [__meta_kubernetes_pod_label_k8s_app]
+                    action: keep
+                    regex: kube-dns
+                  - source_labels: [__meta_kubernetes_pod_ip]
+                    replacement: $$1:9153
+                    target_label: __address__
+                  - target_label: job
+                    replacement: coredns
+                  - source_labels: [__meta_kubernetes_namespace]
+                    target_label: namespace
+                  - source_labels: [__meta_kubernetes_pod_name]
+                    target_label: pod
               - job_name: kubernetes-pods
                 kubernetes_sd_configs:
                   - role: pod
@@ -85,7 +106,7 @@ collectors:
                   - source_labels: [__meta_kubernetes_pod_ip, __meta_kubernetes_pod_annotation_prometheus_io_port]
                     action: replace
                     regex: (.+);(\d+)
-                    replacement: ${1}:${2}
+                    replacement: $$1:$$2
                     target_label: __address__
                   - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_label_app_kubernetes_io_name]
                     separator: /
@@ -96,11 +117,20 @@ collectors:
                     target_label: pod
                   - source_labels: [__meta_kubernetes_pod_node_name]
                     target_label: node
+      processors:
+        memory_limiter:
+          check_interval: 1s
+          limit_percentage: 75
+          spike_limit_percentage: 15
+        batch:
+          send_batch_size: 1000
+          timeout: 1s
       service:
         pipelines:
           metrics:
             receivers: [prometheus]
-            exporters: [otlp_http/mimir]
+            processors: [memory_limiter, batch]
+            exporters: [otlp_http/mimir, debug]
   daemon:
     enabled: true
     mode: daemonset

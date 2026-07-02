@@ -39,8 +39,8 @@ mimir:
       s3:
         bucket_name: ${BUCKET_NAME}
     limits:
-      ingestion_rate: 30000
-      ingestion_burst_size: 50000
+      ingestion_rate: 150000
+      ingestion_burst_size: 300000
     ingest_storage:
       enabled: false
 
