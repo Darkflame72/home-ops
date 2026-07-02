@@ -62,5 +62,9 @@ chunksCache:
 resultsCache:
   enabled: false
 
+monitoring:
+  dashboards:
+    enabled: true
+
 minio:
   enabled: false
