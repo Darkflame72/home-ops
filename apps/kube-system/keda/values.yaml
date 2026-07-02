@@ -1,0 +1,11 @@
+---
+# No yaml-language-server schema available: kedacore/keda
+operator:
+  replicaCount: 1
+
+metricsServer:
+  replicaCount: 1
+
+webhooks:
+  enabled: true
+  replicaCount: 1
