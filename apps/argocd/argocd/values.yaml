@@ -7,6 +7,10 @@ redis-ha:
 
 controller:
   replicas: 1
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 
 configs:
   params:
@@ -79,6 +83,10 @@ server:
     requests:
       cpu: 50m
       memory: 64Mi
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 
 repoServer:
   autoscaling:
@@ -88,9 +96,17 @@ repoServer:
     requests:
       cpu: 100m
       memory: 256Mi
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 
 applicationSet:
   replicas: 2
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 
 notifications:
   enabled: true
