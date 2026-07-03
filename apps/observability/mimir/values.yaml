@@ -41,6 +41,7 @@ mimir:
     limits:
       ingestion_rate: 150000
       ingestion_burst_size: 300000
+      max_global_series_per_user: 10000000
     ingest_storage:
       enabled: false
 
@@ -74,6 +75,8 @@ ingester:
   replicas: 1
   zoneAwareReplication:
     enabled: false
+  persistentVolume:
+    size: 10Gi
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"

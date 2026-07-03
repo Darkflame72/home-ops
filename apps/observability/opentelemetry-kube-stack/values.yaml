@@ -32,13 +32,22 @@ defaultCRConfig:
 collectors:
   cluster:
     enabled: true
-    mode: deployment
+    mode: statefulset
+    replicas: 1
     resources:
       limits:
         memory: 512Mi
       requests:
         cpu: 100m
         memory: 256Mi
+    targetAllocator:
+      enabled: true
+      allocationStrategy: consistent-hashing
+      prometheusCR:
+        enabled: true
+        scrapeInterval: 30s
+        serviceMonitorSelector: {}
+        podMonitorSelector: {}
     config:
       receivers:
         prometheus:
@@ -70,10 +79,6 @@ collectors:
                     target_label: instance
                   - target_label: __address__
                     replacement: blackbox-exporter.observability.svc.cluster.local:9115
-              - job_name: kube-state-metrics
-                static_configs:
-                  - targets:
-                    - opentelemetry-kube-stack-kube-state-metrics.observability:8080
               - job_name: coredns
                 kubernetes_sd_configs:
                   - role: pod
@@ -117,6 +122,10 @@ collectors:
                     target_label: pod
                   - source_labels: [__meta_kubernetes_pod_node_name]
                     target_label: node
+          target_allocator:
+            endpoint: http://opentelemetry-kube-stack-collector-targetallocator:80
+            interval: 30s
+            collector_id: ${POD_NAME}
       processors:
         memory_limiter:
           check_interval: 1s
