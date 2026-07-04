@@ -131,6 +131,11 @@ collectors:
           check_interval: 1s
           limit_percentage: 75
           spike_limit_percentage: 15
+        transform/cluster_label:
+          metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["cluster"], "home")
         batch:
           send_batch_size: 1000
           timeout: 1s
@@ -138,7 +143,7 @@ collectors:
         pipelines:
           metrics:
             receivers: [prometheus]
-            processors: [memory_limiter, batch]
+            processors: [memory_limiter, transform/cluster_label, batch]
             exporters: [otlp_http/mimir, debug]
   daemon:
     enabled: true
