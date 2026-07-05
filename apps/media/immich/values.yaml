@@ -5,6 +5,10 @@ immich:
   persistence:
     library:
       existingClaim: immich
+  configuration:
+    backup:
+      database:
+        enabled: false
 controllers:
   main:
     containers:
