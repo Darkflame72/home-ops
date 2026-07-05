@@ -97,6 +97,25 @@ collectors:
                     target_label: namespace
                   - source_labels: [__meta_kubernetes_pod_name]
                     target_label: pod
+              - job_name: kubernetes-cadvisor
+                kubernetes_sd_configs:
+                  - role: node
+                scheme: https
+                tls_config:
+                  insecure_skip_verify: true
+                bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+                metrics_path: /metrics/cadvisor
+                relabel_configs:
+                  - action: labelmap
+                    regex: __meta_kubernetes_node_label_(.+)
+                  - source_labels: [__address__]
+                    regex: '(.*):.*'
+                    replacement: $$1:10250
+                    target_label: __address__
+                  - target_label: job
+                    replacement: kubernetes-cadvisor
+                  - source_labels: [__meta_kubernetes_node_name]
+                    target_label: node
               - job_name: kubernetes-pods
                 kubernetes_sd_configs:
                   - role: pod
