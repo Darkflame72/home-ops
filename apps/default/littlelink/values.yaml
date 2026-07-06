@@ -22,10 +22,9 @@ controllers:
           NAME: Leon Bowie
           THEME: Dark
           BIO: "Software Developer / Hacker / Educator"
-          BUTTON_ORDER: Website,FORGEJO,MATRIX,MASTODON,GITHUB,TT
+          BUTTON_ORDER: Website,FORGEJO,MASTODON,GITHUB,TT
           GITHUB: https://github.com/Darkflame72
           FORGEJO: https://git.darkflame.dev
-          MATRIX: https://matrix.to/#/@darkflame72:darkflame.dev
           MASTODON: https://mastodon.darkflame.dev/@darkflame
           EMAIL: leon@darkflame.dev
           EMAIL_TEXT: Email me!
