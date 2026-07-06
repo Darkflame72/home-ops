@@ -1,5 +1,4 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/kubernetes-sigs/descheduler/master/charts/descheduler/values.schema.json
 kind: CronJob
 schedule: "*/20 * * * *"
 
