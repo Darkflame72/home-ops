@@ -1,0 +1,33 @@
+---
+kind: CronJob
+schedule: "*/20 * * * *"
+
+service:
+  enabled: true
+
+serviceMonitor:
+  enabled: true
+
+deschedulerPolicy:
+  profiles:
+    - name: default
+      pluginConfig:
+        - name: DefaultEvictor
+          args:
+            ignorePvcPods: true
+            evictLocalStoragePods: false
+            evictSystemCriticalPods: false
+      plugins:
+        balance:
+          enabled:
+            - RemoveDuplicates
+        deschedule:
+          enabled:
+            - RemovePodsViolatingNodeAffinity
+            - RemovePodsViolatingInterPodAntiAffinity
+            - RemovePodsViolatingTopologySpreadConstraints
+            - RemoveFailedPods
+            - RemovePodsHavingTooManyRestarts
+        filter:
+          enabled:
+            - DefaultEvictor
