@@ -1,0 +1,32 @@
+# No yaml-language-server schema available: mogenius/renovate-operator (no schema published)
+crd:
+  install: true
+  mode: template
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+route:
+  enabled: true
+  hostnames:
+    - renovate.darkflame.dev
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-internal
+      namespace: network
+      sectionName: https
+auth:
+  # Only members of this Authentik group can see/manage RenovateJobs in the UI (secure by default).
+  defaultAllowedGroups: "authentik Admins"
+  oidc:
+    enabled: true
+    issuerUrl: "https://auth.darkflame.dev/application/o/renovate/"
+    # Set after creating the OAuth2 provider/application in Authentik (not secret, safe to commit).
+    clientId: "5QCqRHGc0shjhX8raHtX2kyXajIOYStF7ST943j3"
+    existingSecret: renovate-secret
+    secretKey: client-secret
+    # TLS terminates at the envoy-internal Gateway listener, not at an ingress, so this must be set explicitly.
+    redirectScheme: https

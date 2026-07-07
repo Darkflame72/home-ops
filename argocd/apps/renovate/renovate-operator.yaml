@@ -1,0 +1,44 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: renovate-operator
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: '4'
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/renovate/renovate-operator
+      targetRevision: main
+      ref: repo
+    - repoURL: ghcr.io/mogenius/helm-charts
+      chart: renovate-operator
+      targetRevision: 4.14.1
+      helm:
+        releaseName: renovate-operator
+        valueFiles:
+          - $repo/apps/renovate/renovate-operator/values.yaml
+  destination:
+    name: in-cluster
+    namespace: renovate
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true

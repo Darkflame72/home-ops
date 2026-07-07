@@ -1,0 +1,13 @@
+# No yaml-language-server schema available: mogenius/renovate-operator (no schema published)
+apiVersion: renovate-operator.mogenius.com/v1alpha1
+kind: RenovateJob
+metadata:
+  name: forgejo
+spec:
+  schedule: "0 3 * * *"
+  image: renovate/renovate:43.255.0
+  secretRef: renovate-secret
+  parallelism: 1
+  provider:
+    name: forgejo
+    endpoint: "https://git.darkflame.dev/api/v1"
