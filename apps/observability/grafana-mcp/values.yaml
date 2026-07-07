@@ -7,6 +7,8 @@ controllers:
         image:
           repository: grafana/mcp-grafana
           tag: latest@sha256:d4e0044c0efbbd00a004871a8e679f990b57a7fa21b69a51357737ddbe9d57af
+        args:
+          - "--allowed-hosts=*"
         env:
           GRAFANA_URL: "http://grafana-service.observability.svc.cluster.local:3000"
           GRAFANA_SERVICE_ACCOUNT_TOKEN:

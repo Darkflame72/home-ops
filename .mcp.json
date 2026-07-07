@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "homelab": {
+      "type": "http",
+      "url": "https://agentgateway.darkflame.dev/mcp"
+    }
+  }
+}
