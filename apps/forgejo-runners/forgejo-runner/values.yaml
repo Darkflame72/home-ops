@@ -1,0 +1,43 @@
+# No yaml-language-server schema available: wrenix/helm-charts/forgejo-runner (codeberg, no schema published)
+
+# Required by the chart's guard rail for this release line.
+knownLastVersion: true
+
+replicaCount: 1
+
+runner:
+  config:
+    existingInitSecret: forgejo-runner-init
+    file:
+      log:
+        level: "info"
+        job_level: info
+      runner:
+        capacity: 1
+        timeout: 3h
+        # act-compatible images so unmodified `runs-on: ubuntu-latest` style
+        # workflows work unchanged against this runner.
+        labels:
+          - "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
+          - "ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04"
+          - "ubuntu-20.04:docker://catthehacker/ubuntu:act-20.04"
+      cache:
+        enabled: true
+
+securityContext:
+  privileged: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+dind:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 2Gi
