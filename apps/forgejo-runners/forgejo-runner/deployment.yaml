@@ -18,6 +18,7 @@ spec:
           image: code.forgejo.org/forgejo/runner:12.7.3
           securityContext:
             privileged: true
+            runAsUser: 0
           command:
             - "sh"
             - "-c"
