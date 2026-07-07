@@ -16,6 +16,8 @@ spec:
       containers:
         - name: runner
           image: code.forgejo.org/forgejo/runner:12.7.3
+          securityContext:
+            privileged: true
           command:
             - "sh"
             - "-c"
