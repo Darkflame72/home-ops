@@ -3,7 +3,7 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: immich
+  name: immich-v2
   namespace: media
 spec:
   instances: 3
@@ -15,27 +15,28 @@ spec:
     size: 25Gi
     storageClass: openebs-hostpath
 
-  managed:
-    roles:
-    - name: immich
-      connectionLimit: -1
-      ensure: present
-      inherit: true
-      superuser: true
-      login: true
-
   bootstrap:
-    initdb:
+    recovery:
+      source: immich-backup
       database: immich
-      encoding: UTF8
-      localeCType: C
-      localeCollate: C
       owner: immich
-      secret:
-        name: immich-db-url
-      postInitSQL:
-        - CREATE EXTENSION IF NOT EXISTS cube CASCADE;
-        - CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;
+
+  externalClusters:
+    - name: immich-backup
+      barmanObjectStore:
+        serverName: immich
+        destinationPath: s3://cnpg/immich
+        endpointURL: http://10.0.60.15:30188
+        s3Credentials:
+          accessKeyId:
+            name: cnpg-backup-secret
+            key: ACCESS_KEY_ID
+          secretAccessKey:
+            name: cnpg-backup-secret
+            key: ACCESS_SECRET_KEY
+          region:
+            name: cnpg-backup-secret
+            key: REGION
 
   postgresql:
     shared_preload_libraries:
@@ -50,7 +51,7 @@ spec:
 
   backup:
     barmanObjectStore:
-      destinationPath: s3://cnpg/immich
+      destinationPath: s3://cnpg/immich-v2
       endpointURL: http://10.0.60.15:30188
       s3Credentials:
         accessKeyId:

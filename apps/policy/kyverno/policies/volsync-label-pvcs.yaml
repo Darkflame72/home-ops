@@ -15,24 +15,6 @@ spec:
   admission: true
   emitWarning: false
   rules:
-  - name: label-matrix-synapse-media
-    match:
-      any:
-      - resources:
-          kinds: [PersistentVolumeClaim]
-          names: [matrix-synapse-media]
-          namespaces: [comms]
-    mutate:
-      patchStrategicMerge:
-        metadata:
-          labels:
-            volsync.io/backup: "true"
-          annotations:
-            volsync.io/schedule: "0 2 * * *"
-            volsync.io/cache-capacity: "10Gi"
-            volsync.io/run-as-user: "666"
-            volsync.io/run-as-group: "666"
-            volsync.io/fs-group: "666"
   - name: label-forgejo
     match:
       any:

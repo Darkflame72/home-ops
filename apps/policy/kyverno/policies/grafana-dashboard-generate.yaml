@@ -30,7 +30,7 @@ spec:
         kind: GrafanaDashboard
         name: "{{request.object.metadata.name}}"
         namespace: "{{request.object.metadata.namespace}}"
-        synchronize: true
+        synchronize: false
         data:
           spec:
             allowCrossNamespaceImport: true

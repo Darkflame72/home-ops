@@ -1,7 +1,7 @@
 # No yaml-language-server schema available: immich-app/immich-charts (no values.schema.json)
 immich:
   metrics:
-    enabled: "true"
+    enabled: true
   persistence:
     library:
       existingClaim: immich
@@ -23,8 +23,8 @@ controllers:
           DB_URL:
             valueFrom:
               secretKeyRef:
-                name: immich-db-url
-                key: url
+                name: immich-v2-app
+                key: uri
 machine-learning:
   controllers:
     main:
@@ -34,10 +34,12 @@ machine-learning:
       type: persistentVolumeClaim
       accessMode: ReadWriteOnce
       storageClass: "ceph-block"
+      size: 10Gi
     data:
       enabled: true
       existingClaim: immich-nfs
-      readOnly: true
+      globalMounts:
+        - readOnly: true
 server:
   controllers:
     main:
@@ -80,7 +82,6 @@ server:
     data:
       enabled: true
       existingClaim: immich-nfs
-      readOnly: true
   route:
     main:
       enabled: true
