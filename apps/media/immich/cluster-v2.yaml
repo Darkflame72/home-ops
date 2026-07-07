@@ -24,6 +24,7 @@ spec:
   externalClusters:
     - name: immich-backup
       barmanObjectStore:
+        serverName: immich
         destinationPath: s3://cnpg/immich
         endpointURL: http://10.0.60.15:30188
         s3Credentials:
