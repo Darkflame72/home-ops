@@ -1,0 +1,73 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/cluster_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: immich-v2
+  namespace: media
+spec:
+  instances: 1
+  primaryUpdateStrategy: unsupervised
+
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16-0.4.2
+
+  storage:
+    size: 25Gi
+    storageClass: openebs-hostpath
+
+  bootstrap:
+    recovery:
+      source: immich-backup
+      database: immich
+      owner: immich
+
+  externalClusters:
+    - name: immich-backup
+      barmanObjectStore:
+        destinationPath: s3://cnpg/immich
+        endpointURL: http://10.0.60.15:30188
+        s3Credentials:
+          accessKeyId:
+            name: cnpg-backup-secret
+            key: ACCESS_KEY_ID
+          secretAccessKey:
+            name: cnpg-backup-secret
+            key: ACCESS_SECRET_KEY
+          region:
+            name: cnpg-backup-secret
+            key: REGION
+
+  replica:
+    enabled: true
+    source: immich-backup
+
+  postgresql:
+    shared_preload_libraries:
+    - vchord.so
+
+  env:
+  - name: AWS_DEFAULT_REGION
+    valueFrom:
+      secretKeyRef:
+        name: cnpg-backup-secret
+        key: REGION
+
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://cnpg/immich-v2
+      endpointURL: http://10.0.60.15:30188
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-backup-secret
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-backup-secret
+          key: ACCESS_SECRET_KEY
+        region:
+          name: cnpg-backup-secret
+          key: REGION
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"
