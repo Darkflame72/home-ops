@@ -38,10 +38,6 @@ spec:
             name: cnpg-backup-secret
             key: REGION
 
-  replica:
-    enabled: true
-    source: immich-backup
-
   postgresql:
     shared_preload_libraries:
     - vchord.so
