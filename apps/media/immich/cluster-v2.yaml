@@ -6,7 +6,7 @@ metadata:
   name: immich-v2
   namespace: media
 spec:
-  instances: 1
+  instances: 3
   primaryUpdateStrategy: unsupervised
 
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16-0.4.2

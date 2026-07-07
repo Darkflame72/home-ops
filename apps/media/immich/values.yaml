@@ -23,12 +23,11 @@ controllers:
           DB_URL:
             valueFrom:
               secretKeyRef:
-                name: immich-db-url
-                key: url
+                name: immich-v2-app
+                key: uri
 machine-learning:
   controllers:
     main:
-      replicas: 0
       strategy: Recreate
   persistence:
     cache:
@@ -44,7 +43,6 @@ machine-learning:
 server:
   controllers:
     main:
-      replicas: 0
       strategy: Recreate
   probes:
     liveness:
