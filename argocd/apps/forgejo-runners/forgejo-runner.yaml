@@ -10,18 +10,10 @@ metadata:
     argocd.argoproj.io/sync-wave: '4'
 spec:
   project: default
-  sources:
-    - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/forgejo-runners/forgejo-runner
-      targetRevision: main
-      ref: repo
-    - repoURL: codeberg.org/wrenix/helm-charts
-      chart: forgejo-runner
-      targetRevision: 0.7.6
-      helm:
-        releaseName: forgejo-runner
-        valueFiles:
-          - $repo/apps/forgejo-runners/forgejo-runner/values.yaml
+  source:
+    repoURL: "https://github.com/Darkflame72/home-ops.git"
+    path: apps/forgejo-runners/forgejo-runner
+    targetRevision: main
   destination:
     name: in-cluster
     namespace: forgejo-runners
