@@ -73,6 +73,8 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: forgejo
+  labels:
+    home-operations.com/pihole: ignore
 spec:
   hostnames:
     - git.darkflame.dev
@@ -89,6 +91,32 @@ spec:
           name: anubis-forgejo
           namespace: default
           port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: forgejo-internal
+spec:
+  hostnames:
+    - git.darkflame.dev
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-internal
+      namespace: network
+      sectionName: https
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: forgejo-http
+          namespace: default
+          port: 3000
           weight: 1
       matches:
         - path:
