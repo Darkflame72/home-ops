@@ -23,18 +23,14 @@ spec:
             - "sh"
             - "-c"
             - |
-              while ! nc -z 127.0.0.1 2376 </dev/null; do
+              while [ ! -S /var/run/docker.sock ]; do
                 echo 'waiting for docker daemon...';
                 sleep 5;
               done
               /bin/forgejo-runner --config /etc/runner/config.yaml daemon
           env:
             - name: DOCKER_HOST
-              value: tcp://127.0.0.1:2376
-            - name: DOCKER_CERT_PATH
-              value: /certs/client
-            - name: DOCKER_TLS_VERIFY
-              value: "1"
+              value: unix:///var/run/docker.sock
           resources:
             requests:
               cpu: 100m
@@ -44,17 +40,12 @@ spec:
           volumeMounts:
             - name: runner-configfile
               mountPath: /etc/runner
-            - name: docker-certs
-              mountPath: /certs
             - name: docker-sock
               mountPath: /var/run
         - name: dind
           image: docker:29.3.1-dind
           securityContext:
             privileged: true
-          env:
-            - name: DOCKER_TLS_CERTDIR
-              value: /certs
           resources:
             requests:
               cpu: 250m
@@ -62,13 +53,9 @@ spec:
             limits:
               memory: 2Gi
           volumeMounts:
-            - name: docker-certs
-              mountPath: /certs
             - name: docker-sock
               mountPath: /var/run
       volumes:
-        - name: docker-certs
-          emptyDir: {}
         - name: docker-sock
           emptyDir: {}
         - name: runner-configfile
