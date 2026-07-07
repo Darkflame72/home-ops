@@ -18,7 +18,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/home-operations/charts-mirror
       chart: ceph-csi-drivers
-      targetRevision: 1.0.3
+      targetRevision: 1.0.4
       helm:
         releaseName: ceph-csi-drivers
         valueFiles:
