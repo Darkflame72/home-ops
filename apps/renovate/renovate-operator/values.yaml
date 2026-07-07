@@ -28,5 +28,7 @@ auth:
     clientId: "5QCqRHGc0shjhX8raHtX2kyXajIOYStF7ST943j3"
     existingSecret: renovate-secret
     secretKey: client-secret
-    # TLS terminates at the envoy-internal Gateway listener, not at an ingress, so this must be set explicitly.
-    redirectScheme: https
+    # Set explicitly: the pinned chart version (4.14.1) only derives scheme from ingress.tls,
+    # which is unset since we expose via a Gateway API HTTPRoute (envoy-internal), not an ingress.
+    # redirectScheme would fix this on a newer chart release but isn't supported yet in 4.14.1.
+    redirectUrl: "https://renovate.darkflame.dev/auth/callback"
