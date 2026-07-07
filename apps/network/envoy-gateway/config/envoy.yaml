@@ -205,7 +205,13 @@ metadata:
 spec:
   clientIPDetection:
     xForwardedFor:
-      numTrustedHops: 1
+      # Trust XFF only when the immediate connection comes from inside the
+      # cluster (i.e. the cloudflare-tunnel pod). Direct LAN connections to
+      # the Gateway don't pass through cloudflared, so numTrustedHops: 1
+      # broke client IP detection for internal-network requests (Anubis'
+      # "X-Real-Ip header is not set" error on git.darkflame.dev).
+      trustedCIDRs:
+        - 10.42.0.0/16
   connection:
     bufferLimit: 8Mi
     maxAcceptPerSocketEvent: 0
