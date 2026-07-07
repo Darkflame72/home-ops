@@ -31,8 +31,6 @@ spec:
               value: ":9090"
             - name: "SERVE_ROBOTS_TXT"
               value: "true"
-            - name: "XFF_STRIP_PRIVATE"
-              value: "false"
             - name: "TARGET"
               value: "http://forgejo-http.default.svc.cluster.local:3000"
             - name: "OG_PASSTHROUGH"
@@ -91,6 +89,32 @@ spec:
           name: anubis-forgejo
           namespace: default
           port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: forgejo-internal
+spec:
+  hostnames:
+    - git.darkflame.dev
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-internal
+      namespace: network
+      sectionName: https
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: forgejo-http
+          namespace: default
+          port: 3000
           weight: 1
       matches:
         - path:
