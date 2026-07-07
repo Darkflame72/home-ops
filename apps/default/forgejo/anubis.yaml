@@ -31,6 +31,8 @@ spec:
               value: ":9090"
             - name: "SERVE_ROBOTS_TXT"
               value: "true"
+            - name: "CUSTOM_REAL_IP_HEADER"
+              value: "X-Envoy-External-Address"
             - name: "TARGET"
               value: "http://forgejo-http.default.svc.cluster.local:3000"
             - name: "OG_PASSTHROUGH"
