@@ -49,10 +49,10 @@ jobs:
 
             REVISION_FLAGS=()
             if [[ "$SOURCE_COUNT" -gt 1 ]]; then
-              while IFS= read -r rev; do
-                REVISION_FLAGS+=(--revisions "$rev")
+              while IFS=$'\t' read -r rev pos; do
+                REVISION_FLAGS+=(--revisions "$rev" --source-positions "$pos")
               done < <(echo "$APP_JSON" | jq -r --arg sha "$PR_SHA" \
-                '.spec.sources[] | if (.repoURL | test("github\\.com")) then $sha else .targetRevision end')
+                '.spec.sources | to_entries[] | [(if (.value.repoURL | test("github\\.com")) then $sha else .value.targetRevision end), (.key + 1)] | @tsv')
             else
               REVISION_FLAGS=(--revision "$PR_SHA")
             fi

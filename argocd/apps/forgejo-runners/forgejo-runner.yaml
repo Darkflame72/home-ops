@@ -1,0 +1,44 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: forgejo-runner
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: '4'
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/forgejo-runners/forgejo-runner
+      targetRevision: main
+      ref: repo
+    - repoURL: codeberg.org/wrenix/helm-charts
+      chart: forgejo-runner
+      targetRevision: 0.7.6
+      helm:
+        releaseName: forgejo-runner
+        valueFiles:
+          - $repo/apps/forgejo-runners/forgejo-runner/values.yaml
+  destination:
+    name: in-cluster
+    namespace: forgejo-runners
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true

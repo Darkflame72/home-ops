@@ -18,6 +18,8 @@ gitea:
       ROOT_URL: "https://git.darkflame.dev/"
       DISABLE_SSH: true
       # SECRET_KEY will be set from external secret
+    actions:
+      ENABLED: true
     service:
       ALLOW_ONLY_EXTERNAL_REGISTRATION: true
       DISABLE_REGISTRATION: false
