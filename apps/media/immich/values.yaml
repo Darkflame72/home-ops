@@ -82,8 +82,6 @@ server:
     data:
       enabled: true
       existingClaim: immich-nfs
-      globalMounts:
-        - readOnly: true
   route:
     main:
       enabled: true
