@@ -6,3 +6,4 @@ resources:
   - ./pvc.yaml
   - ./cluster-v2.yaml
   - ./scheduled-backup.yaml
+  - ./scaledobject.yaml
