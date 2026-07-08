@@ -35,6 +35,14 @@ admissionController:
             - update
             - watch
         - apiGroups:
+            - postgresql.cnpg.io
+          resources:
+            - clusters
+          verbs:
+            - get
+            - list
+            - watch
+        - apiGroups:
             - grafana.integreatly.org
           resources:
             - grafanadashboards
@@ -81,6 +89,14 @@ backgroundController:
             - list
             - patch
             - update
+            - watch
+        - apiGroups:
+            - postgresql.cnpg.io
+          resources:
+            - clusters
+          verbs:
+            - get
+            - list
             - watch
         - apiGroups:
             - grafana.integreatly.org
