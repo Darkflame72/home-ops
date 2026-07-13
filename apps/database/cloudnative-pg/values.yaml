@@ -1,3 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cloudnative-pg/charts/main/charts/cloudnative-pg/values.schema.json
 crds:
   create: true
+monitoring:
+  podMonitorEnabled: true
