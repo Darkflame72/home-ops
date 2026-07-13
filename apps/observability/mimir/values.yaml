@@ -77,11 +77,18 @@ alertmanager:
         - receiver: "null"
           matchers:
             - alertname = "Watchdog"
+        - receiver: discord-critical
+          matchers:
+            - severity = "critical"
     receivers:
       - name: "null"
       - name: discord
         discord_configs:
           - webhook_url_file: /etc/alertmanager/secrets/discord-webhook
+      - name: discord-critical
+        discord_configs:
+          - webhook_url_file: /etc/alertmanager/secrets/discord-webhook
+            content: "<@456217109236809748>"
 
 compactor:
   replicas: 1
