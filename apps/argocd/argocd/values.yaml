@@ -64,9 +64,11 @@ server:
     hostnames:
       - "cd.darkflame.dev"
     annotations:
-      gatus.home-operations.com/endpoint: |-
-        conditions:
-          - "len([BODY]) > 0"
+      # cd.darkflame.dev is dual-homed (external webhook route), so the guarded
+      # DNS check inherited from envoy-internal can't apply, and the DNS-resolves
+      # variant used here before flaked on 1.1.1.1 blips. A static HTTP endpoint
+      # is defined in apps/observability/gatus/config/config.yaml instead.
+      gatus.home-operations.com/enabled: "false"
     rules:
       - backendRefs:
           - name: argocd-server

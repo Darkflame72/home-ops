@@ -14,10 +14,13 @@ endpoints:
     alerts: &alerts
       - type: discord
 
+  # ICMP intervals are deliberately co-prime: when two ICMP checks fire in
+  # the same second, replies get lost through cilium masquerade (identifier
+  # collision) and show up as false "down" results.
   - name: Google
     group: connectivity
     url: icmp://8.8.8.8
-    interval: 1m
+    interval: 67s
     conditions:
       - "[CONNECTED] == true"
     alerts: *alerts
@@ -25,7 +28,7 @@ endpoints:
   - name: Quad9
     group: connectivity
     url: icmp://9.9.9.9
-    interval: 1m
+    interval: 73s
     conditions:
       - "[CONNECTED] == true"
     alerts: *alerts
@@ -33,17 +36,28 @@ endpoints:
   - name: TrueNAS
     group: internal
     url: icmp://10.0.60.15
-    interval: 5m
+    interval: 5m13s
     conditions:
       - "[CONNECTED] == true"
     alerts: *alerts
 
-  # git.darkflame.dev is dual-homed, so the sidecar's guarded DNS check can't
-  # monitor the internal route (the hostname legitimately resolves publicly).
-  # Resolve via pihole to hit envoy-internal directly, bypassing anubis.
+  # These hostnames are dual-homed, so the sidecar's guarded DNS check can't
+  # monitor the internal route (they legitimately resolve publicly). Resolve
+  # via pihole to probe the envoy-internal path directly (for forgejo this
+  # also bypasses anubis).
   - name: forgejo
     group: internal
     url: https://git.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  - name: argocd
+    group: internal
+    url: https://cd.darkflame.dev
     interval: 1m
     client:
       dns-resolver: tcp://192.168.1.2:53
