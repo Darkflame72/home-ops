@@ -1,0 +1,64 @@
+# No yaml-language-server schema available: home-operations/kromgo
+fullnameOverride: kromgo
+
+config:
+  prometheus: http://mimir-gateway.observability.svc.cluster.local/prometheus
+
+  badges:
+    - id: cluster_birth_age
+      title: Age
+      query: round(time() - min(kube_node_created))
+      valueExpr: humanizeDurationDays(result)
+      icon: mdi:cake-variant-outline
+
+    - id: cluster_uptime_age
+      title: Uptime
+      query: round(avg(node_time_seconds - node_boot_time_seconds))
+      valueExpr: humanizeDurationDays(result)
+      icon: mdi:timer-outline
+
+    - id: cluster_node_count
+      title: Nodes
+      query: count(kube_node_info)
+      icon: mdi:server-outline
+
+    - id: cluster_cpu_usage
+      title: CPU
+      query: round(100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))), 0.1)
+      valueExpr: string(result) + "%"
+      colorExpr: 'colorScale(result, [50.0, 80.0], ["green", "orange", "red"])'
+      icon: mdi:cpu-64-bit
+
+    - id: cluster_memory_usage
+      title: Memory
+      query: round(100 * (1 - avg(node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)), 0.1)
+      valueExpr: string(result) + "%"
+      colorExpr: 'colorScale(result, [50.0, 80.0], ["green", "orange", "red"])'
+      icon: mdi:memory
+
+    - id: cluster_storage_health
+      title: Ceph
+      query: max(ceph_health_status)
+      valueExpr: 'result == 0.0 ? "Healthy" : result == 1.0 ? "Warning" : "Critical"'
+      colorExpr: 'result == 0.0 ? "green" : result == 1.0 ? "orange" : "red"'
+      icon: mdi:database-outline
+
+    - id: cluster_gitops_health
+      title: ArgoCD
+      query: round(count(argocd_app_info{health_status="Healthy", sync_status="Synced"}) / count(argocd_app_info) * 100)
+      valueExpr: string(int(result)) + "%"
+      colorExpr: 'result == 100.0 ? "green" : result >= 80.0 ? "orange" : "red"'
+      icon: mdi:sync
+
+httpRoute:
+  enabled: true
+  parentRefs:
+    - name: envoy-external
+      namespace: network
+      sectionName: https
+  hostnames:
+    - kromgo.darkflame.dev
+
+monitoring:
+  serviceMonitor:
+    enabled: true

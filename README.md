@@ -10,6 +10,18 @@
 
 </div>
 
+<div align="center">
+
+[![Age](https://kromgo.darkflame.dev/badges/cluster_birth_age)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Uptime](https://kromgo.darkflame.dev/badges/cluster_uptime_age)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Nodes](https://kromgo.darkflame.dev/badges/cluster_node_count)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![CPU](https://kromgo.darkflame.dev/badges/cluster_cpu_usage)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Memory](https://kromgo.darkflame.dev/badges/cluster_memory_usage)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Ceph](https://kromgo.darkflame.dev/badges/cluster_storage_health)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![ArgoCD](https://kromgo.darkflame.dev/badges/cluster_gitops_health)](https://github.com/home-operations/kromgo)
+
+</div>
+
 ### <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4a1/512.gif" alt="💡" width="16" height="16"> Core Components
 
 Core components that form the foundation of the cluster:
