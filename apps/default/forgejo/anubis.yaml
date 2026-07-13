@@ -103,15 +103,11 @@ metadata:
   name: forgejo-internal
   annotations:
     # git.darkflame.dev is also public (external route via anubis), so the
-    # inherited guarded DNS check would always fail. Instead do a real HTTP
-    # check via the internal gateway (bypassing anubis) by resolving through
-    # pihole, which holds the internal record for this route.
-    gatus.home-operations.com/endpoint: |-
-      guarded: false
-      client:
-        dns-resolver: tcp://192.168.1.2:53
-      conditions:
-        - "[STATUS] == 200"
+    # guarded DNS check inherited from envoy-internal would always fail, and
+    # the sidecar can't opt a single route out of guarded mode (it only checks
+    # key presence). A static HTTP endpoint that resolves via pihole to probe
+    # this route is defined in apps/observability/gatus/config/config.yaml.
+    gatus.home-operations.com/enabled: "false"
 spec:
   hostnames:
     - git.darkflame.dev

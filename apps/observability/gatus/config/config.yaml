@@ -38,6 +38,19 @@ endpoints:
       - "[CONNECTED] == true"
     alerts: *alerts
 
+  # git.darkflame.dev is dual-homed, so the sidecar's guarded DNS check can't
+  # monitor the internal route (the hostname legitimately resolves publicly).
+  # Resolve via pihole to hit envoy-internal directly, bypassing anubis.
+  - name: forgejo
+    group: internal
+    url: https://git.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
 metrics: true
 
 storage:
