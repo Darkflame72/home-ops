@@ -1,4 +1,4 @@
-# No yaml-language-server schema available: mogenius/renovate-operator (no schema published)
+# yaml-language-server: $schema=../../../.github/schemas/renovate-operator.mogenius.com/renovatejob_v1alpha1.json
 apiVersion: renovate-operator.mogenius.com/v1alpha1
 kind: RenovateJob
 metadata:

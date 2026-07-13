@@ -30,6 +30,7 @@ jobs:
                 -ignore-missing-schemas \
                 -kubernetes-version "${KUBERNETES_VERSION#v}" \
                 -schema-location default \
+                -schema-location '.github/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
                 -schema-location 'https://kubernetes-schemas.pages.dev/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
                 -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
                 -output pretty
