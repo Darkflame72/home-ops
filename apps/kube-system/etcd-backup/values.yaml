@@ -1,0 +1,57 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
+controllers:
+  etcd-backup:
+    type: cronjob
+    cronjob:
+      # Every 6 hours at 10 minutes past the hour
+      schedule: "10 */6 * * *"
+      concurrencyPolicy: Forbid
+      successfulJobsHistory: 1
+      failedJobsHistory: 1
+    pod:
+      restartPolicy: OnFailure
+    containers:
+      app:
+        image:
+          repository: ghcr.io/siderolabs/talos-backup
+          tag: v0.1.0-beta.3@sha256:05c86663b251a407551dc948097e32e163a345818117eb52c573b0447bd0c7a7
+        command:
+          - /talos-backup
+        env:
+          CLUSTER_NAME: kubernetes
+          ENABLE_COMPRESSION: "true"
+          HOME: /tmp
+        envFrom:
+          - secretRef:
+              name: etcd-backup-s3-secret
+        workingDir: /tmp
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+defaultPodOptions:
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
+persistence:
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+  talos-secrets:
+    type: secret
+    name: etcd-backup
+    globalMounts:
+      - path: /var/run/secrets/talos.dev
+        readOnly: true

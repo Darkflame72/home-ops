@@ -1,8 +1,12 @@
 machine:
   features:
     kubernetesTalosAPIAccess:
+      # Note: roles and namespaces are both flat allow-lists (not paired), so
+      # any allowed namespace can request any allowed role.
       allowedKubernetesNamespaces:
-        - system-upgrade # or the namespace the controller will be installed to
+        - system-upgrade # tuppr / system-upgrade-controller
+        - kube-system # etcd-backup (talos-backup CronJob)
       allowedRoles:
         - os:admin
+        - os:etcd:backup
       enabled: true
