@@ -6,6 +6,7 @@ resources:
   - ./cluster.yaml
   - ./scheduled-backup.yaml
   - ./external-secret.yaml
+  - ./podmonitor.yaml
 configMapGenerator:
   - name: gatus-configmap
     files:

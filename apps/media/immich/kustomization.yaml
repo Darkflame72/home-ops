@@ -7,3 +7,4 @@ resources:
   - ./cluster-v2.yaml
   - ./scheduled-backup.yaml
   - ./scaledobject.yaml
+  - ./podmonitor.yaml

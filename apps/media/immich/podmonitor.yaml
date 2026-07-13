@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/podmonitor_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: immich-v2
+  namespace: media
+spec:
+  namespaceSelector:
+    matchNames:
+      - media
+  selector:
+    matchLabels:
+      cnpg.io/cluster: immich-v2
+      cnpg.io/podRole: instance
+  podMetricsEndpoints:
+    - port: metrics
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
+          targetLabel: cluster

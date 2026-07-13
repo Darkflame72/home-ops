@@ -18,8 +18,6 @@ spec:
       shared_buffers: 512MB
       pg_stat_statements.max: "10000"
       pg_stat_statements.track: all
-  monitoring:
-    enablePodMonitor: true
   resources:
     requests:
       memory: "512Mi"
