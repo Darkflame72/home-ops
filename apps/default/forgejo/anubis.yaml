@@ -102,11 +102,16 @@ kind: HTTPRoute
 metadata:
   name: forgejo-internal
   annotations:
-    # git.darkflame.dev is intentionally public (external route via anubis),
-    # so the inherited guarded check must expect DNS to resolve.
+    # git.darkflame.dev is also public (external route via anubis), so the
+    # inherited guarded DNS check would always fail. Instead do a real HTTP
+    # check via the internal gateway (bypassing anubis) by resolving through
+    # pihole, which holds the internal record for this route.
     gatus.home-operations.com/endpoint: |-
+      guarded: false
+      client:
+        dns-resolver: tcp://192.168.1.2:53
       conditions:
-        - "len([BODY]) > 0"
+        - "[STATUS] == 200"
 spec:
   hostnames:
     - git.darkflame.dev
