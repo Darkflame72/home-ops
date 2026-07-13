@@ -85,10 +85,23 @@ alertmanager:
       - name: discord
         discord_configs:
           - webhook_url_file: /etc/alertmanager/secrets/discord-webhook
+            title: &discord_title '{{ if eq .Status "firing" }}🔥{{ else }}✅{{ end }} {{ .CommonLabels.alertname }} — {{ .CommonLabels.namespace }} ({{ .CommonLabels.severity }})'
+            message: &discord_message |-
+              {{ range .Alerts }}
+              {{ if eq .Status "firing" }}**FIRING**{{ else }}**RESOLVED**{{ end }}: {{ .Annotations.summary }}
+              {{ .Annotations.description }}
+              {{- if .Labels.pod }}
+              Pod: `{{ .Labels.pod }}`
+              {{- end }}
+
+              {{ end }}
+              [🔍 View metric history](https://grafana.darkflame.dev/explore?left={{ printf "{\"datasource\":\"a77e92f1-3318-470d-92d9-499ed1fec5fc\",\"queries\":[{\"expr\":\"ALERTS{alertname=\\\"%s\\\"}\",\"refId\":\"A\"}],\"range\":{\"from\":\"now-6h\",\"to\":\"now\"}}" .CommonLabels.alertname | urlquery }})
       - name: discord-critical
         discord_configs:
           - webhook_url_file: /etc/alertmanager/secrets/discord-webhook
             content: "<@456217109236809748>"
+            title: *discord_title
+            message: *discord_message
 
 compactor:
   replicas: 1
