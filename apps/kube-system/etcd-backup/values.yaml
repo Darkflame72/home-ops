@@ -15,7 +15,10 @@ controllers:
       app:
         image:
           repository: ghcr.io/siderolabs/talos-backup
-          tag: v0.1.0-beta.3@sha256:05c86663b251a407551dc948097e32e163a345818117eb52c573b0447bd0c7a7
+          # v0.1.0-beta.3 predates AGE_RECIPIENT_PUBLIC_KEY/ENABLE_COMPRESSION and has inverted
+          # USE_PATH_STYLE logic (see project_etcd_backup_setup memory) - pin past it to the commit
+          # that added the sane env var contract documented in the current README.
+          tag: v0.1.0-beta.3-10-gb9fd478@sha256:7fc186ff37a3137f470082cb609bf1dc3bcece13dd9a6421ec09cfdf4f33ae6c
         command:
           - /talos-backup
         env:
