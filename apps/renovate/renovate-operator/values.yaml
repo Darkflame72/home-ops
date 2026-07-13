@@ -23,6 +23,19 @@ webhook:
   # Serve the webhook receiver on the UI host (renovate.darkflame.dev/webhook/...)
   # instead of a dedicated hostname; /webhook paths are exempt from OIDC auth.
   unifiedWebhookHost: true
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+  dashboard:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+    grafanaDashboard:
+      allowCrossNamespaceImport: true
+      instanceSelector:
+        matchLabels:
+          grafana.internal/instance: grafana
 auth:
   # Only members of this Authentik group can see/manage RenovateJobs in the UI (secure by default).
   defaultAllowedGroups: "authentik Admins"
