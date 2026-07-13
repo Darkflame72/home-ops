@@ -1,4 +1,4 @@
-# No yaml-language-server schema available: mogenius/renovate-operator (no schema published)
+# yaml-language-server: $schema=../../../.github/schemas/renovate-operator.mogenius.com/renovatejob_v1alpha1.json
 apiVersion: renovate-operator.mogenius.com/v1alpha1
 kind: RenovateJob
 metadata:
@@ -11,3 +11,15 @@ spec:
   provider:
     name: forgejo
     endpoint: "https://git.darkflame.dev/api/v1"
+  webhook:
+    enabled: true
+    authentication:
+      enabled: true
+      secretRef:
+        name: renovate-webhook-secret
+        key: token
+    # Automatically create/remove the webhook on every discovered Forgejo repo
+    # each discovery cycle. Uses RENOVATE_TOKEN from spec.secretRef, so the bot
+    # account needs admin (not just push) permission on the repos.
+    sync:
+      enabled: true

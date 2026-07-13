@@ -18,6 +18,11 @@ route:
       name: envoy-internal
       namespace: network
       sectionName: https
+webhook:
+  enabled: true
+  # Serve the webhook receiver on the UI host (renovate.darkflame.dev/webhook/...)
+  # instead of a dedicated hostname; /webhook paths are exempt from OIDC auth.
+  unifiedWebhookHost: true
 auth:
   # Only members of this Authentik group can see/manage RenovateJobs in the UI (secure by default).
   defaultAllowedGroups: "authentik Admins"
@@ -28,7 +33,6 @@ auth:
     clientId: "5QCqRHGc0shjhX8raHtX2kyXajIOYStF7ST943j3"
     existingSecret: renovate-secret
     secretKey: client-secret
-    # Set explicitly: the pinned chart version (4.14.1) only derives scheme from ingress.tls,
-    # which is unset since we expose via a Gateway API HTTPRoute (envoy-internal), not an ingress.
-    # redirectScheme would fix this on a newer chart release but isn't supported yet in 4.14.1.
-    redirectUrl: "https://renovate.darkflame.dev/auth/callback"
+    # The chart derives the redirect host from route.hostnames[0] but the scheme from
+    # ingress.tls, which is unset since TLS terminates at the Gateway (envoy-internal).
+    redirectScheme: https
