@@ -1,0 +1,56 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
+controllers:
+  etcd-defrag:
+    type: cronjob
+    cronjob:
+      # Weekly on Sunday at 03:00
+      schedule: "0 3 * * 0"
+      concurrencyPolicy: Forbid
+      successfulJobsHistory: 1
+      failedJobsHistory: 1
+    containers:
+      app:
+        image:
+          repository: ghcr.io/ahrtr/etcd-defrag
+          tag: v0.42.0@sha256:5138a12eda39067dabcf1d420d66f54f29f1e9297109a6b36574e010b45d58cc
+        args:
+          - --endpoints=https://127.0.0.1:2379
+          - --cluster
+          - --cacert=/certs/ca.crt
+          - --cert=/certs/server.crt
+          - --key=/certs/server.key
+          # Defrag when quota usage > 50% OR free space > 100MiB
+          - --defrag-rule=dbQuotaUsage > 0.5 || dbSizeFree > 100*1024*1024
+          - --move-leader
+          - --wait-between-defrags=30s
+          - --auto-disalarm
+          - --disalarm-threshold=0.8
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            memory: 64Mi
+defaultPodOptions:
+  hostNetwork: true
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    runAsNonRoot: false
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
+persistence:
+  certs:
+    type: hostPath
+    hostPath: /system/secrets/etcd
+    globalMounts:
+      - path: /certs
+        readOnly: true
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
