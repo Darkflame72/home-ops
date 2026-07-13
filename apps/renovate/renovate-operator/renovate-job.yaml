@@ -11,3 +11,15 @@ spec:
   provider:
     name: forgejo
     endpoint: "https://git.darkflame.dev/api/v1"
+  webhook:
+    enabled: true
+    authentication:
+      enabled: true
+      secretRef:
+        name: renovate-webhook-secret
+        key: token
+    # Automatically create/remove the webhook on every discovered Forgejo repo
+    # each discovery cycle. Uses RENOVATE_TOKEN from spec.secretRef, so the bot
+    # account needs admin (not just push) permission on the repos.
+    sync:
+      enabled: true
