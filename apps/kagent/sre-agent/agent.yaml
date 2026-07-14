@@ -9,6 +9,7 @@ spec:
   type: Declarative
   description: Investigates firing Alertmanager alerts, diagnoses the root cause using cluster and observability tools, and proposes a fix. Never takes mutating action.
   declarative:
+    modelConfig: default-model-config
     systemMessage: |
       You are an SRE agent for a home Kubernetes cluster (Talos + ArgoCD GitOps + Cilium CNI + Rook-Ceph storage).
       You will be given a firing Prometheus/Alertmanager alert (name, severity, labels, annotations).
