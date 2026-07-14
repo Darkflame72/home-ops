@@ -37,6 +37,8 @@ nodes:
         mtu: 1500
         vip:
           ip: "10.0.60.10"
+    patches:
+      - "./patches/global/ethernetconfig-eno1.yaml"
     schematic:
       customization:
         systemExtensions:
@@ -61,6 +63,8 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    patches:
+      - "./patches/global/ethernetconfig-eno1.yaml"
     schematic:
       customization:
         systemExtensions:
@@ -87,6 +91,8 @@ nodes:
         mtu: 1500
         vip:
           ip: "10.0.60.10"
+    patches:
+      - "./patches/global/ethernetconfig-eno1.yaml"
     schematic:
       customization:
         systemExtensions:
@@ -138,6 +144,8 @@ nodes:
         mtu: 1500
         vip:
           ip: "10.0.60.10"
+    patches:
+      - "./patches/global/ethernetconfig-eno1.yaml"
     schematic:
       customization:
         systemExtensions:
@@ -162,6 +170,8 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    patches:
+      - "./patches/global/ethernetconfig-enp0s31f6.yaml"
     schematic:
       customization:
         systemExtensions:
@@ -186,6 +196,8 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    patches:
+      - "./patches/global/ethernetconfig-enp0s31f6.yaml"
     schematic:
       customization:
         systemExtensions:
@@ -210,6 +222,8 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    patches:
+      - "./patches/global/ethernetconfig-enp0s31f6.yaml"
     schematic:
       customization:
         systemExtensions:
@@ -234,6 +248,8 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "10.0.60.1"
         mtu: 1500
+    patches:
+      - "./patches/global/ethernetconfig-enp0s31f6.yaml"
     schematic:
       customization:
         systemExtensions:

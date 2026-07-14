@@ -1,0 +1,10 @@
+# e1000e (Intel I219-LM) defaults to a 256-descriptor rx/tx ring on this
+# NIC (4096 max), which overruns under bursty traffic (ceph replication,
+# mimir pushes) well before the 1GbE link is bandwidth-saturated, causing
+# the CephNodeNetworkPacketDrops alert. Raise both rings to the max.
+apiVersion: v1alpha1
+kind: EthernetConfig
+name: eno1
+rings:
+  rx: 4096
+  tx: 4096
