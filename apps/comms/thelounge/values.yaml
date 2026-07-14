@@ -38,6 +38,8 @@ service:
         port: 9000
 route:
   app:
+    annotations:
+      gatus.home-operations.com/enabled: "false"
     hostnames: ["{{ .Release.Name }}.darkflame.dev"]
     parentRefs:
       - name: envoy-internal

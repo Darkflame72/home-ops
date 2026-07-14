@@ -65,6 +65,105 @@ endpoints:
       - "[STATUS] == 200"
     alerts: *alerts
 
+  # These are all single-homed to envoy-internal, so the auto-discovered
+  # gatus-sidecar check would be "guarded" (DNS-only, asserting the
+  # hostname doesn't resolve publicly) rather than an actual healthcheck.
+  # Disabled via gatus.home-operations.com/enabled: "false" on each route
+  # and replaced with a real HTTP check, resolved via pihole like the
+  # dual-homed hosts above.
+  - name: jellyfin
+    group: internal
+    url: https://jelly.darkflame.dev/health
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  - name: thelounge
+    group: internal
+    url: https://thelounge.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  - name: atuin
+    group: internal
+    url: https://sh.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  - name: miniflux
+    group: internal
+    url: https://miniflux.darkflame.dev/healthcheck
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  - name: bar-assistant
+    group: internal
+    url: https://bar.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  - name: kopia
+    group: internal
+    url: https://kopia.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  # OIDC-gated: an unauthenticated request to / redirects to the auth flow.
+  - name: renovate
+    group: internal
+    url: https://renovate.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 302"
+    alerts: *alerts
+
+  - name: rook-dashboard
+    group: internal
+    url: https://rook.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  # No root route configured; a 404 from the app itself (as opposed to a
+  # 502/503/504 from envoy with no backend) is the "healthy" response.
+  - name: agentgateway
+    group: internal
+    url: https://agentgateway.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 404"
+    alerts: *alerts
+
 metrics: true
 
 storage:

@@ -8,6 +8,8 @@ toolbox:
   enabled: true
 route:
   dashboard:
+    annotations:
+      gatus.home-operations.com/enabled: "false"
     host:
       name: rook.darkflame.dev
       path: /

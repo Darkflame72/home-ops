@@ -5,6 +5,8 @@ kind: HTTPRoute
 metadata:
   name: agentgateway
   namespace: agents
+  annotations:
+    gatus.home-operations.com/enabled: "false"
 spec:
   hostnames:
     - agentgateway.darkflame.dev

@@ -20,7 +20,7 @@ spec:
     - type: prometheus
       metadata:
         serverAddress: http://mimir-gateway.observability.svc.cluster.local/prometheus
-        query: probe_success{job="blackbox-nfs",instance="10.0.60.15:2049"}
+        query: max_over_time(probe_success{job="blackbox-nfs",instance="10.0.60.15:2049"}[10m])
         threshold: "1"
         activationThreshold: "0"
 ---
@@ -45,6 +45,6 @@ spec:
     - type: prometheus
       metadata:
         serverAddress: http://mimir-gateway.observability.svc.cluster.local/prometheus
-        query: probe_success{job="blackbox-nfs",instance="10.0.60.15:2049"}
+        query: max_over_time(probe_success{job="blackbox-nfs",instance="10.0.60.15:2049"}[10m])
         threshold: "1"
         activationThreshold: "0"

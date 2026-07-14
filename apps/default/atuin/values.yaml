@@ -50,6 +50,8 @@ service:
         port: *port
 route:
   app:
+    annotations:
+      gatus.home-operations.com/enabled: "false"
     hostnames:
       - sh.darkflame.dev
     parentRefs:

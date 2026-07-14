@@ -10,6 +10,8 @@ resources:
     memory: 256Mi
 route:
   enabled: true
+  annotations:
+    gatus.home-operations.com/enabled: "false"
   hostnames:
     - renovate.darkflame.dev
   parentRefs:

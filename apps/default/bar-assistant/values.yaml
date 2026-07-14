@@ -71,6 +71,8 @@ route:
   internal:
     enabled: true
     kind: HTTPRoute
+    annotations:
+      gatus.home-operations.com/enabled: "false"
     parentRefs:
       - name: envoy-internal
         namespace: network
