@@ -1,0 +1,18 @@
+---
+# No yaml-language-server schema available: argoproj/argo-rollouts (no values.schema.json)
+controller:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+dashboard:
+  enabled: true
+  httproute:
+    enabled: true
+    parentRefs:
+      - name: envoy-internal
+        namespace: network
+        sectionName: https
+    hostnames:
+      - rollouts.darkflame.dev

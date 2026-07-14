@@ -1,0 +1,44 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-rollouts
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/argo-rollouts/argo-rollouts
+      targetRevision: main
+      ref: repo
+    - repoURL: ghcr.io/argoproj/argo-helm
+      chart: argo-rollouts
+      targetRevision: 2.41.0
+      helm:
+        releaseName: argo-rollouts
+        valueFiles:
+          - $repo/apps/argo-rollouts/argo-rollouts/values.yaml
+  destination:
+    name: in-cluster
+    namespace: argo-rollouts
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
