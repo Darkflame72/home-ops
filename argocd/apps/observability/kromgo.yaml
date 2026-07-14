@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/home-operations/charts
       chart: kromgo
-      targetRevision: 0.15.0
+      targetRevision: 0.15.1
       helm:
         releaseName: kromgo
         valueFiles:
