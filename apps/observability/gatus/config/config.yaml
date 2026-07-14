@@ -131,7 +131,8 @@ endpoints:
       - "[STATUS] == 200"
     alerts: *alerts
 
-  # OIDC-gated: an unauthenticated request to / redirects to the auth flow.
+  # OIDC-gated: gatus follows the redirect to the login page, which is the
+  # final 200 response for an unauthenticated request.
   - name: renovate
     group: internal
     url: https://renovate.darkflame.dev
@@ -139,7 +140,7 @@ endpoints:
     client:
       dns-resolver: tcp://192.168.1.2:53
     conditions:
-      - "[STATUS] == 302"
+      - "[STATUS] == 200"
     alerts: *alerts
 
   - name: rook-dashboard
