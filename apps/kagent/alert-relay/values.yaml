@@ -44,6 +44,13 @@ service:
         port: 8080
 route:
   app:
+    annotations:
+      # This route only exists so Discord "mark as reviewed" links are clickable
+      # externally; the service itself is primarily internal (Alertmanager calls
+      # the ClusterIP directly) and only exposes /ack/{token}, not a checkable
+      # root path. Gatus checks it instead via the internal service in
+      # apps/observability/gatus/config/config.yaml.
+      gatus.home-operations.com/enabled: "false"
     hostnames:
       - alert-relay.darkflame.dev
     parentRefs:

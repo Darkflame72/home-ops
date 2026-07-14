@@ -65,6 +65,18 @@ endpoints:
       - "[STATUS] == 200"
     alerts: *alerts
 
+  # alert-relay is primarily an internal service (Alertmanager posts straight
+  # to the ClusterIP); its only HTTPRoute exposes /ack/{token} for Discord
+  # links, which isn't checkable, so gatus's HTTPRoute auto-discovery is
+  # disabled for it in favor of hitting the in-cluster service's health check.
+  - name: alert-relay
+    group: internal
+    url: http://alert-relay.kagent.svc.cluster.local:8080/healthz
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
 metrics: true
 
 storage:
