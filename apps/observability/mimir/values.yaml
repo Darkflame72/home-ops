@@ -74,12 +74,19 @@ alertmanager:
       group_interval: 5m
       repeat_interval: 12h
       routes:
+        - receiver: kagent-relay
+          matchers:
+            - severity =~ "critical|warning"
+            - alertname != "Watchdog"
+          continue: true
         - receiver: "null"
           matchers:
             - alertname = "Watchdog"
         - receiver: discord-critical
           matchers:
             - severity = "critical"
+        - receiver: discord
+          matchers: []
     receivers:
       - name: "null"
       - name: discord
@@ -102,6 +109,10 @@ alertmanager:
             content: "<@456217109236809748>"
             title: *discord_title
             message: *discord_message
+      - name: kagent-relay
+        webhook_configs:
+          - url: http://alert-relay.kagent.svc.cluster.local:8080/alertmanager
+            send_resolved: false
 
 compactor:
   replicas: 1
