@@ -1,7 +1,9 @@
 # No yaml-language-server schema available: rook/rook-ceph-cluster (no values.schema.json)
 monitoring:
   enabled: true
-  createPrometheusRules: true
+  # Rules are vendored in ./prometheus-rules.yaml with a local tweak (see that file's header) so the
+  # chart's copy is disabled here to avoid a duplicate/conflicting PrometheusRule resource.
+  createPrometheusRules: false
 toolbox:
   enabled: true
 route:
