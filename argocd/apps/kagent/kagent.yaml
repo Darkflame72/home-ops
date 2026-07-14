@@ -14,6 +14,7 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/kagent/kagent
       targetRevision: main
       ref: repo
     - repoURL: ghcr.io/kagent-dev/kagent/helm

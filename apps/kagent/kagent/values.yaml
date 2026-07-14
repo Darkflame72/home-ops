@@ -36,14 +36,6 @@ argo-rollouts-agent:
   enabled: false
 
 ui:
-  httpRoute:
-    enabled: true
-    parentRefs:
-      - group: gateway.networking.k8s.io
-        kind: Gateway
-        name: envoy-external
-        namespace: network
-        sectionName: https
-    hostnames:
-      - kagent.darkflame.dev
+  # ui.httpRoute is a no-op on chart 0.9.11 (Gateway API support landed after
+  # this release) -- see apps/kagent/kagent/httproute.yaml for the real route.
   externalUrl: https://kagent.darkflame.dev
