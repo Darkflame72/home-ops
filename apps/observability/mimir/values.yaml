@@ -135,6 +135,18 @@ ingester:
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"
+  # Keep the ingester off Ceph OSD nodes: its distributor push bursts collide
+  # with OSD-to-OSD replication traffic on the shared 1GbE NIC, causing
+  # periodic rx packet drops on the OSD nodes' interface.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: rook-ceph-osd
+          namespaces:
+            - rook-ceph
+          topologyKey: kubernetes.io/hostname
 
 querier:
   replicas: 1
