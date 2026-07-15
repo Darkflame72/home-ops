@@ -29,6 +29,14 @@ machine-learning:
   controllers:
     main:
       strategy: Recreate
+      containers:
+        main:
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              memory: 4Gi
   persistence:
     cache:
       type: persistentVolumeClaim
@@ -44,6 +52,14 @@ server:
   controllers:
     main:
       strategy: Recreate
+      containers:
+        main:
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 4Gi
   probes:
     liveness:
       enabled: true
