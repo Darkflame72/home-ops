@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/grafana/alloy/main/operations/helm/charts/alloy/values.schema.json
 controller:
   type: deployment
   replicas: 1
