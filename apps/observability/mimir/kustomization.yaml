@@ -6,3 +6,4 @@ resources:
   - ./obc.yaml
   - ./external-secret.yaml
   - ./grafanadatasource.yaml
+  - ./prometheus-rules.yaml
