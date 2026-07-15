@@ -21,7 +21,13 @@ configs:
       g, ci, role:readonly
       p, role:mcp-agent, applications, get, */*, allow
       p, role:mcp-agent, applications, sync, */*, allow
-      p, role:mcp-agent, applications, action/*, */*, allow
+      p, role:mcp-agent, applications, action/apps/Deployment/restart, */*, allow
+      p, role:mcp-agent, applications, action/apps/StatefulSet/restart, */*, allow
+      p, role:mcp-agent, applications, action/argoproj.io/Rollout/restart, */*, allow
+      p, role:mcp-agent, applications, action/argoproj.io/Rollout/promote-full, */*, allow
+      p, role:mcp-agent, applications, action/argoproj.io/Rollout/retry, */*, allow
+      p, role:mcp-agent, applications, action/argoproj.io/Rollout/resume, */*, allow
+      p, role:mcp-agent, applications, action/argoproj.io/Rollout/abort, */*, allow
       p, role:mcp-agent, logs, get, */*, allow
       g, argocd-mcp, role:mcp-agent
   cm:
