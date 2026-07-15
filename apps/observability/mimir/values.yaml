@@ -91,10 +91,15 @@ alertmanager:
             title: &discord_title '{{ if eq .Status "firing" }}🔥{{ else }}✅{{ end }} {{ .CommonLabels.alertname }} — {{ .CommonLabels.namespace }} ({{ .CommonLabels.severity }})'
             message: &discord_message |-
               {{ range .Alerts }}
-              {{ if eq .Status "firing" }}**FIRING**{{ else }}**RESOLVED**{{ end }}: {{ .Annotations.summary }}
+              {{ if eq .Status "firing" }}**FIRING**{{ else }}**RESOLVED**{{ end }}: {{ or .Annotations.summary .Annotations.message "no summary provided" }}
+              {{- if .Annotations.description }}
               {{ .Annotations.description }}
+              {{- end }}
               {{- if .Labels.pod }}
               Pod: `{{ .Labels.pod }}`
+              {{- end }}
+              {{- if .Annotations.resource }}
+              Resource: `{{ .Annotations.resource }}`
               {{- end }}
 
               {{ end }}
