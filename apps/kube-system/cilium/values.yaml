@@ -3,7 +3,10 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/v1.19.5/install/kubernetes/cilium/values.schema.json
 autoDirectNodeRoutes: true
 bpf:
-  masquerade: true
+  # Disabled: BPF masquerade doesn't handle the link-local SNAT address
+  # Istio ambient uses for kubelet health probes, breaking health checks
+  # for meshed pods. Falls back to Cilium's iptables masquerade path.
+  masquerade: false
   # Ref: https://github.com/siderolabs/talos/issues/10002
   hostLegacyRouting: true
 cni:

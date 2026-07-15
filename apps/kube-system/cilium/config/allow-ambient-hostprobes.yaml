@@ -1,0 +1,17 @@
+---
+# Allows Istio ambient's SNAT-ed kubelet health check probes into meshed
+# pods. No-op today (no default-deny CiliumNetworkPolicy exists yet), but
+# required the moment one is added, per Istio's ambient prerequisites.
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-ambient-hostprobes
+spec:
+  description: "Allows SNAT-ed kubelet health check probes into ambient pods"
+  enableDefaultDeny:
+    egress: false
+    ingress: false
+  endpointSelector: {}
+  ingress:
+    - fromCIDR:
+        - "169.254.7.127/32"
