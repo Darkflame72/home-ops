@@ -1,0 +1,21 @@
+# No yaml-language-server schema available: kyverno/policy-reporter (no values.schema.json)
+target:
+  alertManager:
+    # Mimir's embedded Alertmanager serves its API under /alertmanager, not root.
+    # Reuses the existing Discord routing in apps/observability/mimir/values.yaml
+    # (severity=critical -> discord-critical, else -> discord) instead of a
+    # second, separate Discord webhook integration.
+    host: http://mimir-alertmanager.observability.svc.cluster.local:8080/alertmanager
+    minimumSeverity: medium
+
+ui:
+  enabled: true
+
+monitoring:
+  enabled: true
+  grafana:
+    grafanaDashboard:
+      enabled: true
+      matchLabels:
+        dashboards: null
+        grafana.internal/instance: grafana
