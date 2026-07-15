@@ -6,3 +6,7 @@ resources:
   - ./grafana-dashboard-generate.yaml
   - ./volsync-generate.yaml
   - ./volsync-label-pvcs.yaml
+  - ./disallow-latest-tag.yaml
+  - ./disallow-privileged-containers.yaml
+  - ./require-requests-limits.yaml
+  - ./require-run-as-nonroot.yaml
