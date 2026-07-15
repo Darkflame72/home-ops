@@ -6,6 +6,8 @@ grafana:
   enabled: true
 
 admissionController:
+  serviceMonitor:
+    enabled: true
   rbac:
     clusterRole:
       extraResources:
@@ -54,8 +56,32 @@ admissionController:
             - patch
             - update
             - watch
+        - apiGroups:
+            - security.istio.io
+          resources:
+            - authorizationpolicies
+          verbs:
+            - create
+            - delete
+            - get
+            - list
+            - patch
+            - update
+            - watch
+        - apiGroups:
+            - ""
+          resources:
+            - namespaces
+          verbs:
+            - get
+            - list
+            - patch
+            - update
+            - watch
 
 backgroundController:
+  serviceMonitor:
+    enabled: true
   resources:
     limits:
       memory: 512Mi
@@ -110,3 +136,33 @@ backgroundController:
             - patch
             - update
             - watch
+        - apiGroups:
+            - security.istio.io
+          resources:
+            - authorizationpolicies
+          verbs:
+            - create
+            - delete
+            - get
+            - list
+            - patch
+            - update
+            - watch
+        - apiGroups:
+            - ""
+          resources:
+            - namespaces
+          verbs:
+            - get
+            - list
+            - patch
+            - update
+            - watch
+
+cleanupController:
+  serviceMonitor:
+    enabled: true
+
+reportsController:
+  serviceMonitor:
+    enabled: true
