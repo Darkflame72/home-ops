@@ -9,6 +9,10 @@ spec:
   instances: 3
   primaryUpdateStrategy: unsupervised
 
+  affinity:
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16-0.4.2
 
   storage:
