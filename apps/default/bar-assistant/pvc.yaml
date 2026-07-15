@@ -8,6 +8,10 @@ metadata:
   name: bar
 spec:
   accessModes: ["ReadWriteOnce"]
+  dataSourceRef:
+    kind: ReplicationDestination
+    apiGroup: volsync.backube
+    name: bar-dst
   resources:
     requests:
       storage: 5Gi
