@@ -17,11 +17,12 @@ spec:
         - name: runner
           image: code.forgejo.org/forgejo/runner:12.7.3
           securityContext:
-            # Stays root (no non-root user in the image, and it needs to
-            # reach the dind sidecar's docker.sock which is root:docker
-            # owned) but no longer privileged — it doesn't need host device
-            # access, only the dind container does. See the
-            # forgejo-runner-dind-privileged PolicyException.
+            # Stays root (runAsUser: 0): the image has no non-root user, and
+            # it needs to reach the dind sidecar's docker.sock, which is
+            # root:docker owned. No longer privileged though — it doesn't
+            # need host device access, only the dind container does. See
+            # the forgejo-runner-dind-privileged PolicyException.
+            runAsUser: 0
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
