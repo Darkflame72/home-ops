@@ -493,6 +493,38 @@ spec:
 apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
+  name: talos-static-control-plane-pods
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      kube-apiserver/kube-controller-manager/kube-scheduler are Talos
+      static pods (app.kubernetes.io/managed-by: Talos), defined by Talos
+      machine config directly on the control-plane nodes — not something
+      this repo's Helm/Kustomize manages, so there's no values file to add
+      resources or securityContext to.
+spec:
+  exceptions:
+    - policyName: require-requests-limits
+      ruleNames:
+        - validate-resources
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+          namespaces:
+            - kube-system
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: Talos
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
   name: istio-ambient-dataplane-run-as-root
   namespace: policy
   annotations:

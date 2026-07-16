@@ -7,3 +7,19 @@ maxRunners: 3
 controllerServiceAccount:
   namespace: arc-system
   name: arc-controller-gha-rs-controller
+
+# Same image as the controller (distroless nonroot, UID 65532) — matches
+# ghcr.io/actions/gha-runner-scale-set-controller's Dockerfile USER.
+listenerTemplate:
+  spec:
+    containers:
+      - name: listener
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
