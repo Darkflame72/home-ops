@@ -27,6 +27,11 @@ metadata:
       policy carves out an exception for mimir-gateway specifically — verified
       live that a selector-scoped rule with no `from` clause allows unmeshed
       callers through while the rest of the namespace stays restricted.
+      Same pattern applied for forgejo-runners (its own namespace isn't
+      meshed) calling forgejo's API — this caused a live outage
+      (CrashLoopBackOff, "connection refused"/"reset by peer" to
+      forgejo-http from both the ClusterIP and the pod IP directly) until
+      the workload-scoped allow was added.
       Add the calling namespace to the relevant rule below when wiring up a
       new cross-namespace dependency; if the caller isn't/can't be meshed,
       use a workload-scoped exception like the mimir-gateway one instead of
@@ -107,6 +112,28 @@ spec:
                         - network
                         - observability
                         - security
+
+    - name: default-allow-forgejo-runners
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - default
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: allow-forgejo-runners
+        namespace: default
+        synchronize: true
+        data:
+          spec:
+            selector:
+              matchLabels:
+                app.kubernetes.io/name: forgejo
+            rules:
+              - {}
 
     - name: games-default-allow
       match:
