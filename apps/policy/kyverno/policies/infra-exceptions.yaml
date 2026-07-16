@@ -193,7 +193,9 @@ metadata:
       privileged mode and root to run nested containers — this is an
       unavoidable requirement of Docker-in-Docker, not a misconfiguration.
       The runner container itself (the other container in this Deployment)
-      talks to dind over a shared unix socket and runs unprivileged/non-root.
+      is no longer privileged (it doesn't need host device access) but
+      stays root too: its image has no non-root user, and it needs to reach
+      dind's docker.sock which is root:docker owned.
 spec:
   exceptions:
     - policyName: disallow-privileged-containers
