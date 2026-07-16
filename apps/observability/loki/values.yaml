@@ -90,6 +90,14 @@ gateway:
       limits:
         memory: 128Mi
 
+lokiCanary:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
 chunksCache:
   enabled: false
 
