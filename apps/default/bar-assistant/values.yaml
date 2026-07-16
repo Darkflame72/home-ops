@@ -33,7 +33,11 @@ controllers:
           ALLOW_REGISTRATION: false
           ENABLE_PASSWORD_LOGIN: false
         securityContext:
+          # Kubelet can't verify non-root for images with a non-numeric
+          # USER (www-data here) — needs an explicit numeric UID or it
+          # refuses to start with CreateContainerConfigError.
           runAsNonRoot: true
+          runAsUser: 33
         resources:
           requests:
             cpu: 10m
@@ -69,7 +73,11 @@ controllers:
           API_URL: *api-url
           MEILISEARCH_URL: "https://bar.darkflame.dev/search"
         securityContext:
+          # Kubelet can't verify non-root for images with a non-numeric
+          # USER (www-data here) — needs an explicit numeric UID or it
+          # refuses to start with CreateContainerConfigError.
           runAsNonRoot: true
+          runAsUser: 33
         resources:
           requests:
             cpu: 10m
