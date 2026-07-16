@@ -1,5 +1,5 @@
 # No yaml-language-server schema available: kyverno/kyverno (no values.schema.json)
-config:
+features:
   policyExceptions:
     enabled: true
     # Restrict to the policy namespace so exceptions stay reviewable in one
