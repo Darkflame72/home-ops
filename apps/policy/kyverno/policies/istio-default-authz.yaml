@@ -1,0 +1,254 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/clusterpolicy_v1.json
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: istio-default-authz
+  annotations:
+    policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Generates a namespace-wide "default-allow" AuthorizationPolicy for each
+      namespace onboarded by istio-ambient-namespace-labels.yaml. Istio's
+      semantics: the mere presence of an ALLOW AuthorizationPolicy for a
+      workload switches that workload to implicit default-deny for anything
+      not explicitly matched, so no separate empty deny-all rule is needed.
+      Validated live (2026-07-15) against the comms namespace: cross-namespace
+      source.namespaces matching only works when BOTH the source and
+      destination namespace are ambient-meshed — traffic from an unmeshed
+      namespace is denied outright even if its name is listed, since ztunnel
+      can't verify its identity. That's why "network" (ingress gateway) and
+      "observability" (metrics scraping, gatus checks) are meshed and listed
+      as allowed sources everywhere they're needed.
+      Known gap: KEDA (kube-system, deliberately left unmeshed — DNS-critical)
+      polls mimir-gateway for ScaledObject triggers (immich/jellyfin
+      autoscaling). kube-system can't be added to observability's allow-list
+      for the same reason above, so a second, workload-scoped permissive
+      policy carves out an exception for mimir-gateway specifically — verified
+      live that a selector-scoped rule with no `from` clause allows unmeshed
+      callers through while the rest of the namespace stays restricted.
+      Add the calling namespace to the relevant rule below when wiring up a
+      new cross-namespace dependency; if the caller isn't/can't be meshed,
+      use a workload-scoped exception like the mimir-gateway one instead of
+      widening the namespace-wide rule.
+spec:
+  admission: true
+  emitWarning: false
+  generateExisting: true
+  rules:
+    - name: agents-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - agents
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: agents
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - agents
+                        - network
+
+    - name: comms-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - comms
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: comms
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - comms
+                        - network
+                        - observability
+
+    - name: database-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - database
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: database
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - database
+                        - network
+                        - observability
+                        - default
+                        - media
+
+    - name: default-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - default
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: default
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - default
+                        - network
+                        - observability
+                        - security
+
+    - name: games-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - games
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: games
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - games
+                        - network
+                        - observability
+
+    - name: media-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - media
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: media
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - media
+                        - network
+                        - observability
+
+    - name: observability-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - observability
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: observability
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - observability
+                        - network
+                        - agents
+
+    - name: observability-allow-mimir-gateway-scaledobjects
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - observability
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: allow-mimir-gateway-keda
+        namespace: observability
+        synchronize: true
+        data:
+          spec:
+            selector:
+              matchLabels:
+                app.kubernetes.io/name: mimir
+                app.kubernetes.io/component: gateway
+            rules:
+              - {}
+
+    - name: security-default-allow
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - security
+      generate:
+        apiVersion: security.istio.io/v1
+        kind: AuthorizationPolicy
+        name: default-allow
+        namespace: security
+        synchronize: true
+        data:
+          spec:
+            rules:
+              - from:
+                  - source:
+                      namespaces:
+                        - security
+                        - network
+                        - observability
