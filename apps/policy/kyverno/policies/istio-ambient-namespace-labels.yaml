@@ -19,6 +19,14 @@ metadata:
       for source.namespaces matching to work.
       kube-system is deliberately excluded (DNS-critical, too high blast
       radius to onboard without a maintenance window).
+      "database" is also excluded: onboarding it broke Dragonfly's
+      StatefulSet ClusterIP Service (ztunnel's service-level interception
+      closed connections routed through the Service VIP — direct pod IPs
+      worked fine, isolating it to Service-level handling, not pod-to-pod
+      mTLS) and its own internal replication protocol on port 9999 between
+      replicas. Caused a live outage across every app using the shared
+      cache (Forgejo, bar-assistant, etc.). Revisit once verified safe
+      with a maintenance window.
 spec:
   admission: true
   emitWarning: false
@@ -33,7 +41,6 @@ spec:
               names:
                 - agents
                 - comms
-                - database
                 - default
                 - games
                 - media

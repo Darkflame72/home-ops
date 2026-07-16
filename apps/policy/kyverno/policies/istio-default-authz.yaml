@@ -83,32 +83,6 @@ spec:
                         - network
                         - observability
 
-    - name: database-default-allow
-      match:
-        any:
-          - resources:
-              kinds:
-                - Namespace
-              names:
-                - database
-      generate:
-        apiVersion: security.istio.io/v1
-        kind: AuthorizationPolicy
-        name: default-allow
-        namespace: database
-        synchronize: true
-        data:
-          spec:
-            rules:
-              - from:
-                  - source:
-                      namespaces:
-                        - database
-                        - network
-                        - observability
-                        - default
-                        - media
-
     - name: default-default-allow
       match:
         any:
