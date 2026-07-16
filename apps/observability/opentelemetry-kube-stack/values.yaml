@@ -3,12 +3,34 @@ opentelemetry-operator:
   manager:
     collectorImage:
       repository: otel/opentelemetry-collector-contrib
+    resources:
+      requests:
+        cpu: 10m
+        memory: 96Mi
+      limits:
+        memory: 384Mi
 
 kubeStateMetrics:
   enabled: true
 
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 15m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
 nodeExporter:
   enabled: true
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 15m
+      memory: 48Mi
+    limits:
+      memory: 192Mi
 
 defaultCRConfig:
   config:
@@ -34,6 +56,8 @@ collectors:
     enabled: true
     mode: statefulset
     replicas: 1
+    podSecurityContext:
+      runAsNonRoot: true
     resources:
       limits:
         memory: 1Gi
@@ -43,6 +67,14 @@ collectors:
     targetAllocator:
       enabled: true
       allocationStrategy: consistent-hashing
+      securityContext:
+        runAsNonRoot: true
+      resources:
+        requests:
+          cpu: 25m
+          memory: 288Mi
+        limits:
+          memory: 1152Mi
       prometheusCR:
         enabled: true
         scrapeInterval: 30s

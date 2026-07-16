@@ -59,6 +59,13 @@ httpRoute:
   hostnames:
     - kromgo.darkflame.dev
 
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
 monitoring:
   serviceMonitor:
     enabled: true

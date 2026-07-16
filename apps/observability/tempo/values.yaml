@@ -40,6 +40,13 @@ tempo:
     - configMapRef:
         name: tempo-bucket
 
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
 persistence:
   enabled: true
   size: 10Gi

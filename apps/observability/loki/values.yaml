@@ -37,6 +37,12 @@ loki:
 
 singleBinary:
   replicas: 1
+  resources:
+    requests:
+      cpu: 160m
+      memory: 640Mi
+    limits:
+      memory: 2560Mi
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3100"
@@ -52,6 +58,14 @@ singleBinary:
     size: 10Gi
     storageClass: ceph-block
 
+sidecar:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 144Mi
+    limits:
+      memory: 576Mi
+
 read:
   replicas: 0
 write:
@@ -62,6 +76,19 @@ backend:
 gateway:
   enabled: true
   replicas: 1
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+  metrics:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
 
 chunksCache:
   enabled: false

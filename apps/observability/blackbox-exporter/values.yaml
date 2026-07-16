@@ -10,6 +10,13 @@ config:
       tcp:
         preferred_ip_protocol: ip4
 
+resources:
+  requests:
+    cpu: 10m
+    memory: 48Mi
+  limits:
+    memory: 192Mi
+
 # OTel handles scraping — no ServiceMonitor needed
 serviceMonitor:
   enabled: false

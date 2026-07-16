@@ -3,8 +3,19 @@ controller:
   replicas: 1
 
 alloy:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 112Mi
+    limits:
+      memory: 448Mi
   configMap:
     content: |
       mimir.rules.kubernetes "sync" {
         address = "http://mimir-gateway.observability.svc.cluster.local"
       }
+
+configReloader:
+  resources:
+    limits:
+      memory: 128Mi

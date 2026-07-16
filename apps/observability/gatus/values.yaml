@@ -16,8 +16,9 @@ controllers:
         resources:
           requests:
             cpu: 10m
-          limits:
             memory: 64Mi
+          limits:
+            memory: 256Mi
         restartPolicy: Always
     containers:
       app:
@@ -59,6 +60,7 @@ controllers:
         resources:
           requests:
             cpu: 100m
+            memory: 32Mi
           limits:
             memory: 256Mi
     statefulset:

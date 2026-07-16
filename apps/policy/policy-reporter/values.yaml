@@ -8,8 +8,21 @@
 #     host: http://mimir-alertmanager.observability.svc.cluster.local:8080/alertmanager
 #     minimumSeverity: medium
 
+resources:
+  requests:
+    cpu: 15m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
 ui:
   enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
 
 monitoring:
   enabled: true
