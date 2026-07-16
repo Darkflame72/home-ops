@@ -43,3 +43,4 @@ spec:
       name: istiod-default-validator
       jqPathExpressions:
         - '.webhooks[].clientConfig.caBundle'
+        - '.webhooks[].failurePolicy'

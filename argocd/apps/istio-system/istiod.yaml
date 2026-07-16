@@ -49,3 +49,4 @@ spec:
       name: istio-validator-istio-system
       jqPathExpressions:
         - '.webhooks[].clientConfig.caBundle'
+        - '.webhooks[].failurePolicy'
