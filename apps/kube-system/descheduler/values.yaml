@@ -25,7 +25,7 @@ deschedulerPolicy:
           enabled:
             - RemovePodsViolatingNodeAffinity
             - RemovePodsViolatingInterPodAntiAffinity
-            - RemovePodsViolatingTopologySpreadConstraints
+            - RemovePodsViolatingTopologySpreadConstraint
             - RemoveFailedPods
             - RemovePodsHavingTooManyRestarts
         filter:

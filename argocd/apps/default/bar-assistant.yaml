@@ -43,3 +43,10 @@ spec:
       - ServerSideApply=true
       - PruneLast=true
       - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: ""
+      kind: PersistentVolumeClaim
+      name: bar
+      jsonPointers:
+        - /spec/dataSource
+        - /spec/dataSourceRef
