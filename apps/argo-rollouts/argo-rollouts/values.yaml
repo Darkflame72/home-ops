@@ -1,6 +1,12 @@
 ---
 # No yaml-language-server schema available: argoproj/argo-rollouts (no values.schema.json)
 controller:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
   metrics:
     enabled: true
     serviceMonitor:
@@ -8,6 +14,12 @@ controller:
 
 dashboard:
   enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 48Mi
+    limits:
+      memory: 192Mi
   httproute:
     enabled: true
     parentRefs:

@@ -4,9 +4,50 @@ global:
 
 redis-ha:
   enabled: true
+  redis:
+    resources:
+      requests:
+        cpu: 30m
+        memory: 192Mi
+      limits:
+        memory: 768Mi
+  sentinel:
+    resources:
+      requests:
+        cpu: 40m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+  init:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+  splitBrainDetection:
+    resources:
+      requests:
+        cpu: 15m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+  haproxy:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
 
 controller:
   replicas: 1
+  resources:
+    requests:
+      cpu: 155m
+      memory: 2192Mi
+    limits:
+      memory: 8768Mi
   metrics:
     enabled: true
     serviceMonitor:
@@ -91,6 +132,8 @@ server:
     requests:
       cpu: 50m
       memory: 64Mi
+    limits:
+      memory: 960Mi
   metrics:
     enabled: true
     serviceMonitor:
@@ -104,6 +147,8 @@ repoServer:
     requests:
       cpu: 100m
       memory: 256Mi
+    limits:
+      memory: 1216Mi
   metrics:
     enabled: true
     serviceMonitor:
@@ -111,13 +156,33 @@ repoServer:
 
 applicationSet:
   replicas: 2
+  resources:
+    requests:
+      cpu: 10m
+      memory: 160Mi
+    limits:
+      memory: 640Mi
   metrics:
     enabled: true
     serviceMonitor:
       enabled: true
 
+dex:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
 notifications:
   enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 176Mi
+    limits:
+      memory: 704Mi
   secret:
     create: false
     name: argocd-notifications-secret

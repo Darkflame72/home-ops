@@ -1,3 +1,10 @@
+resources:
+  requests:
+    cpu: 10m
+    memory: 112Mi
+  limits:
+    memory: 448Mi
+
 monitoring:
   enabled: true
   serviceMonitor:
