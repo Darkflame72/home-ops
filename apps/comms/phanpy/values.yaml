@@ -7,6 +7,12 @@ controllers:
         image:
           repository: ghcr.io/yitsushi/phanpy-docker
           tag: 2025.11.26.ac85274@sha256:c6eff8b71b245bc5925eb1117d0b80cb03300679bd81043107c32efe1b2db0ed
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
 service:
   app:
     ports:

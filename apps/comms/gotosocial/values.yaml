@@ -81,7 +81,7 @@ defaultPodOptions:
   automountServiceAccountToken: false
   enableServiceLinks: false
   securityContext:
-    runAsNonRoot: false
+    runAsNonRoot: true
     runAsUser: &uid 568
     runAsGroup: *uid
     fsGroup: *uid

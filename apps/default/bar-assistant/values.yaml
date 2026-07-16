@@ -32,6 +32,14 @@ controllers:
           SESSION_DRIVER: redis
           ALLOW_REGISTRATION: false
           ENABLE_PASSWORD_LOGIN: false
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 480Mi
+          limits:
+            memory: 1920Mi
       search:
         image:
           repository: docker.io/getmeili/meilisearch
@@ -45,6 +53,12 @@ controllers:
                 key: meili-master-key
           MEILI_NO_ANALYTICS: true
           MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
   frontend:
     containers:
       salt-rim:
@@ -54,6 +68,14 @@ controllers:
         env:
           API_URL: *api-url
           MEILISEARCH_URL: "https://bar.darkflame.dev/search"
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
 service:
   backend:
     controller: bar-assistant

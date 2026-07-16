@@ -38,6 +38,7 @@ controllers:
           FOOTER: Leon Bowie © 2024-Present
         resources:
           requests:
+            cpu: 10m
             memory: 64M
           limits:
             memory: 100M

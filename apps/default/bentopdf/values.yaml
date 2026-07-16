@@ -8,6 +8,8 @@ controllers:
         image:
           repository: ghcr.io/alam00000/bentopdf
           tag: 2.8.6@sha256:eaeea1e447205a79cb61d7efdc6966f37311dc1bc9c36a3a5c897bf79107c2c3
+        securityContext:
+          runAsNonRoot: true
         probes:
           liveness:
             enabled: true

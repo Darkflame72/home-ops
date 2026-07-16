@@ -1,12 +1,21 @@
 # No yaml-language-server schema available: forgejo-contrib/forgejo-helm (codeberg, no schema published)
 image:
   rootless: true
+containerSecurityContext:
+  runAsNonRoot: true
 resources:
   requests:
     cpu: 10m
     memory: 100Mi
   limits:
     memory: 2Gi
+initContainers:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
 persistence:
   enabled: true
   claimName: forgejo
