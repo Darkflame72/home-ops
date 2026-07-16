@@ -1,1 +1,7 @@
 # No yaml-language-server schema available: home-operations/charts/tuppr (no values.schema.json)
+resources:
+  requests:
+    cpu: 10m
+    memory: 144Mi
+  limits:
+    memory: 576Mi

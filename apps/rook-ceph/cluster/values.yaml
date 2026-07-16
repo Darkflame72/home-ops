@@ -172,6 +172,12 @@ cephObjectStores:
       gateway:
         port: 80
         instances: 1
+        resources:
+          requests:
+            cpu: 35m
+            memory: 576Mi
+          limits:
+            memory: 2304Mi
     storageClass:
       enabled: true
       name: ceph-bucket

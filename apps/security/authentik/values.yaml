@@ -47,6 +47,14 @@ prometheus:
     enabled: true
 server:
   replicas: 1
+  securityContext:
+    runAsNonRoot: true
+  resources:
+    requests:
+      cpu: 30m
+      memory: 864Mi
+    limits:
+      memory: 3456Mi
   route:
     main:
       enabled: true
@@ -63,3 +71,11 @@ server:
       enabled: true
 worker:
   replicas: 2
+  securityContext:
+    runAsNonRoot: true
+  resources:
+    requests:
+      cpu: 125m
+      memory: 496Mi
+    limits:
+      memory: 1984Mi

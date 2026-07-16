@@ -11,3 +11,9 @@ spec:
     schedule: 0 */8 * * *
   repository:
     repository: volsync-s3-secret
+  resources:
+    requests:
+      cpu: 10m
+      memory: 256Mi
+    limits:
+      memory: 1Gi

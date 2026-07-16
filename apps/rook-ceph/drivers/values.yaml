@@ -9,6 +9,64 @@ drivers:
     snapshotPolicy: volumeGroupSnapshot
     kernelMountOptions:
       ms_mode: prefer-crc
+    nodePlugin:
+      resources:
+        plugin:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+        registrar:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+        logRotator:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+    controllerPlugin:
+      resources:
+        attacher:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
+        plugin:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+        provisioner:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 384Mi
+        resizer:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
+        snapshotter:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
+        logRotator:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
   nfs:
     enabled: false
   nvmeof:
@@ -17,3 +75,61 @@ drivers:
     enabled: true
     name: rook-ceph.rbd.csi.ceph.com
     snapshotPolicy: volumeSnapshot
+    nodePlugin:
+      resources:
+        plugin:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
+        registrar:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+        logRotator:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+    controllerPlugin:
+      resources:
+        attacher:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
+        plugin:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
+        provisioner:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 384Mi
+        resizer:
+          requests:
+            cpu: 10m
+            memory: 80Mi
+          limits:
+            memory: 320Mi
+        snapshotter:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 384Mi
+        logRotator:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
