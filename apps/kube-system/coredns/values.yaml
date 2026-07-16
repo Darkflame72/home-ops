@@ -4,7 +4,11 @@ fullnameOverride: coredns
 image:
   repository: mirror.gcr.io/coredns/coredns
 podSecurityContext:
+  # Kubelet can't verify non-root for images with a non-numeric USER
+  # (nonroot here) — needs an explicit numeric UID or it refuses to
+  # start with CreateContainerConfigError.
   runAsNonRoot: true
+  runAsUser: 65532
 k8sAppLabelOverride: kube-dns
 serviceAccount:
   create: true
