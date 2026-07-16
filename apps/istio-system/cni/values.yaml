@@ -1,3 +1,6 @@
 ---
 # No yaml-language-server schema available: istio/cni
 profile: ambient
+resources:
+  limits:
+    memory: 400Mi

@@ -1,0 +1,5 @@
+---
+# No yaml-language-server schema available: istio/ztunnel
+resources:
+  limits:
+    memory: 1536Mi

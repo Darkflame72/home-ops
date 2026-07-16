@@ -28,6 +28,12 @@ envoy:
   prometheus:
      serviceMonitor:
        enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 80Mi
+    limits:
+      memory: 320Mi
 gatewayAPI:
   enabled: true
 hubble:
@@ -41,6 +47,15 @@ kubeProxyReplacement: true
 kubeProxyReplacementHealthzBindAddr: 0.0.0.0:10256
 l2announcements:
   enabled: true
+resources:
+  requests:
+    cpu: 100m
+    memory: 240Mi
+  limits:
+    # Generous headroom: a cilium-agent OOMKill takes down host networking
+    # (see k8s-2 UDP egress incident), so this is sized well above the
+    # observed ~185Mi working set rather than tightly to it.
+    memory: 2Gi
 loadBalancer:
   algorithm: maglev
   mode: "dsr"
@@ -54,6 +69,12 @@ operator:
       enabled: true
   replicas: 1
   rollOutPods: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 96Mi
+    limits:
+      memory: 384Mi
 prometheus:
   enabled: true
   serviceMonitor:

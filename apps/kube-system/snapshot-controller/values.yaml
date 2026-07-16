@@ -4,3 +4,16 @@ controller:
   replicaCount: 2
   serviceMonitor:
     create: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 96Mi
+    limits:
+      memory: 384Mi
+webhook:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi

@@ -26,6 +26,12 @@ sources: ["gateway-httproute"]
 # logs when ExternalDNS attempts to create TXT records.
 registry: noop
 domainFilters: ["darkflame.dev"]
+resources:
+  requests:
+    cpu: 10m
+    memory: 112Mi
+  limits:
+    memory: 448Mi
 serviceMonitor:
   enabled: true
 podAnnotations:

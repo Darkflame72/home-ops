@@ -24,6 +24,12 @@ txtOwnerId: default
 txtPrefix: k8s.
 domainFilters:
   - darkflame.dev
+resources:
+  requests:
+    cpu: 10m
+    memory: 160Mi
+  limits:
+    memory: 640Mi
 serviceMonitor:
   enabled: true
 podAnnotations:

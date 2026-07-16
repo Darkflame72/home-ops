@@ -1,3 +1,6 @@
 ---
 # No yaml-language-server schema available: istio/istiod
 profile: ambient
+resources:
+  limits:
+    memory: 4096Mi

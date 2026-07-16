@@ -12,11 +12,17 @@ metadata:
 spec:
   project: default
   sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/istio-system/ztunnel
+      targetRevision: main
+      ref: repo
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: ztunnel
       targetRevision: 1.30.3
       helm:
         releaseName: ztunnel
+        valueFiles:
+          - $repo/apps/istio-system/ztunnel/values.yaml
   destination:
     name: in-cluster
     namespace: istio-system
