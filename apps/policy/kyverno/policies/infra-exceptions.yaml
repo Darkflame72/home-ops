@@ -1,0 +1,516 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/policyexception_v2.json
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: rook-ceph-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      Ceph daemons (mon/mgr/mds/osd/rgw/exporter/crashcollector) and the CSI
+      plugins run as root by design (device ownership, chown of
+      /var/lib/ceph, bind-mounting host paths). require-run-as-nonroot can
+      never be satisfied here without breaking storage.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+          namespaces:
+            - rook-ceph
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: rook-ceph-privileged
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      OSDs and the CSI node plugins need privileged mode for raw block
+      device access and mount namespace operations on the host.
+spec:
+  exceptions:
+    - policyName: disallow-privileged-containers
+      ruleNames:
+        - privileged-containers
+        - autogen-privileged-containers
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+          namespaces:
+            - rook-ceph
+          names:
+            - rook-ceph-osd-*
+            - rook-ceph.cephfs.csi.ceph.com-nodeplugin*
+            - rook-ceph.rbd.csi.ceph.com-nodeplugin*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: rook-ceph-log-collector-limits
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The log-collector sidecar injected into Ceph daemon pods (mon/osd/mds/
+      rgw/etc.) is controlled entirely by CephCluster.spec.logCollector
+      (enabled/maxLogSize/periodicity only) — there is no field to set its
+      container resources, verified against the CephCluster CRD schema.
+spec:
+  exceptions:
+    - policyName: require-requests-limits
+      ruleNames:
+        - validate-resources
+        - autogen-validate-resources
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - rook-ceph
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: cilium-run-as-root-privileged
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      cilium and cilium-envoy need root and privileged mode to manage host
+      networking (iptables/eBPF programs, network namespaces). cilium-operator
+      is scratch-based with no USER directive (runs as root) and upstream
+      non-root support is still unresolved (cilium/cilium#23217) — it isn't
+      privileged, just root, so it's excepted from require-run-as-nonroot only.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+    - policyName: disallow-privileged-containers
+      ruleNames:
+        - privileged-containers
+        - autogen-privileged-containers
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - DaemonSet
+          namespaces:
+            - kube-system
+          names:
+            - cilium
+            - cilium-envoy
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: cilium-operator-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      cilium-operator's image is scratch-based with no USER directive (runs
+      as root by default) and upstream non-root support is still unresolved
+      (cilium/cilium#23217, verified against the Dockerfile directly).
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - kube-system
+          names:
+            - cilium-operator*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: envoy-gateway-shutdown-manager-limits
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The shutdown-manager sidecar injected into every Envoy Gateway-managed
+      Deployment (envoy-external, envoy-internal) is hardcoded by the
+      envoy-gateway controller with a fixed requests-only resource block
+      (cpu: 10m, memory: 32Mi) via DefaultShutdownManagerCPUResourceRequests
+      / DefaultShutdownManagerMemoryResourceRequests in the controller
+      source. There is no EnvoyProxy or EnvoyGateway API field to set a
+      memory limit on it (verified against api/v1alpha1 in envoy-gateway
+      v1.8.2), so require-requests-limits can never be satisfied here.
+spec:
+  exceptions:
+    - policyName: require-requests-limits
+      ruleNames:
+        - validate-resources
+        - autogen-validate-resources
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - network
+          names:
+            - envoy-external*
+            - envoy-internal*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: forgejo-runner-dind-privileged
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The dind (docker:dind) sidecar backing the Forgejo Actions runner needs
+      privileged mode and root to run nested containers — this is an
+      unavoidable requirement of Docker-in-Docker, not a misconfiguration.
+      The runner container itself (the other container in this Deployment)
+      talks to dind over a shared unix socket and runs unprivileged/non-root.
+spec:
+  exceptions:
+    - policyName: disallow-privileged-containers
+      ruleNames:
+        - privileged-containers
+        - autogen-privileged-containers
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - forgejo-runners
+          names:
+            - forgejo-runner*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: etcd-defrag-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      etcd-defrag deliberately runs as root (runAsUser: 0, hostNetwork) to
+      read Talos's root-owned etcd cert files bind-mounted from
+      /system/secrets/etcd on the control-plane host. Not a misconfiguration.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-cronjob-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - CronJob
+          namespaces:
+            - kube-system
+          names:
+            - etcd-defrag*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: otel-daemon-collector-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The daemon-mode OTel collector runs logsCollection (reads
+      /var/log/pods, root:root 0640 on containerd), hostMetrics, and
+      kubeletMetrics presets against host paths. Unlike the cluster
+      collector (otel-contrib image is non-root by default, UID 10001), the
+      daemon collector's host log/proc access is the blocker, not the image
+      itself — matches the same host-access reasoning already applied to
+      cilium/istio-cni-node/ztunnel.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - DaemonSet
+          namespaces:
+            - observability
+          names:
+            - opentelemetry-kube-stack-daemon-collector*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: comms-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      phanpy (ghcr.io/yitsushi/phanpy-docker, nginx:alpine base) and redbot
+      (ghcr.io/phasecorex/red-discordbot, extra-audio tag) both confirmed
+      running as UID 0 live (kubectl exec ... id) with no USER directive in
+      the base image and no PUID/PGID configured in our values. Forcing
+      runAsNonRoot would crash-loop them; a real fix needs PUID/PGID env
+      vars plus a volume ownership migration for redbot's existing /data,
+      which is out of scope here.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - comms
+          names:
+            - phanpy*
+            - redbot*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: default-ns-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      excalidraw (docker.io/excalidraw/excalidraw, nginx:stable-alpine-slim,
+      no USER directive) and littlelink
+      (ghcr.io/timothystewart6/littlelink-server) both confirmed running as
+      UID 0 live despite littlelink's project docs claiming non-root
+      support — the deployed "latest" tag doesn't reflect that. bar-assistant's
+      meilisearch (search) container is docker.io/getmeili/meilisearch,
+      which dropped non-root support in v0.25.0 after bugs
+      (github.com/meilisearch/meilisearch/issues/2051) and remains root.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+          namespaces:
+            - default
+          names:
+            - excalidraw*
+            - littlelink*
+            - bar-assistant*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: immich-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      immich-server and immich-machine-learning (ghcr.io/immich-app/immich-*)
+      have no USER directive in their Dockerfiles and run as UID 0 by
+      design; the official non-root guide is reported unreliable
+      (github.com/immich-app/immich/discussions/13124). Confirmed root live.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - media
+          names:
+            - immich-server*
+            - immich-machine-learning*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: openebs-localpv-provisioner-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      openebs/provisioner-localpv needs root to chown newly provisioned
+      hostPath volumes to the requesting pod's UID/GID; the chart's own
+      `localpv.privileged` defaults to true for this reason. Confirmed
+      running as UID 0 live.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - openebs-system
+          names:
+            - openebs-localpv-provisioner*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: alloy-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      grafana/alloy runs as root by default; Grafana documents non-root
+      support as experimental/undocumented
+      (grafana.com/docs/alloy/latest/configure/nonroot/). Confirmed running
+      as UID 0 live.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - observability
+          names:
+            - alloy*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: spegel-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      spegel needs read access to the root-owned containerd socket
+      (/run/containerd/containerd.sock) on every node to mirror OCI images
+      P2P; this requires root.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - DaemonSet
+          namespaces:
+            - kube-system
+          names:
+            - spegel*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: dragonfly-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      ghcr.io/dragonflydb/dragonfly confirmed running as UID 0 live; no
+      documented non-root Dockerfile USER found upstream.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - StatefulSet
+          namespaces:
+            - database
+          names:
+            - dragonfly*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: istio-ambient-dataplane-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      istio-cni-node and ztunnel need root to install the CNI plugin on the
+      host and to manage pod network namespaces for ambient mesh redirection.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - DaemonSet
+          namespaces:
+            - istio-system
+          names:
+            - istio-cni-node
+            - ztunnel
