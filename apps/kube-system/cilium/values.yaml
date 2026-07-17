@@ -47,6 +47,15 @@ kubeProxyReplacement: true
 kubeProxyReplacementHealthzBindAddr: 0.0.0.0:10256
 l2announcements:
   enabled: true
+# Fallback resources for the agent's init containers (mount-cgroup,
+# apply-sysctl-overwrites, mount-bpf-fs, clean-cilium-state, config) that
+# don't have their own dedicated resources field in the chart.
+initResources:
+  requests:
+    cpu: 10m
+    memory: 16Mi
+  limits:
+    memory: 64Mi
 resources:
   requests:
     cpu: 100m
