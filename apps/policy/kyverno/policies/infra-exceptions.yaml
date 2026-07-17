@@ -23,6 +23,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
             - DaemonSet
           namespaces:
             - rook-ceph
@@ -49,6 +50,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
             - DaemonSet
           namespaces:
             - rook-ceph
@@ -81,6 +83,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - rook-ceph
 
@@ -144,6 +147,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - kube-system
           names:
@@ -177,6 +181,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - network
           names:
@@ -214,6 +219,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - forgejo-runners
           names:
@@ -306,6 +312,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - comms
           names:
@@ -340,6 +347,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
             - StatefulSet
           namespaces:
             - default
@@ -372,6 +380,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - media
           names:
@@ -402,6 +411,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - openebs-system
           names:
@@ -431,6 +441,7 @@ spec:
           kinds:
             - Pod
             - Deployment
+            - ReplicaSet
           namespaces:
             - observability
           names:
