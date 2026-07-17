@@ -165,6 +165,26 @@ endpoints:
       - "[STATUS] == 404"
     alerts: *alerts
 
+  - name: argo-rollouts
+    group: internal
+    url: https://rollouts.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
+  - name: policy-reporter
+    group: internal
+    url: https://policy-reporter.darkflame.dev
+    interval: 1m
+    client:
+      dns-resolver: tcp://192.168.1.2:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
 metrics: true
 
 storage:

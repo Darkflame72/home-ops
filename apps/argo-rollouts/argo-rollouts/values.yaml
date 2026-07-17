@@ -22,6 +22,8 @@ dashboard:
       memory: 192Mi
   httproute:
     enabled: true
+    annotations:
+      gatus.home-operations.com/enabled: "false"
     parentRefs:
       - name: envoy-internal
         namespace: network
