@@ -117,7 +117,9 @@ spec:
             - kube-system
           names:
             - cilium
+            - cilium-?*
             - cilium-envoy
+            - cilium-envoy-?*
 
 ---
 apiVersion: kyverno.io/v2
@@ -547,4 +549,6 @@ spec:
             - istio-system
           names:
             - istio-cni-node
+            - istio-cni-node-?*
             - ztunnel
+            - ztunnel-?*
