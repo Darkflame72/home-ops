@@ -19,14 +19,30 @@ metadata:
       for source.namespaces matching to work.
       kube-system is deliberately excluded (DNS-critical, too high blast
       radius to onboard without a maintenance window).
-      "database" is also excluded: onboarding it broke Dragonfly's
-      StatefulSet ClusterIP Service (ztunnel's service-level interception
-      closed connections routed through the Service VIP — direct pod IPs
-      worked fine, isolating it to Service-level handling, not pod-to-pod
-      mTLS) and its own internal replication protocol on port 9999 between
-      replicas. Caused a live outage across every app using the shared
-      cache (Forgejo, bar-assistant, etc.). Revisit once verified safe
-      with a maintenance window.
+
+      FULL ROLLBACK (2026-07-17): onboarding "database" broke Dragonfly's
+      StatefulSet ClusterIP Service and internal replication (fixed by
+      excluding it). Hours later, CNPG clusters in every other meshed
+      namespace (comms, default, media, observability, security) were
+      found stuck in the same class of failure since the exact second
+      the default-deny AuthorizationPolicy first went live
+      (2026-07-16T21:35:38Z, per each Cluster's stale "ClusterIsNotReady"
+      condition) — the operator's port-8000 instance-manager
+      communication was silently broken cluster-wide for ~3 hours,
+      not self-healing, and not fixed by restarting the affected pods
+      (unlike the Dragonfly case). Client applications kept working
+      (they go through a Service on 5432), but CNPG's own HA/failover
+      monitoring was blind the whole time. Given ambient mesh has now
+      broken two independent StatefulSet-style workloads via two
+      different mechanisms in the same session, onboarding is fully
+      rolled back pending a proper investigation in a maintenance
+      window rather than continuing to find and patch namespaces one
+      at a time. istiod/cni/ztunnel remain installed (apps/istio-system),
+      just nothing is onboarded.
+      This ClusterPolicy is currently NOT referenced by
+      apps/policy/kyverno/policies/kustomization.yaml (deliberately
+      unwired, not deleted, so this history/rationale stays discoverable
+      for whoever picks this back up).
 spec:
   admission: true
   emitWarning: false
