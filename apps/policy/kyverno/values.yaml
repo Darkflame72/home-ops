@@ -19,6 +19,19 @@ admissionController:
     clusterRole:
       extraResources:
         - apiGroups:
+            - volsync.backube
+          resources:
+            - replicationsources
+            - replicationdestinations
+          verbs:
+            - create
+            - delete
+            - get
+            - list
+            - patch
+            - update
+            - watch
+        - apiGroups:
             - postgresql.cnpg.io
           resources:
             - scheduledbackups
@@ -85,6 +98,19 @@ backgroundController:
   rbac:
     clusterRole:
       extraResources:
+        - apiGroups:
+            - volsync.backube
+          resources:
+            - replicationsources
+            - replicationdestinations
+          verbs:
+            - create
+            - delete
+            - get
+            - list
+            - patch
+            - update
+            - watch
         - apiGroups:
             - postgresql.cnpg.io
           resources:
