@@ -11,6 +11,8 @@ spec:
   compression:
     compressor: zstd-fastest
   copyMethod: Snapshot
+  defaultDeletionPolicy: Delete
+  groupBy: VolumeGroupSnapshot
   identity:
     hostname: comms
     username: thelounge
@@ -32,6 +34,7 @@ spec:
   - pvc:
       name: thelounge
     sourcePathOverride: /data
+    sourcePathStrategy: PvcName
   upload:
     maxParallelFileReads: 2
   volumeSnapshotClassName: csi-ceph-blockpool

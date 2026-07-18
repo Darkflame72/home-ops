@@ -11,6 +11,8 @@ spec:
   compression:
     compressor: zstd-fastest
   copyMethod: Snapshot
+  defaultDeletionPolicy: Delete
+  groupBy: VolumeGroupSnapshot
   identity:
     hostname: observability
     username: config-gatus-0
@@ -32,6 +34,7 @@ spec:
   - pvc:
       name: config-gatus-0
     sourcePathOverride: /data
+    sourcePathStrategy: PvcName
   upload:
     maxParallelFileReads: 2
   volumeSnapshotClassName: csi-ceph-blockpool
