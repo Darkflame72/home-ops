@@ -121,6 +121,24 @@
     {
       "matchDatasources": ["github-releases"],
       "addLabels": ["renovate/github-release"]
+    },
+    {
+      "description": "Group the ArgoCD chart bump with its matching yaml-language-server schema comment bump so they land in one PR",
+      "matchDepNames": ["cilium", "cilium/cilium"],
+      "groupName": "cilium"
+    },
+    {
+      "description": "Group the ArgoCD chart bump with its matching yaml-language-server schema comment bump so they land in one PR",
+      "matchDepNames": ["cert-manager", "cert-manager/cert-manager"],
+      "groupName": "cert-manager"
+    },
+    {
+      "description": "Group the ArgoCD chart bump with its matching yaml-language-server schema comment bump so they land in one PR",
+      "matchDepNames": [
+        "ghcr.io/external-secrets/charts/external-secrets",
+        "external-secrets/external-secrets"
+      ],
+      "groupName": "external-secrets"
     }
   ],
   "customManagers": [
