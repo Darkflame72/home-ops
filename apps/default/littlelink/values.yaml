@@ -6,7 +6,7 @@ controllers:
       main:
         image:
           repository: ghcr.io/timothystewart6/littlelink-server
-          tag: latest@sha256:a91ebf84db8ead59edaf48dbb079004d73d0ffce1a81e30f75d6768ac3798a35
+          tag: latest@sha256:b94f9990a51ab682b32e6b656be1f109ac69c30b14fabd2827fad80680465c45
         env:
           TZ: Pacific/Auckland
           META_TITLE: Leon Bowie
