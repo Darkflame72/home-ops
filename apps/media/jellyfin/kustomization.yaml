@@ -6,3 +6,4 @@ resources:
   - ./pvc.yaml
   - ./scaledobject.yaml
   - ./volsync
+  - ./kopiur.yaml

@@ -121,6 +121,8 @@ endpoints:
       - "[STATUS] == 200"
     alerts: *alerts
 
+  # kopiur's UI always requires auth (never defaults to no-login), so an
+  # unauthenticated probe gets 401, not 200.
   - name: kopia
     group: internal
     url: https://kopia.darkflame.dev
@@ -128,7 +130,7 @@ endpoints:
     client:
       dns-resolver: tcp://192.168.1.2:53
     conditions:
-      - "[STATUS] == 200"
+      - "[STATUS] == 401"
     alerts: *alerts
 
   # OIDC-gated: gatus follows the redirect to the login page, which is the

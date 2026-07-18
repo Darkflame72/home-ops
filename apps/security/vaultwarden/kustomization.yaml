@@ -8,3 +8,4 @@ resources:
   - ./cluster.yaml
   - ./scheduled-backup.yaml
   - ./podmonitor.yaml
+  - ./kopiur.yaml

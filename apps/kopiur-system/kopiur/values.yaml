@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/home-operations/kopiur/main/deploy/helm/kopiur/values.schema.json
+installScope: cluster
+webhook:
+  tls:
+    mode: self
+features:
+  credentialProjection:
+    enabled: false
+  kopiaUi:
+    enabled: true

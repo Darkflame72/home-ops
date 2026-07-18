@@ -8,3 +8,4 @@ resources:
   - ./scheduled-backup.yaml
   - ./anubis.yaml
   - ./podmonitor.yaml
+  - ./kopiur.yaml

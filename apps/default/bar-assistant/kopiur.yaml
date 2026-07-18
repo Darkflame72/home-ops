@@ -1,0 +1,49 @@
+# Migrated from VolSync (perfectra1n fork) via `kopiur migrate volsync`.
+# identity is pinned to bar@default:/data so history continues under kopiur.
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: bar
+  namespace: default
+spec:
+  compression:
+    compressor: zstd-fastest
+  copyMethod: Snapshot
+  identity:
+    hostname: default
+    username: bar
+  mover:
+    cache:
+      capacity: 5Gi
+      storageClassName: openebs-hostpath
+    podSecurityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  retention:
+    keepDaily: 7
+    keepHourly: 24
+  sources:
+  - pvc:
+      name: bar
+    sourcePathOverride: /data
+  upload:
+    maxParallelFileReads: 2
+  volumeSnapshotClassName: csi-ceph-blockpool
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: bar
+  namespace: default
+spec:
+  policyRef:
+    name: bar
+  schedule:
+    cron: 0 * * * *

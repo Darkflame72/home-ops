@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: volsync
+  name: kopiur
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -12,19 +12,19 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/volsync-system/volsync
+      path: apps/kopiur-system/kopiur
       targetRevision: main
       ref: repo
-    - repoURL: ghcr.io/home-operations/charts-mirror
-      chart: volsync-perfectra1n
-      targetRevision: 0.18.5
+    - repoURL: ghcr.io/home-operations/charts
+      chart: kopiur
+      targetRevision: 0.7.5
       helm:
-        releaseName: volsync
+        releaseName: kopiur
         valueFiles:
-          - $repo/apps/volsync-system/volsync/values.yaml
+          - $repo/apps/kopiur-system/kopiur/values.yaml
   destination:
     name: in-cluster
-    namespace: volsync-system
+    namespace: kopiur-system
   syncPolicy:
     automated:
       allowEmpty: true

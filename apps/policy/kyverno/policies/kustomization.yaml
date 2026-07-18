@@ -10,8 +10,6 @@ resources:
   # istio-ambient-namespace-labels.yaml for why (broke CNPG/Dragonfly
   # cluster-wide, rolled back 2026-07-17 pending investigation in a
   # maintenance window).
-  - ./volsync-generate.yaml
-  - ./volsync-label-pvcs.yaml
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml
   - ./require-requests-limits.yaml

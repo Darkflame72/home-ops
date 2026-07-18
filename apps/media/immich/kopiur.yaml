@@ -1,0 +1,49 @@
+# Migrated from VolSync (perfectra1n fork) via `kopiur migrate volsync`.
+# identity is pinned to immich-machine-learning@media:/data so history continues under kopiur.
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: immich-machine-learning
+  namespace: media
+spec:
+  compression:
+    compressor: zstd-fastest
+  copyMethod: Snapshot
+  identity:
+    hostname: media
+    username: immich-machine-learning
+  mover:
+    cache:
+      capacity: 5Gi
+      storageClassName: openebs-hostpath
+    podSecurityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  retention:
+    keepDaily: 7
+    keepHourly: 24
+  sources:
+  - pvc:
+      name: immich-machine-learning
+    sourcePathOverride: /data
+  upload:
+    maxParallelFileReads: 2
+  volumeSnapshotClassName: csi-ceph-blockpool
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: immich-machine-learning
+  namespace: media
+spec:
+  policyRef:
+    name: immich-machine-learning
+  schedule:
+    cron: 0 3 * * *
