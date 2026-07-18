@@ -569,3 +569,34 @@ spec:
             - istio-cni-node-?*
             - ztunnel
             - ztunnel-?*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: kopiur-controller-limits
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      kopiur's controller deliberately ships with no memory limit: on
+      (re)start it reconciles every existing resource at once, spawning
+      concurrent in-process kopia subprocesses whose RSS counts against the
+      container's cgroup, and a limit that doesn't cover that startup burst
+      OOMKills it into a crash loop (documented in the chart's own
+      values.yaml). The webhook and kopia-ui server carry the same
+      no-limits-by-default posture from the chart.
+spec:
+  exceptions:
+    - policyName: require-requests-limits
+      ruleNames:
+        - validate-resources
+        - autogen-validate-resources
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+            - ReplicaSet
+          namespaces:
+            - kopiur-system
