@@ -71,6 +71,8 @@ route:
 persistence:
   storage:
     existingClaim: gotosocial
+    globalMounts:
+      - path: /gotosocial/storage
   tmp:
     type: emptyDir
     medium: Memory
