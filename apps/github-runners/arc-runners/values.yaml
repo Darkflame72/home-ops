@@ -8,6 +8,27 @@ controllerServiceAccount:
   namespace: arc-system
   name: arc-controller-gha-rs-controller
 
+# The chart's default template.spec.containers has no resources/securityContext
+# set on the runner container and floats on the mutable `latest` tag, tripping
+# require-requests-limits, disallow-latest-tag and run-as-non-root. Helm
+# replaces lists wholesale (no merge), so the full container spec must be
+# repeated here. UID 1001 is the "runner" user baked into the image.
+template:
+  spec:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1001
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner:2.335.1
+        command: ["/home/runner/run.sh"]
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+
 # Same image as the controller (distroless nonroot, UID 65532) — matches
 # ghcr.io/actions/gha-runner-scale-set-controller's Dockerfile USER.
 listenerTemplate:

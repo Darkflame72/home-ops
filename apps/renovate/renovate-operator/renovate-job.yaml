@@ -8,6 +8,12 @@ spec:
   image: renovate/renovate:43.255.0
   secretRef: renovate-secret
   parallelism: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   provider:
     name: forgejo
     endpoint: "https://git.darkflame.dev/api/v1"

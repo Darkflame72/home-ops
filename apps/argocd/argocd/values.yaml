@@ -2,6 +2,14 @@
 global:
   domain: cd.darkflame.dev
 
+redisSecretInit:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
 redis-ha:
   enabled: true
   redis:
