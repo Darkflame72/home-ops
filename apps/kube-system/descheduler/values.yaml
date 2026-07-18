@@ -21,11 +21,11 @@ deschedulerPolicy:
         balance:
           enabled:
             - RemoveDuplicates
+            - RemovePodsViolatingTopologySpreadConstraint
         deschedule:
           enabled:
             - RemovePodsViolatingNodeAffinity
             - RemovePodsViolatingInterPodAntiAffinity
-            - RemovePodsViolatingTopologySpreadConstraint
             - RemoveFailedPods
             - RemovePodsHavingTooManyRestarts
         filter:
