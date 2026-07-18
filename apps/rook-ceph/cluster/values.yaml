@@ -49,7 +49,7 @@ cephClusterSpec:
     enabled: true
     urlPrefix: /
     ssl: false
-    # prometheusEndpoint: http://prometheus-operated.observability.svc.cluster.local:9090
+    prometheusEndpoint: http://mimir-gateway.observability.svc.cluster.local/prometheus
   mgr:
     modules:
       - name: diskprediction_local

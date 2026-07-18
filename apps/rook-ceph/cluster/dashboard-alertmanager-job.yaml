@@ -1,0 +1,85 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/batch/job_v1.json
+# Points the Ceph dashboard at Alertmanager (Mimir) so it can display active Ceph alerts.
+# There is no CephCluster CRD field for this (unlike dashboard.prometheusEndpoint) — the
+# rook maintainers closed the feature request as wontfix: https://github.com/rook/rook/issues/15342
+# so it has to be set via `ceph dashboard set-alertmanager-api-host`. Re-run on every ArgoCD
+# sync since the setting lives in ceph's mon config store, not in a k8s resource.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rook-ceph-dashboard-alertmanager
+  namespace: rook-ceph
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: rook-ceph-default
+      containers:
+        - name: set-alertmanager-api-host
+          image: quay.io/ceph/ceph:v20.2.2
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              CEPH_CONFIG="/etc/ceph/ceph.conf"
+              MON_CONFIG="/etc/rook/mon-endpoints"
+              KEYRING_FILE="/etc/ceph/keyring"
+
+              mon_endpoints=$(sed 's/[a-z0-9_-]\+=//g' "${MON_CONFIG}")
+              cat <<EOF > "${CEPH_CONFIG}"
+              [global]
+              mon_host = ${mon_endpoints}
+
+              [client.admin]
+              keyring = ${KEYRING_FILE}
+              EOF
+
+              cat <<EOF > "${KEYRING_FILE}"
+              [${ROOK_CEPH_USERNAME}]
+              key = $(cat /var/lib/rook-ceph-mon/secret.keyring)
+              EOF
+
+              ceph dashboard set-alertmanager-api-host 'http://mimir-gateway.observability.svc.cluster.local/alertmanager'
+          env:
+            - name: ROOK_CEPH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rook-ceph-mon
+                  key: ceph-username
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 2016
+            runAsNonRoot: true
+            runAsUser: 2016
+          volumeMounts:
+            - mountPath: /etc/ceph
+              name: ceph-config
+            - mountPath: /etc/rook
+              name: mon-endpoint-volume
+            - mountPath: /var/lib/rook-ceph-mon
+              name: ceph-admin-secret
+      volumes:
+        - name: ceph-config
+          emptyDir: {}
+        - name: mon-endpoint-volume
+          configMap:
+            name: rook-ceph-mon-endpoints
+            items:
+              - key: data
+                path: mon-endpoints
+        - name: ceph-admin-secret
+          secret:
+            secretName: rook-ceph-mon
+            items:
+              - key: ceph-secret
+                path: secret.keyring
