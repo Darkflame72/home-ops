@@ -21,9 +21,9 @@ spec:
       capacity: 5Gi
       storageClassName: openebs-hostpath
     podSecurityContext:
-      fsGroup: 1000
-      runAsGroup: 1000
-      runAsUser: 1000
+      fsGroup: 33
+      runAsGroup: 33
+      runAsUser: 33
   repository:
     kind: ClusterRepository
     name: kopia-primary
