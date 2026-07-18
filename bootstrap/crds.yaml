@@ -18,7 +18,7 @@ releases:
   - name: envoy-gateway
     namespace: network
     chart: oci://mirror.gcr.io/envoyproxy/gateway-helm
-    version: v1.6.1
+    version: 1.8.2
 
   # Needed by Cilium
   - name: kube-prometheus-stack

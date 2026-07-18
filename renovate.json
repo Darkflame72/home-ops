@@ -13,7 +13,8 @@
   "helmfile": {
     "managerFilePatterns": [
       "/(^|/)helmfile\\.ya?ml?(?:\\.j2)?$/",
-      "/(^|/)helmfile\\.d/.+\\.ya?ml?(?:\\.j2)?$/"
+      "/(^|/)helmfile\\.d/.+\\.ya?ml?(?:\\.j2)?$/",
+      "/(^|/)bootstrap/.+\\.ya?ml(?:\\.j2)?$/"
     ]
   },
   "helm-values": {
