@@ -17,6 +17,18 @@ deschedulerPolicy:
             ignorePvcPods: true
             evictLocalStoragePods: false
             evictSystemCriticalPods: false
+        - name: RemoveDuplicates
+        - name: RemovePodsViolatingTopologySpreadConstraint
+        - name: RemovePodsViolatingNodeAffinity
+          args:
+            nodeAffinityType:
+              - requiredDuringSchedulingIgnoredDuringExecution
+        - name: RemovePodsViolatingInterPodAntiAffinity
+        - name: RemoveFailedPods
+        - name: RemovePodsHavingTooManyRestarts
+          args:
+            podRestartThreshold: 100
+            includingInitContainers: true
       plugins:
         balance:
           enabled:
