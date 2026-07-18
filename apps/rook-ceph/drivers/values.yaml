@@ -3,70 +3,10 @@ operatorConfig:
   driverSpecDefaults:
     clusterName: rook-ceph
 drivers:
+  # Disabled: nothing uses CephFS (see cluster/values.yaml for why the
+  # CephFilesystem itself was removed).
   cephfs:
-    enabled: true
-    name: rook-ceph.cephfs.csi.ceph.com
-    snapshotPolicy: volumeGroupSnapshot
-    kernelMountOptions:
-      ms_mode: prefer-crc
-    nodePlugin:
-      resources:
-        plugin:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            memory: 128Mi
-        registrar:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            memory: 128Mi
-        logRotator:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            memory: 128Mi
-    controllerPlugin:
-      resources:
-        attacher:
-          requests:
-            cpu: 10m
-            memory: 80Mi
-          limits:
-            memory: 320Mi
-        plugin:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            memory: 128Mi
-        provisioner:
-          requests:
-            cpu: 10m
-            memory: 96Mi
-          limits:
-            memory: 384Mi
-        resizer:
-          requests:
-            cpu: 10m
-            memory: 80Mi
-          limits:
-            memory: 320Mi
-        snapshotter:
-          requests:
-            cpu: 10m
-            memory: 80Mi
-          limits:
-            memory: 320Mi
-        logRotator:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            memory: 128Mi
+    enabled: false
   nfs:
     enabled: false
   nvmeof:
