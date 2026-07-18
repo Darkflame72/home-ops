@@ -68,6 +68,12 @@ cephClusterSpec:
     osd:
       limits:
         memory: 8Gi
+    prepareosd:
+      requests:
+        cpu: 500m
+        memory: 50Mi
+      limits:
+        memory: 1Gi
   storage:
     useAllNodes: true
     useAllDevices: false

@@ -9,8 +9,10 @@ metadata:
     policies.kyverno.io/description: >-
       Ceph daemons (mon/mgr/mds/osd/rgw/exporter/crashcollector) and the CSI
       plugins run as root by design (device ownership, chown of
-      /var/lib/ceph, bind-mounting host paths). require-run-as-nonroot can
-      never be satisfied here without breaking storage.
+      /var/lib/ceph, bind-mounting host paths). The osd-prepare Job runs the
+      same provisioning code path (wipes/formats raw block devices) and
+      needs root for the same reason. require-run-as-nonroot can never be
+      satisfied here without breaking storage.
 spec:
   exceptions:
     - policyName: require-run-as-nonroot
@@ -25,6 +27,7 @@ spec:
             - Deployment
             - ReplicaSet
             - DaemonSet
+            - Job
           namespaces:
             - rook-ceph
 
@@ -37,7 +40,9 @@ metadata:
   annotations:
     policies.kyverno.io/description: >-
       OSDs and the CSI node plugins need privileged mode for raw block
-      device access and mount namespace operations on the host.
+      device access and mount namespace operations on the host. The
+      osd-prepare Job needs the same for device discovery/wiping before an
+      OSD exists to hand it off to.
 spec:
   exceptions:
     - policyName: disallow-privileged-containers
@@ -52,6 +57,7 @@ spec:
             - Deployment
             - ReplicaSet
             - DaemonSet
+            - Job
           namespaces:
             - rook-ceph
           names:
