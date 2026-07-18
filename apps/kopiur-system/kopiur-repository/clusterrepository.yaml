@@ -26,6 +26,7 @@ spec:
       - comms
       - default
       - games
+      - kopiur-system
       - media
       - observability
       - security
