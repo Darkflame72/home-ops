@@ -39,9 +39,13 @@ controllers:
 defaultPodOptions:
   hostNetwork: true
   securityContext:
-    runAsUser: 0
-    runAsGroup: 0
-    runAsNonRoot: false
+    # Talos owns /system/secrets/etcd/* as uid/gid 60, mode 0400 (owner-only).
+    # Must match that uid exactly: running as root here doesn't help because
+    # capabilities.drop:[ALL] on the container strips CAP_DAC_OVERRIDE, so
+    # root can't bypass the owner-only permission bits either.
+    runAsUser: 60
+    runAsGroup: 60
+    runAsNonRoot: true
   nodeSelector:
     node-role.kubernetes.io/control-plane: ""
 persistence:
