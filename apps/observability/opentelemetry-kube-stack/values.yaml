@@ -204,6 +204,23 @@ collectors:
     enabled: true
     mode: daemonset
     config:
+      receivers:
+        # Talos enables kube-apiserver audit logging by default (Metadata
+        # level, /var/log/audit/kube on each control-plane node) but never
+        # ships those logs anywhere. hostMetrics preset already mounts the
+        # host root at /hostfs (read-only), so no extra volume is needed.
+        filelog/audit:
+          include:
+            - /hostfs/var/log/audit/kube/*.log
+          start_at: end
+          retry_on_failure:
+            enabled: true
+      processors:
+        resource/audit:
+          attributes:
+            - action: insert
+              key: service.name
+              value: kube-audit
       service:
         pipelines:
           traces:
@@ -211,6 +228,10 @@ collectors:
           metrics:
             exporters: [otlp_http/mimir, debug]
           logs:
+            exporters: [otlp_http/loki, debug]
+          logs/audit:
+            receivers: [filelog/audit]
+            processors: [resource/audit, resource_detection/env, resource/hostname, batch]
             exporters: [otlp_http/loki, debug]
     presets:
       logsCollection:
