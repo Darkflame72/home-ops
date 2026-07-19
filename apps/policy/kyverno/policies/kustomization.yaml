@@ -14,5 +14,7 @@ resources:
   # identity break, envoy connection-reset break) before re-attempting.
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml
+  - ./require-image-registry-allowlist.yaml
   - ./require-requests-limits.yaml
   - ./require-run-as-nonroot.yaml
+  - ./verify-image-signatures.yaml

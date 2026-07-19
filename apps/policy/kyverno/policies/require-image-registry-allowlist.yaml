@@ -1,0 +1,65 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/kyverno/main/config/crds/policies.kyverno.io/v1/validatingpolicies.yaml
+#
+# CEL-based ValidatingPolicy (not legacy ClusterPolicy — see the note in
+# verify-image-signatures.yaml on the v1.20 removal timeline).
+#
+# This is the control that actually covers every container, unlike
+# verify-image-signatures.yaml which only covers publishers whose signing
+# identity has been confirmed. It doesn't care whether an image is signed,
+# only whether it comes from a registry this cluster already trusts.
+#
+# Ships in Audit like every other policy in this directory. Once a clean
+# policy-report pass confirms no unexpected workload trips it, this is a
+# reasonable candidate to promote to Deny — registry provenance isn't the kind
+# of unverifiable trust assumption cosign identities are, so it doesn't need
+# the same indefinite-audit caution as verify-image-signatures.yaml.
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-image-registry-allowlist
+  annotations:
+    policies.kyverno.io/title: Require Image Registry Allowlist
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Container images must come from an allowlisted registry, seeded from
+      this cluster's actual live image inventory (checked 2026-07-19):
+      ghcr.io, quay.io, docker.io, registry.k8s.io, reg.kyverno.io,
+      registry.istio.io, mirror.gcr.io, ecr-public.aws.com,
+      cr.agentgateway.dev, code.forgejo.org. Bare-name Docker Hub shorthand
+      (e.g. "renovate/renovate:43", no explicit registry host) is allowed —
+      it's already implicitly docker.io, which is already trusted; this
+      cluster has 5 such images live (docker, grafana/mcp-grafana,
+      otel/opentelemetry-collector-contrib, renovate/renovate,
+      vaultwarden/server) and none should regress.
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validationActions:
+    - Audit
+  variables:
+    - name: allowedRegistry
+      expression: >-
+        '^(ghcr\\.io|quay\\.io|docker\\.io|registry\\.k8s\\.io|reg\\.kyverno\\.io|registry\\.istio\\.io|mirror\\.gcr\\.io|ecr-public\\.aws\\.com|cr\\.agentgateway\\.dev|code\\.forgejo\\.org)/'
+    - name: hasExplicitRegistry
+      expression: "'^[^/]+[.:][^/]*/'"
+  validations:
+    - expression: >-
+        object.spec.containers.all(c,
+          c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
+        && object.spec.initContainers.all(c,
+          c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
+        && object.spec.ephemeralContainers.all(c,
+          c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
+      message: >-
+        Container image must come from an allowlisted registry (ghcr.io,
+        quay.io, docker.io, registry.k8s.io, reg.kyverno.io,
+        registry.istio.io, mirror.gcr.io, ecr-public.aws.com,
+        cr.agentgateway.dev, code.forgejo.org) or be an unprefixed Docker Hub
+        shorthand image. Adding a new registry requires a PR.
