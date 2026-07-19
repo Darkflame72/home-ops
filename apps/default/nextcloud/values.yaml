@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nextcloud/helm/refs/heads/main/charts/nextcloud/values.schema.json
+image:
+  registry: docker.io
+  repository: library/nextcloud
+  flavor: apache
+  # renovate: datasource=docker depName=nextcloud
+  tag: 34.0.1-apache@sha256:e15c14f83a90484e497dabc7d01248370f69e1de353c072b8aa15dbd19d5fd9b
+
+replicaCount: 1
+
+phpClientHttpsFix:
+  enabled: true
+  protocol: https
+
+httpRoute:
+  enabled: true
+  hostnames:
+    - cloud.darkflame.dev
+  parentRefs:
+    - name: envoy-external
+      namespace: network
+
+service:
+  port: 80
+
+nextcloud:
+  host: cloud.darkflame.dev
+  containerPort: 80
+  datadir: /var/www/html/data
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secret
+  extraEnv:
+    - name: TRUSTED_PROXIES
+      value: "10.42.0.0/16 10.43.0.0/16"
+    - name: OVERWRITECLIURL
+      value: "https://cloud.darkflame.dev"
+    - name: OVERWRITEHOST
+      value: "cloud.darkflame.dev"
+  strategy:
+    type: Recreate
+
+internalDatabase:
+  enabled: false
+
+externalDatabase:
+  enabled: true
+  type: postgresql
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-postgres-app
+    usernameKey: user
+    passwordKey: password
+    hostKey: host
+    databaseKey: dbname
+
+externalRedis:
+  enabled: true
+  host: dragonfly.database.svc.cluster.local
+  port: "6379"
+
+cronjob:
+  enabled: true
+  type: cronjob
+  cronjob:
+    schedule: "*/5 * * * *"
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+
+persistence:
+  enabled: true
+  existingClaim: nextcloud-app
+  nextcloudData:
+    enabled: true
+    existingClaim: nextcloud-nfs
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    memory: 2Gi
+
+prometheus:
+  serviceMonitor:
+    enabled: true

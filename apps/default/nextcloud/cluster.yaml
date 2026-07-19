@@ -1,0 +1,47 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/cluster_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: nextcloud-postgres
+  namespace: default
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
+  primaryUpdateStrategy: unsupervised
+
+  affinity:
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+  storage:
+    size: 20Gi
+    storageClass: openebs-hostpath
+  postgresql:
+    parameters:
+      max_connections: "300"
+      shared_buffers: 512MB
+      pg_stat_statements.max: "10000"
+      pg_stat_statements.track: all
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "4Gi"
+
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://cnpg/nextcloud-postgres
+      endpointURL: http://10.0.60.15:30188
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-backup-secret
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-backup-secret
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"
