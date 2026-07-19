@@ -1,0 +1,98 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: ghost-mysql
+  namespace: default
+spec:
+  compression:
+    compressor: zstd-fastest
+  copyMethod: Snapshot
+  defaultDeletionPolicy: Delete
+  groupBy: VolumeGroupSnapshot
+  identity:
+    hostname: default
+    username: ghost-mysql
+  mover:
+    cache:
+      capacity: 5Gi
+      storageClassName: openebs-hostpath
+    podSecurityContext:
+      fsGroup: 999
+      runAsGroup: 999
+      runAsUser: 999
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  retention:
+    keepDaily: 7
+    keepHourly: 24
+  sources:
+  - pvc:
+      name: ghost-mysql
+    sourcePathOverride: /data
+    sourcePathStrategy: PvcName
+  upload:
+    maxParallelFileReads: 2
+  volumeSnapshotClassName: csi-ceph-blockpool
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: ghost-mysql
+  namespace: default
+spec:
+  policyRef:
+    name: ghost-mysql
+  schedule:
+    cron: 0 * * * *
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: ghost-content
+  namespace: default
+spec:
+  compression:
+    compressor: zstd-fastest
+  copyMethod: Snapshot
+  defaultDeletionPolicy: Delete
+  groupBy: VolumeGroupSnapshot
+  identity:
+    hostname: default
+    username: ghost-content
+  mover:
+    cache:
+      capacity: 5Gi
+      storageClassName: openebs-hostpath
+    podSecurityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  retention:
+    keepDaily: 7
+    keepHourly: 24
+  sources:
+  - pvc:
+      name: ghost-content
+    sourcePathOverride: /data
+    sourcePathStrategy: PvcName
+  upload:
+    maxParallelFileReads: 2
+  volumeSnapshotClassName: csi-ceph-blockpool
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: ghost-content
+  namespace: default
+spec:
+  policyRef:
+    name: ghost-content
+  schedule:
+    cron: 0 * * * *
