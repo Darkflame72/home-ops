@@ -38,17 +38,32 @@ metadata:
       identity against the new default-deny policies in every other
       namespace it polls.
 
-      RE-ENABLED (2026-07-19): fixed by adding a workload-scoped
-      allow-cnpg-instance-manager AuthorizationPolicy (port 8000 only, no
-      `from` clause — see istio-default-authz.yaml) to every namespace that
-      hosts a CNPG cluster, mirroring the existing mimir-gateway/KEDA and
-      forgejo-runners exceptions for other unmeshed callers. Rolling out
-      one namespace at a time this time (not all 6 at once), verifying CNPG
-      cluster health cluster-wide after each addition before proceeding to
-      the next. Current rollout progress is the names list below — grows by
-      one namespace per commit. "database" stays excluded throughout
-      (Dragonfly issue above is unresolved and out of scope for this
-      re-enablement).
+      RE-ENABLED, THEN RE-ROLLED-BACK (2026-07-19): re-enabled with a fix
+      for the CNPG issue above (workload-scoped allow-cnpg-instance-manager
+      AuthorizationPolicy, port 8000 only, no `from` clause — see
+      istio-default-authz.yaml — mirroring the existing mimir-gateway/KEDA
+      and forgejo-runners exceptions), onboarding one namespace at a time
+      this time instead of all 6 at once. First namespace tried was
+      "network" (envoy-external/envoy-internal/envoy-gateway, the sole
+      ingress path) — it has no default-deny AuthorizationPolicy generated
+      for it, so this wasn't the CNPG failure mode. Instead, within minutes
+      of the label landing, envoy-external started intermittently resetting
+      already-established upstream connections
+      (response_flags "UC" / "upstream_reset_before_response_started
+      {connection_termination}") to backends in unrelated namespaces
+      (argocd, observability), causing live intermittent 503s on
+      externally-exposed hosts (confirmed on cd.darkflame.dev,
+      grafana.darkflame.dev). This is a third distinct ambient-mesh failure
+      mode (connection-level disruption from ztunnel/CNI redirection on the
+      ingress-hosting namespace itself, unrelated to AuthorizationPolicy),
+      on top of the Dragonfly StatefulSet break and the CNPG operator
+      identity issue above. Rolled back again the same day — namespace list
+      below is empty pending investigation of this new failure mode.
+      Suggests "network" (envoy) may need to go last, or not at all,
+      rather than first, when this is revisited: it has the highest blast
+      radius (sole ingress path) for a class of ambient failure that isn't
+      mitigated by the AuthorizationPolicy exceptions used for the other
+      two failure modes.
 spec:
   admission: true
   emitWarning: false
@@ -60,8 +75,7 @@ spec:
           - resources:
               kinds:
                 - Namespace
-              names:
-                - network
+              names: []
       mutate:
         targets:
           - apiVersion: v1
