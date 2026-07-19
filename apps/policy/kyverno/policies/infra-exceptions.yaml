@@ -234,9 +234,6 @@ metadata:
       meilisearch (search) container is docker.io/getmeili/meilisearch,
       which dropped non-root support in v0.25.0 after bugs
       (github.com/meilisearch/meilisearch/issues/2051) and remains root.
-      nextcloud's entrypoint needs root to write PHP config
-      (/usr/local/etc/php/conf.d/redis-session.ini) before it can serve —
-      forcing runAsNonRoot crash-loops it (verified live).
 spec:
   policyRefs:
     - name: require-run-as-nonroot
@@ -246,8 +243,7 @@ spec:
       expression: >-
         object.metadata.namespace == 'default' &&
         (object.metadata.name.startsWith('excalidraw') ||
-         object.metadata.name.startsWith('bar-assistant') ||
-         object.metadata.name.startsWith('nextcloud'))
+         object.metadata.name.startsWith('bar-assistant'))
 
 ---
 apiVersion: policies.kyverno.io/v1
