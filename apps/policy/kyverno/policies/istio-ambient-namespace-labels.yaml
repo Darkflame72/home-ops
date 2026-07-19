@@ -1,7 +1,21 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/clusterpolicy_v1.json
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/kyverno/main/config/crds/policies.kyverno.io/v1/mutatingpolicies.yaml
+#
+# CEL-based MutatingPolicy (not legacy ClusterPolicy — see the note in
+# verify-image-signatures.yaml on the v1.20 removal timeline). Migrated while
+# dormant/unwired (see kustomization.yaml) — not live.
+#
+# The legacy policy encoded its empty allow-list as `match.resources.names: []`,
+# which in Kyverno's own match semantics means "match nothing" (a deliberate
+# fail-safe empty state, not a wildcard). The CEL matchConstraints equivalent
+# (`resourceRules[].resourceNames: []`) means the OPPOSITE — the Kubernetes API
+# itself documents an empty resourceNames as "everything is allowed" — so
+# porting the field name directly would have flipped this from disabled to
+# matching every namespace. Used a matchCondition instead
+# (`object.metadata.name in [...]`), which stays unambiguous in both the
+# current empty state and once namespaces get added back.
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
 metadata:
   name: istio-ambient-namespace-labels
   annotations:
@@ -65,23 +79,24 @@ metadata:
       mitigated by the AuthorizationPolicy exceptions used for the other
       two failure modes.
 spec:
-  admission: true
-  emitWarning: false
-  mutateExistingOnPolicyUpdate: true
-  rules:
-    - name: label-namespace-ambient
-      match:
-        any:
-          - resources:
-              kinds:
-                - Namespace
-              names: []
-      mutate:
-        targets:
-          - apiVersion: v1
-            kind: Namespace
-            name: "{{request.object.metadata.name}}"
-        patchStrategicMerge:
-          metadata:
-            labels:
-              istio.io/dataplane-mode: ambient
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+  matchConditions:
+    - name: namespace-in-allowlist
+      expression: "object.metadata.name in []"
+  evaluation:
+    mutateExisting:
+      enabled: true
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            metadata: Object.metadata{
+              labels: {"istio.io/dataplane-mode": "ambient"}
+            }
+          }

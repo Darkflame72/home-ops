@@ -1,7 +1,11 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/clusterpolicy_v1.json
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/kyverno/main/config/crds/policies.kyverno.io/v1/generatingpolicies.yaml
+#
+# CEL-based GeneratingPolicy (not legacy ClusterPolicy — see the note in
+# verify-image-signatures.yaml on the v1.20 removal timeline). This is the
+# last resource in this directory that was still on the legacy API.
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
 metadata:
   name: grafana-dashboard-generate
   annotations:
@@ -12,31 +16,48 @@ metadata:
       grafana_dashboard=1, bridging Helm chart dashboard ConfigMaps
       to the grafana-operator.
 spec:
-  admission: true
-  emitWarning: false
-  generateExisting: true
-  rules:
-    - name: generate-grafana-dashboard
-      match:
-        any:
-          - resources:
-              kinds:
-                - ConfigMap
-              selector:
-                matchLabels:
-                  grafana_dashboard: "1"
-      generate:
-        apiVersion: grafana.integreatly.org/v1beta1
-        kind: GrafanaDashboard
-        name: "{{request.object.metadata.name}}"
-        namespace: "{{request.object.metadata.namespace}}"
-        synchronize: false
-        data:
-          spec:
-            allowCrossNamespaceImport: true
-            instanceSelector:
-              matchLabels:
-                grafana.internal/instance: grafana
-            configMapRef:
-              name: "{{request.object.metadata.name}}"
-              key: "{{keys(request.object.data)[0]}}"
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["configmaps"]
+    objectSelector:
+      matchLabels:
+        grafana_dashboard: "1"
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: cmName
+      expression: "object.metadata.name"
+    - name: cmNamespace
+      expression: "object.metadata.namespace"
+    - name: firstKey
+      expression: "object.data.map(k, k)[0]"
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("grafana.integreatly.org/v1beta1"),
+            "kind": dyn("GrafanaDashboard"),
+            "metadata": dyn({
+              "name": variables.cmName,
+              "namespace": variables.cmNamespace
+            }),
+            "spec": dyn({
+              "allowCrossNamespaceImport": dyn(true),
+              "instanceSelector": dyn({
+                "matchLabels": {"grafana.internal/instance": "grafana"}
+              }),
+              "configMapRef": dyn({
+                "name": variables.cmName,
+                "key": variables.firstKey
+              })
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply(variables.cmNamespace, variables.downstream)"
