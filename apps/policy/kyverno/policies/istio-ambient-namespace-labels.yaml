@@ -18,31 +18,37 @@ metadata:
       policy for why source AND destination namespace both need to be meshed
       for source.namespaces matching to work.
       kube-system is deliberately excluded (DNS-critical, too high blast
-      radius to onboard without a maintenance window).
+      radius to onboard without a maintenance window). "database" is also
+      deliberately excluded (see FULL ROLLBACK below) — the CNPG operator
+      and Dragonfly both run there and Dragonfly's StatefulSet replication
+      breaks under ambient.
 
       FULL ROLLBACK (2026-07-17): onboarding "database" broke Dragonfly's
       StatefulSet ClusterIP Service and internal replication (fixed by
-      excluding it). Hours later, CNPG clusters in every other meshed
-      namespace (comms, default, media, observability, security) were
-      found stuck in the same class of failure since the exact second
-      the default-deny AuthorizationPolicy first went live
-      (2026-07-16T21:35:38Z, per each Cluster's stale "ClusterIsNotReady"
-      condition) — the operator's port-8000 instance-manager
-      communication was silently broken cluster-wide for ~3 hours,
-      not self-healing, and not fixed by restarting the affected pods
-      (unlike the Dragonfly case). Client applications kept working
-      (they go through a Service on 5432), but CNPG's own HA/failover
-      monitoring was blind the whole time. Given ambient mesh has now
-      broken two independent StatefulSet-style workloads via two
-      different mechanisms in the same session, onboarding is fully
-      rolled back pending a proper investigation in a maintenance
-      window rather than continuing to find and patch namespaces one
-      at a time. istiod/cni/ztunnel remain installed (apps/istio-system),
-      just nothing is onboarded.
-      This ClusterPolicy is currently NOT referenced by
-      apps/policy/kyverno/policies/kustomization.yaml (deliberately
-      unwired, not deleted, so this history/rationale stays discoverable
-      for whoever picks this back up).
+      excluding it — still excluded, unresolved). Hours later, CNPG
+      clusters in every other meshed namespace (comms, default, media,
+      observability, security) were found stuck in the same class of
+      failure since the exact second the default-deny AuthorizationPolicy
+      first went live (2026-07-16T21:35:38Z, per each Cluster's stale
+      "ClusterIsNotReady" condition) — the operator's port-8000
+      instance-manager communication was silently broken cluster-wide for
+      ~3 hours, not self-healing, and not fixed by restarting the affected
+      pods (unlike the Dragonfly case). Root cause: the CNPG operator runs
+      in "database", which is unmeshed, so ztunnel couldn't verify its
+      identity against the new default-deny policies in every other
+      namespace it polls.
+
+      RE-ENABLED (2026-07-19): fixed by adding a workload-scoped
+      allow-cnpg-instance-manager AuthorizationPolicy (port 8000 only, no
+      `from` clause — see istio-default-authz.yaml) to every namespace that
+      hosts a CNPG cluster, mirroring the existing mimir-gateway/KEDA and
+      forgejo-runners exceptions for other unmeshed callers. Rolling out
+      one namespace at a time this time (not all 6 at once), verifying CNPG
+      cluster health cluster-wide after each addition before proceeding to
+      the next. Current rollout progress is the names list below — grows by
+      one namespace per commit. "database" stays excluded throughout
+      (Dragonfly issue above is unresolved and out of scope for this
+      re-enablement).
 spec:
   admission: true
   emitWarning: false
@@ -55,14 +61,7 @@ spec:
               kinds:
                 - Namespace
               names:
-                - agents
-                - comms
-                - default
-                - games
-                - media
                 - network
-                - observability
-                - security
       mutate:
         targets:
           - apiVersion: v1

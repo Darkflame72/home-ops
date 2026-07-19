@@ -5,11 +5,12 @@ kind: Kustomization
 resources:
   - ./grafana-dashboard-generate.yaml
   - ./infra-exceptions.yaml
-  # istio-ambient-namespace-labels.yaml and istio-default-authz.yaml are
-  # deliberately unwired, not deleted — see the description in
-  # istio-ambient-namespace-labels.yaml for why (broke CNPG/Dragonfly
-  # cluster-wide, rolled back 2026-07-17 pending investigation in a
-  # maintenance window).
+  # istio-ambient-namespace-labels.yaml and istio-default-authz.yaml:
+  # re-enabled 2026-07-19 after the 2026-07-17 CNPG/Dragonfly rollback —
+  # onboarding one namespace at a time this time, see the annotations on
+  # those two policies for the incident history and current rollout state.
+  - ./istio-ambient-namespace-labels.yaml
+  - ./istio-default-authz.yaml
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml
   - ./require-requests-limits.yaml
