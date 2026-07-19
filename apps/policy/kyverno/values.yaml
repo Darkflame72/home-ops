@@ -147,3 +147,13 @@ cleanupController:
 reportsController:
   serviceMonitor:
     enabled: true
+  resources:
+    # Chart default (128Mi limit) OOMKilled once after adding 4 more active
+    # CEL background-scan policies (2026-07-19) — background scanning now
+    # evaluates 5 ValidatingPolicies across every resource in the cluster
+    # per cycle instead of 1.
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi

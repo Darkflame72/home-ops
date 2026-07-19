@@ -53,9 +53,9 @@ spec:
     - expression: >-
         object.spec.containers.all(c,
           c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
-        && object.spec.initContainers.all(c,
+        && object.spec.?initContainers.orValue([]).all(c,
           c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
-        && object.spec.ephemeralContainers.all(c,
+        && object.spec.?ephemeralContainers.orValue([]).all(c,
           c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
       message: >-
         Container image must come from an allowlisted registry (ghcr.io,

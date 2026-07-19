@@ -1,6 +1,17 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/policyexception_v2.json
-apiVersion: kyverno.io/v2
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/policies.kyverno.io/policyexception_v1.json
+#
+# These target the CEL-based ValidatingPolicy types (disallow-privileged-containers,
+# require-requests-limits, require-run-as-nonroot), NOT the legacy kyverno.io/v2
+# PolicyException type. That older type keys off policyName+ruleNames, and CEL
+# ValidatingPolicy has no named rules (just a flat spec.validations list) — an
+# exception written against it silently matches nothing. This is the mechanism
+# kyverno ships for excepting CEL policies: policyRefs + CEL matchConditions
+# instead of a JMESPath match block. Name-glob patterns from the old format
+# (e.g. "foo-*") are ported here as .startsWith('foo') — deliberately not
+# anchored to require an extra character after the dash, since no real
+# resource is ever named exactly "foo-" with nothing after it.
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: rook-ceph-run-as-root
@@ -14,25 +25,15 @@ metadata:
       needs root for the same reason. require-run-as-nonroot can never be
       satisfied here without breaking storage.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-            - DaemonSet
-            - Job
-          namespaces:
-            - rook-ceph
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: rook-ceph-namespace
+      expression: "object.metadata.namespace == 'rook-ceph'"
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: rook-ceph-privileged
@@ -44,29 +45,19 @@ metadata:
       osd-prepare Job needs the same for device discovery/wiping before an
       OSD exists to hand it off to.
 spec:
-  exceptions:
-    - policyName: disallow-privileged-containers
-      ruleNames:
-        - privileged-containers
-        - autogen-privileged-containers
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-            - DaemonSet
-            - Job
-          namespaces:
-            - rook-ceph
-          names:
-            - rook-ceph-osd-*
-            - rook-ceph.cephfs.csi.ceph.com-nodeplugin*
-            - rook-ceph.rbd.csi.ceph.com-nodeplugin*
+  policyRefs:
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: rook-ceph-privileged-workloads
+      expression: >-
+        object.metadata.namespace == 'rook-ceph' &&
+        (object.metadata.name.startsWith('rook-ceph-osd-') ||
+         object.metadata.name.startsWith('rook-ceph.cephfs.csi.ceph.com-nodeplugin') ||
+         object.metadata.name.startsWith('rook-ceph.rbd.csi.ceph.com-nodeplugin'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: rook-ceph-log-collector-limits
@@ -78,23 +69,15 @@ metadata:
       (enabled/maxLogSize/periodicity only) — there is no field to set its
       container resources, verified against the CephCluster CRD schema.
 spec:
-  exceptions:
-    - policyName: require-requests-limits
-      ruleNames:
-        - validate-resources
-        - autogen-validate-resources
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - rook-ceph
+  policyRefs:
+    - name: require-requests-limits
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: rook-ceph-namespace
+      expression: "object.metadata.namespace == 'rook-ceph'"
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: cilium-run-as-root-privileged
@@ -107,31 +90,19 @@ metadata:
       non-root support is still unresolved (cilium/cilium#23217) — it isn't
       privileged, just root, so it's excepted from require-run-as-nonroot only.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-    - policyName: disallow-privileged-containers
-      ruleNames:
-        - privileged-containers
-        - autogen-privileged-containers
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - DaemonSet
-          namespaces:
-            - kube-system
-          names:
-            - cilium
-            - cilium-?*
-            - cilium-envoy
-            - cilium-envoy-?*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: cilium-workloads
+      expression: >-
+        object.metadata.namespace == 'kube-system' &&
+        (object.metadata.name == 'cilium' || object.metadata.name.startsWith('cilium-'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: cilium-operator-run-as-root
@@ -142,25 +113,17 @@ metadata:
       as root by default) and upstream non-root support is still unresolved
       (cilium/cilium#23217, verified against the Dockerfile directly).
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - kube-system
-          names:
-            - cilium-operator*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: cilium-operator-workloads
+      expression: >-
+        object.metadata.namespace == 'kube-system' &&
+        object.metadata.name.startsWith('cilium-operator')
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: envoy-gateway-shutdown-manager-limits
@@ -176,26 +139,18 @@ metadata:
       memory limit on it (verified against api/v1alpha1 in envoy-gateway
       v1.8.2), so require-requests-limits can never be satisfied here.
 spec:
-  exceptions:
-    - policyName: require-requests-limits
-      ruleNames:
-        - validate-resources
-        - autogen-validate-resources
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - network
-          names:
-            - envoy-external*
-            - envoy-internal*
+  policyRefs:
+    - name: require-requests-limits
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: envoy-gateway-workloads
+      expression: >-
+        object.metadata.namespace == 'network' &&
+        (object.metadata.name.startsWith('envoy-external') ||
+         object.metadata.name.startsWith('envoy-internal'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: forgejo-runner-dind-privileged
@@ -210,29 +165,19 @@ metadata:
       stays root too: its image has no non-root user, and it needs to reach
       dind's docker.sock which is root:docker owned.
 spec:
-  exceptions:
-    - policyName: disallow-privileged-containers
-      ruleNames:
-        - privileged-containers
-        - autogen-privileged-containers
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - forgejo-runners
-          names:
-            - forgejo-runner*
+  policyRefs:
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: forgejo-runner-workloads
+      expression: >-
+        object.metadata.namespace == 'forgejo-runners' &&
+        object.metadata.name.startsWith('forgejo-runner')
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: otel-daemon-collector-run-as-root
@@ -247,24 +192,17 @@ metadata:
       itself — matches the same host-access reasoning already applied to
       cilium/istio-cni-node/ztunnel.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - DaemonSet
-          namespaces:
-            - observability
-          names:
-            - opentelemetry-kube-stack-daemon-collector*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: otel-daemon-collector-workloads
+      expression: >-
+        object.metadata.namespace == 'observability' &&
+        object.metadata.name.startsWith('opentelemetry-kube-stack-daemon-collector')
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: comms-run-as-root
@@ -279,26 +217,18 @@ metadata:
       vars plus a volume ownership migration for redbot's existing /data,
       which is out of scope here.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - comms
-          names:
-            - phanpy*
-            - redbot*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: comms-workloads
+      expression: >-
+        object.metadata.namespace == 'comms' &&
+        (object.metadata.name.startsWith('phanpy') ||
+         object.metadata.name.startsWith('redbot'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: default-ns-run-as-root
@@ -314,28 +244,19 @@ metadata:
       which dropped non-root support in v0.25.0 after bugs
       (github.com/meilisearch/meilisearch/issues/2051) and remains root.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-            - StatefulSet
-          namespaces:
-            - default
-          names:
-            - excalidraw*
-            - littlelink*
-            - bar-assistant*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: default-ns-workloads
+      expression: >-
+        object.metadata.namespace == 'default' &&
+        (object.metadata.name.startsWith('excalidraw') ||
+         object.metadata.name.startsWith('littlelink') ||
+         object.metadata.name.startsWith('bar-assistant'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: immich-run-as-root
@@ -347,26 +268,18 @@ metadata:
       design; the official non-root guide is reported unreliable
       (github.com/immich-app/immich/discussions/13124). Confirmed root live.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - media
-          names:
-            - immich-server*
-            - immich-machine-learning*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: immich-workloads
+      expression: >-
+        object.metadata.namespace == 'media' &&
+        (object.metadata.name.startsWith('immich-server') ||
+         object.metadata.name.startsWith('immich-machine-learning'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: openebs-localpv-provisioner-run-as-root
@@ -378,25 +291,17 @@ metadata:
       `localpv.privileged` defaults to true for this reason. Confirmed
       running as UID 0 live.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - openebs-system
-          names:
-            - openebs-localpv-provisioner*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: openebs-provisioner-workloads
+      expression: >-
+        object.metadata.namespace == 'openebs-system' &&
+        object.metadata.name.startsWith('openebs-localpv-provisioner')
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: openebs-localpv-helper-pods
@@ -412,32 +317,22 @@ metadata:
       privileged/root with no limits and can't be brought into compliance
       from this repo.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-    - policyName: disallow-privileged-containers
-      ruleNames:
-        - privileged-containers
-        - autogen-privileged-containers
-    - policyName: require-requests-limits
-      ruleNames:
-        - validate-resources
-        - autogen-validate-resources
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-          namespaces:
-            - openebs-system
-          names:
-            - init-pvc-*
-            - cleanup-pvc-*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+    - name: require-requests-limits
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: openebs-helper-pods
+      expression: >-
+        object.metadata.namespace == 'openebs-system' &&
+        (object.metadata.name.startsWith('init-pvc-') ||
+         object.metadata.name.startsWith('cleanup-pvc-'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: alloy-run-as-root
@@ -449,25 +344,17 @@ metadata:
       (grafana.com/docs/alloy/latest/configure/nonroot/). Confirmed running
       as UID 0 live.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - observability
-          names:
-            - alloy*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: alloy-workloads
+      expression: >-
+        object.metadata.namespace == 'observability' &&
+        object.metadata.name.startsWith('alloy')
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: spegel-run-as-root
@@ -478,24 +365,17 @@ metadata:
       (/run/containerd/containerd.sock) on every node to mirror OCI images
       P2P; this requires root.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - DaemonSet
-          namespaces:
-            - kube-system
-          names:
-            - spegel*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: spegel-workloads
+      expression: >-
+        object.metadata.namespace == 'kube-system' &&
+        object.metadata.name.startsWith('spegel')
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: dragonfly-run-as-root
@@ -505,24 +385,17 @@ metadata:
       ghcr.io/dragonflydb/dragonfly confirmed running as UID 0 live; no
       documented non-root Dockerfile USER found upstream.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - StatefulSet
-          namespaces:
-            - database
-          names:
-            - dragonfly*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: dragonfly-workloads
+      expression: >-
+        object.metadata.namespace == 'database' &&
+        object.metadata.name.startsWith('dragonfly')
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: talos-static-control-plane-pods
@@ -535,26 +408,19 @@ metadata:
       this repo's Helm/Kustomize manages, so there's no values file to add
       resources or securityContext to.
 spec:
-  exceptions:
-    - policyName: require-requests-limits
-      ruleNames:
-        - validate-resources
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-          namespaces:
-            - kube-system
-          selector:
-            matchLabels:
-              app.kubernetes.io/managed-by: Talos
+  policyRefs:
+    - name: require-requests-limits
+      kind: ValidatingPolicy
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: talos-static-pods
+      expression: >-
+        object.metadata.namespace == 'kube-system' &&
+        object.metadata.?labels['app.kubernetes.io/managed-by'].orValue('') == 'Talos'
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: istio-ambient-dataplane-run-as-root
@@ -564,27 +430,18 @@ metadata:
       istio-cni-node and ztunnel need root to install the CNI plugin on the
       host and to manage pod network namespaces for ambient mesh redirection.
 spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - DaemonSet
-          namespaces:
-            - istio-system
-          names:
-            - istio-cni-node
-            - istio-cni-node-?*
-            - ztunnel
-            - ztunnel-?*
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: istio-ambient-dataplane-workloads
+      expression: >-
+        object.metadata.namespace == 'istio-system' &&
+        (object.metadata.name.startsWith('istio-cni-node') ||
+         object.metadata.name.startsWith('ztunnel'))
 
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: kopiur-controller-limits
@@ -599,29 +456,17 @@ metadata:
       values.yaml). The webhook and kopia-ui server carry the same
       no-limits-by-default posture from the chart, but are labeled
       app.kubernetes.io/managed-by: Helm (the chart's own Deployments/Pods),
-      not managed-by: kopiur, so they need a namespace-scoped match of their
-      own. Mover Jobs (one per backup/restore/maintenance run) also ship
-      with no resources set and run in the WORKLOAD's namespace, not
-      kopiur-system, and are labeled managed-by: kopiur by the operator, so
-      those are matched by label across all namespaces instead.
+      not managed-by: kopiur, so they're covered by the namespace match
+      below instead. Mover Jobs (one per backup/restore/maintenance run)
+      also ship with no resources set and run in the WORKLOAD's namespace,
+      not kopiur-system, and are labeled managed-by: kopiur by the
+      operator, so those are matched by label across all namespaces.
 spec:
-  exceptions:
-    - policyName: require-requests-limits
-      ruleNames:
-        - validate-resources
-        - autogen-validate-resources
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - Deployment
-            - ReplicaSet
-          namespaces:
-            - kopiur-system
-      - resources:
-          kinds:
-            - Job
-          selector:
-            matchLabels:
-              app.kubernetes.io/managed-by: kopiur
+  policyRefs:
+    - name: require-requests-limits
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: kopiur-namespace-or-managed-jobs
+      expression: >-
+        object.metadata.namespace == 'kopiur-system' ||
+        object.metadata.?labels['app.kubernetes.io/managed-by'].orValue('') == 'kopiur'
