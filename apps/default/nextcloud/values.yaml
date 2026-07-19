@@ -33,10 +33,6 @@ nextcloud:
   host: cloud.darkflame.dev
   containerPort: 80
   datadir: /var/www/html/data
-  securityContext:
-    runAsUser: 33
-    runAsGroup: 33
-    runAsNonRoot: true
   existingSecret:
     enabled: true
     secretName: nextcloud-secret

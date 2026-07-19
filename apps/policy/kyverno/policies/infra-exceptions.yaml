@@ -230,13 +230,13 @@ metadata:
   annotations:
     policies.kyverno.io/description: >-
       excalidraw (docker.io/excalidraw/excalidraw, nginx:stable-alpine-slim,
-      no USER directive) and littlelink
-      (ghcr.io/timothystewart6/littlelink-server) both confirmed running as
-      UID 0 live despite littlelink's project docs claiming non-root
-      support — the deployed "latest" tag doesn't reflect that. bar-assistant's
+      no USER directive) confirmed running as UID 0 live. bar-assistant's
       meilisearch (search) container is docker.io/getmeili/meilisearch,
       which dropped non-root support in v0.25.0 after bugs
       (github.com/meilisearch/meilisearch/issues/2051) and remains root.
+      nextcloud's entrypoint needs root to write PHP config
+      (/usr/local/etc/php/conf.d/redis-session.ini) before it can serve —
+      forcing runAsNonRoot crash-loops it (verified live).
 spec:
   policyRefs:
     - name: require-run-as-nonroot
@@ -246,8 +246,8 @@ spec:
       expression: >-
         object.metadata.namespace == 'default' &&
         (object.metadata.name.startsWith('excalidraw') ||
-         object.metadata.name.startsWith('littlelink') ||
-         object.metadata.name.startsWith('bar-assistant'))
+         object.metadata.name.startsWith('bar-assistant') ||
+         object.metadata.name.startsWith('nextcloud'))
 
 ---
 apiVersion: policies.kyverno.io/v1
