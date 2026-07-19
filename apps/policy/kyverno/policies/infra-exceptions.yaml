@@ -235,34 +235,6 @@ spec:
 apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
-  name: etcd-defrag-run-as-root
-  namespace: policy
-  annotations:
-    policies.kyverno.io/description: >-
-      etcd-defrag deliberately runs as root (runAsUser: 0, hostNetwork) to
-      read Talos's root-owned etcd cert files bind-mounted from
-      /system/secrets/etcd on the control-plane host. Not a misconfiguration.
-spec:
-  exceptions:
-    - policyName: require-run-as-nonroot
-      ruleNames:
-        - run-as-non-root
-        - autogen-cronjob-run-as-non-root
-  match:
-    any:
-      - resources:
-          kinds:
-            - Pod
-            - CronJob
-          namespaces:
-            - kube-system
-          names:
-            - etcd-defrag*
-
----
-apiVersion: kyverno.io/v2
-kind: PolicyException
-metadata:
   name: otel-daemon-collector-run-as-root
   namespace: policy
   annotations:
@@ -422,6 +394,47 @@ spec:
             - openebs-system
           names:
             - openebs-localpv-provisioner*
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: openebs-localpv-helper-pods
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      openebs/provisioner-localpv spawns bare helper Pods (init-pvc-*,
+      cleanup-pvc-*) directly via client-go (no owning Deployment/
+      ReplicaSet) to chown/mkdir/rm the hostPath directory backing each PVC
+      on the target node. Their spec is hardcoded by the provisioner binary
+      itself — the chart's `localpv.helperPod` values block only exposes
+      `image`, no securityContext or resources fields — so they run
+      privileged/root with no limits and can't be brought into compliance
+      from this repo.
+spec:
+  exceptions:
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+    - policyName: disallow-privileged-containers
+      ruleNames:
+        - privileged-containers
+        - autogen-privileged-containers
+    - policyName: require-requests-limits
+      ruleNames:
+        - validate-resources
+        - autogen-validate-resources
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+          namespaces:
+            - openebs-system
+          names:
+            - init-pvc-*
+            - cleanup-pvc-*
 
 ---
 apiVersion: kyverno.io/v2
