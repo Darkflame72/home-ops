@@ -4,7 +4,7 @@ apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
   name: ghost-mysql
-  namespace: default
+  namespace: comms
 spec:
   compression:
     compressor: zstd-fastest
@@ -12,7 +12,7 @@ spec:
   defaultDeletionPolicy: Delete
   groupBy: VolumeGroupSnapshot
   identity:
-    hostname: default
+    hostname: comms
     username: ghost-mysql
   mover:
     cache:
@@ -42,7 +42,7 @@ apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotSchedule
 metadata:
   name: ghost-mysql
-  namespace: default
+  namespace: comms
 spec:
   policyRef:
     name: ghost-mysql
@@ -53,7 +53,7 @@ apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
   name: ghost-content
-  namespace: default
+  namespace: comms
 spec:
   compression:
     compressor: zstd-fastest
@@ -61,7 +61,7 @@ spec:
   defaultDeletionPolicy: Delete
   groupBy: VolumeGroupSnapshot
   identity:
-    hostname: default
+    hostname: comms
     username: ghost-content
   mover:
     cache:
@@ -90,7 +90,7 @@ apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotSchedule
 metadata:
   name: ghost-content
-  namespace: default
+  namespace: comms
 spec:
   policyRef:
     name: ghost-content

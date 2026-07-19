@@ -13,7 +13,7 @@ spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/default/ghost
+      path: apps/comms/ghost
       targetRevision: main
       ref: repo
     - repoURL: ghcr.io/bjw-s-labs/helm
@@ -22,10 +22,10 @@ spec:
       helm:
         releaseName: ghost
         valueFiles:
-          - $repo/apps/default/ghost/values.yaml
+          - $repo/apps/comms/ghost/values.yaml
   destination:
     name: in-cluster
-    namespace: default
+    namespace: comms
   syncPolicy:
     automated:
       allowEmpty: true
