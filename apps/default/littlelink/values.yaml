@@ -30,8 +30,8 @@ controllers:
           EMAIL_TEXT: Email me!
           CUSTOM_BUTTON_TEXT: Tūhura Tech
           CUSTOM_BUTTON_URL: https://tuhuratech.org.nz
-          CUSTOM_BUTTON_COLOR: #000000
-          CUSTOM_BUTTON_TEXT_COLOR: #ffffff
+          CUSTOM_BUTTON_COLOR: "#000000"
+          CUSTOM_BUTTON_TEXT_COLOR: "#ffffff"
           CUSTOM_BUTTON_ALT_TEXT: Tūhura Tech
           CUSTOM_BUTTON_NAME: TT
           CUSTOM_BUTTON_ICON: fas fa-cog

@@ -1,45 +1,16 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/kyverno/main/config/crds/policies.kyverno.io/v1/generatingpolicies.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/generatingpolicy_v1.json
 #
-# CEL-based GeneratingPolicy (not legacy ClusterPolicy — see the note in
-# verify-image-signatures.yaml on the v1.20 removal timeline). Migrated while
-# dormant/unwired (see kustomization.yaml) — not live, so this carries none of
-# the blast radius grafana-dashboard-generate.yaml's migration did.
+# One GeneratingPolicy per namespace rather than one policy with a branching
+# CEL expression, so each generated AuthorizationPolicy is reviewable
+# independently.
 #
-# One GeneratingPolicy per original rule, deliberately not consolidated into a
-# single policy with a big per-namespace CEL conditional: each rule's content
-# is fully static (a fixed list of source namespaces per target), so a 1:1
-# split keeps each resource trivially reviewable against the rule it replaces,
-# rather than trusting one large branching expression to get all 9 cases right.
-#
-# Generates a namespace-wide "default-allow" AuthorizationPolicy for each
-# namespace onboarded by istio-ambient-namespace-labels.yaml. Istio's
-# semantics: the mere presence of an ALLOW AuthorizationPolicy for a
-# workload switches that workload to implicit default-deny for anything
-# not explicitly matched, so no separate empty deny-all rule is needed.
-# Validated live (2026-07-15) against the comms namespace: cross-namespace
-# source.namespaces matching only works when BOTH the source and
-# destination namespace are ambient-meshed — traffic from an unmeshed
-# namespace is denied outright even if its name is listed, since ztunnel
-# can't verify its identity. That's why "network" (ingress gateway) and
-# "observability" (metrics scraping, gatus checks) are meshed and listed
-# as allowed sources everywhere they're needed.
-# Known gap: KEDA (kube-system, deliberately left unmeshed — DNS-critical)
-# polls mimir-gateway for ScaledObject triggers (immich/jellyfin
-# autoscaling). kube-system can't be added to observability's allow-list
-# for the same reason above, so a second, workload-scoped permissive
-# policy carves out an exception for mimir-gateway specifically — verified
-# live that a selector-scoped rule with no `from` clause allows unmeshed
-# callers through while the rest of the namespace stays restricted.
-# Same pattern applied for forgejo-runners (its own namespace isn't
-# meshed) calling forgejo's API — this caused a live outage
-# (CrashLoopBackOff, "connection refused"/"reset by peer" to
-# forgejo-http from both the ClusterIP and the pod IP directly) until
-# the workload-scoped allow was added.
-# Add the calling namespace to the relevant rule below when wiring up a
-# new cross-namespace dependency; if the caller isn't/can't be meshed,
-# use a workload-scoped exception like the mimir-gateway one instead of
-# widening the namespace-wide rule.
+# An ALLOW AuthorizationPolicy switches a workload to implicit default-deny
+# for anything unmatched, so no separate deny-all rule is needed.
+# source.namespaces matching requires BOTH namespaces to be ambient-meshed —
+# an unmeshed caller is denied even if listed by name. Callers that can't be
+# meshed (e.g. kube-system, forgejo-runners) instead get a workload-scoped
+# exception with no `from` clause, like the two below.
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
@@ -180,9 +151,8 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — forgejo-runners exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception (no `from` clause) for forgejo-runners, an
-      unmeshed namespace, calling forgejo's API in default. See the file
-      header for the incident this fixed.
+      Workload-scoped exception for forgejo-runners (unmeshed) calling
+      forgejo's API in default.
 spec:
   matchConstraints:
     resourceRules:
@@ -357,9 +327,8 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — mimir-gateway/KEDA exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception (no `from` clause) for KEDA (kube-system,
-      unmeshed) polling mimir-gateway for ScaledObject triggers. See the
-      file header for why this can't just widen observability's allow-list.
+      Workload-scoped exception for KEDA (kube-system, unmeshed) polling
+      mimir-gateway for ScaledObject triggers.
 spec:
   matchConstraints:
     resourceRules:

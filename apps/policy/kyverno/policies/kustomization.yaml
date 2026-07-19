@@ -6,12 +6,8 @@ resources:
   - ./grafana-dashboard-generate.yaml
   - ./infra-exceptions.yaml
   # istio-ambient-namespace-labels.yaml and istio-default-authz.yaml are
-  # deliberately unwired, not deleted — re-enabled 2026-07-19, hit a third
-  # distinct ambient-mesh failure mode on the very first namespace
-  # (envoy-external connection resets, "network" ns) and rolled back the
-  # same day. See the annotation on istio-ambient-namespace-labels.yaml for
-  # the full incident history (Dragonfly StatefulSet break, CNPG operator
-  # identity break, envoy connection-reset break) before re-attempting.
+  # deliberately unwired, not deleted — see the former for the rollout
+  # failures blocking re-enablement.
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml
   - ./require-image-registry-allowlist.yaml

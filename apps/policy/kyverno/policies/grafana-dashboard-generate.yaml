@@ -1,9 +1,5 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/kyverno/main/config/crds/policies.kyverno.io/v1/generatingpolicies.yaml
-#
-# CEL-based GeneratingPolicy (not legacy ClusterPolicy — see the note in
-# verify-image-signatures.yaml on the v1.20 removal timeline). This is the
-# last resource in this directory that was still on the legacy API.
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/generatingpolicy_v1.json
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:

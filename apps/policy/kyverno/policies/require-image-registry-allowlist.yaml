@@ -1,19 +1,9 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/kyverno/main/config/crds/policies.kyverno.io/v1/validatingpolicies.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/validatingpolicy_v1.json
 #
-# CEL-based ValidatingPolicy (not legacy ClusterPolicy — see the note in
-# verify-image-signatures.yaml on the v1.20 removal timeline).
-#
-# This is the control that actually covers every container, unlike
-# verify-image-signatures.yaml which only covers publishers whose signing
-# identity has been confirmed. It doesn't care whether an image is signed,
-# only whether it comes from a registry this cluster already trusts.
-#
-# Ships in Audit like every other policy in this directory. Once a clean
-# policy-report pass confirms no unexpected workload trips it, this is a
-# reasonable candidate to promote to Deny — registry provenance isn't the kind
-# of unverifiable trust assumption cosign identities are, so it doesn't need
-# the same indefinite-audit caution as verify-image-signatures.yaml.
+# Covers every container regardless of signing status, unlike
+# verify-image-signatures.yaml which only covers publishers with a confirmed
+# signing identity.
 apiVersion: policies.kyverno.io/v1
 kind: ValidatingPolicy
 metadata:
@@ -24,8 +14,8 @@ metadata:
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
       Container images must come from an allowlisted registry, seeded from
-      this cluster's actual live image inventory (checked 2026-07-19):
-      ghcr.io, quay.io, docker.io, registry.k8s.io, reg.kyverno.io,
+      this cluster's actual live image inventory: ghcr.io, quay.io,
+      docker.io, registry.k8s.io, reg.kyverno.io,
       registry.istio.io, mirror.gcr.io, ecr-public.aws.com,
       cr.agentgateway.dev, code.forgejo.org. Bare-name Docker Hub shorthand
       (e.g. "renovate/renovate:43", no explicit registry host) is allowed —

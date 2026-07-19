@@ -26,8 +26,8 @@ endpointRoutes:
 envoy:
   rollOutPods: true
   prometheus:
-     serviceMonitor:
-       enabled: true
+    serviceMonitor:
+      enabled: true
   resources:
     requests:
       cpu: 10m

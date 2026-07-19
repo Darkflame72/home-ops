@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/nextcloud/helm/refs/heads/main/charts/nextcloud/values.schema.json
 image:
   registry: docker.io
   repository: library/nextcloud

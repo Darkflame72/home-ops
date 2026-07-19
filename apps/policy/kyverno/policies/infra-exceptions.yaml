@@ -1,16 +1,10 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/policies.kyverno.io/policyexception_v1.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/policyexception_v1.json
 #
-# These target the CEL-based ValidatingPolicy types (disallow-privileged-containers,
-# require-requests-limits, require-run-as-nonroot), NOT the legacy kyverno.io/v2
-# PolicyException type. That older type keys off policyName+ruleNames, and CEL
-# ValidatingPolicy has no named rules (just a flat spec.validations list) — an
-# exception written against it silently matches nothing. This is the mechanism
-# kyverno ships for excepting CEL policies: policyRefs + CEL matchConditions
-# instead of a JMESPath match block. Name-glob patterns from the old format
-# (e.g. "foo-*") are ported here as .startsWith('foo') — deliberately not
-# anchored to require an extra character after the dash, since no real
-# resource is ever named exactly "foo-" with nothing after it.
+# Targets CEL ValidatingPolicy via policyRefs+matchConditions — the legacy
+# kyverno.io/v2 PolicyException keys off ruleNames, which CEL policies don't
+# have, so it would silently match nothing. Name-glob patterns like "foo-*"
+# are ported as .startsWith('foo').
 apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
@@ -470,3 +464,30 @@ spec:
       expression: >-
         object.metadata.namespace == 'kopiur-system' ||
         object.metadata.?labels['app.kubernetes.io/managed-by'].orValue('') == 'kopiur'
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: nextcloud-run-as-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      docker.io/library/nextcloud:apache flavor doesn't support running as
+      non-root — Apache needs root to bind port 80 and the upstream request
+      to support this was closed "not planned"
+      (github.com/nextcloud/docker/issues/760). Confirmed running as UID 0
+      live. The nextcloud-cron CronJob already runs non-root (UID 33) since
+      it doesn't bind privileged ports, so it isn't covered by this
+      exception — matched by component label, not name, to avoid excepting
+      the cron pods too.
+spec:
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: nextcloud-app-workloads
+      expression: >-
+        object.metadata.namespace == 'default' &&
+        object.metadata.?labels['app.kubernetes.io/name'].orValue('') == 'nextcloud' &&
+        object.metadata.?labels['app.kubernetes.io/component'].orValue('') == 'app'

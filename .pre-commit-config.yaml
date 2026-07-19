@@ -8,3 +8,8 @@ repos:
         args: ["--allow-multiple-documents"]
       - id: check-added-large-files
       - id: check-merge-conflict
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint

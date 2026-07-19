@@ -1,18 +1,11 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/kyverno/main/config/crds/policies.kyverno.io/v1/imagevalidatingpolicies.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/imagevalidatingpolicy_v1.json
 #
-# CEL-based ImageValidatingPolicy, not the legacy kyverno.io/v1 ClusterPolicy —
-# ClusterPolicy/CleanupPolicy were deprecated in Kyverno 1.17 and are scheduled
-# for removal in v1.20 (Oct 2026), so new verifyImages work goes here instead.
-#
-# One ImageValidatingPolicy per publisher, each with exactly one attestor, on
-# purpose: combining several publishers' attestors into a single verifyImageSignatures()
-# call is ambiguous about AND-vs-OR semantics from the docs alone, and each
-# publisher's identity gets confirmed (and promoted to Deny) independently anyway.
-# Add a new ImageValidatingPolicy here per publisher only once its signing
-# identity is confirmed against that publisher's own docs — never a wildcard
-# subject (e.g. "https://github.com/*"), since that accepts a signature from any
-# GitHub repo, including an attacker's fork.
+# One ImageValidatingPolicy per publisher, one attestor each (combining
+# attestors into a single verifyImageSignatures() call is ambiguous about
+# AND-vs-OR semantics). Never use a wildcard subject (e.g.
+# "https://github.com/*") — that accepts a signature from any GitHub repo,
+# including an attacker's fork.
 apiVersion: policies.kyverno.io/v1
 kind: ImageValidatingPolicy
 metadata:
@@ -22,10 +15,8 @@ metadata:
     policies.kyverno.io/category: Supply Chain Security
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      Verifies cosign keyless signatures on quay.io/cilium/cilium, confirmed
-      against https://docs.cilium.io/en/stable/configuration/verify-image-signatures/
-      on 2026-07-19. Audit only — see the promotion note below before ever
-      switching validationActions to Deny.
+      Verifies cosign keyless signatures on quay.io/cilium/cilium against
+      Cilium's published GitHub Actions identity.
 spec:
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
@@ -63,11 +54,8 @@ metadata:
     policies.kyverno.io/category: Supply Chain Security
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      Verifies cosign keyless signatures on registry.k8s.io images. Kubernetes
-      has signed release images since v1.24, confirmed against
-      https://kubernetes.io/docs/tasks/administer-cluster/verify-signed-artifacts/
-      on 2026-07-19. Audit only — see the promotion note below before ever
-      switching validationActions to Deny.
+      Verifies cosign keyless signatures on registry.k8s.io images against
+      the Kubernetes release identity.
 spec:
   failurePolicy: Ignore
   matchConstraints:
