@@ -89,8 +89,7 @@ controllers:
             enabled: true
             custom: true
             spec:
-              httpGet:
-                path: /
+              tcpSocket:
                 port: 2368
               initialDelaySeconds: 10
               periodSeconds: 10
