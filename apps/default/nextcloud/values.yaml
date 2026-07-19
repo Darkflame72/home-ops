@@ -39,6 +39,12 @@ nextcloud:
       value: "cloud.darkflame.dev"
   strategy:
     type: Recreate
+  configs:
+    hide-login-form.config.php: |-
+      <?php
+      $CONFIG = array (
+        'hide_login_form' => true,
+      );
 
 internalDatabase:
   enabled: false
