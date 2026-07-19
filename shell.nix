@@ -72,7 +72,6 @@ pkgs.mkShell {
     pkgs.pre-commit
     pkgs.yamllint
     pkgs.kopia
-    pkgs.kubectl-rook-ceph
   ];
 
   KUBECONFIG = "${toString ./.}/kubeconfig";
