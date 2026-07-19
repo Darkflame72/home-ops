@@ -10,6 +10,10 @@ controllers:
           repository: docker.io/library/mysql
           # renovate: datasource=docker depName=mysql
           tag: 8.0.44@sha256:f37951fc3753a6a22d6c7bf6978c5e5fefcf6f31814d98c582524f98eae52b21
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+          runAsNonRoot: true
         env:
           MYSQL_DATABASE: ghost
           MYSQL_USER: ghost
@@ -45,6 +49,9 @@ controllers:
           repository: ghcr.io/tryghost/activitypub-migrations
           # renovate: datasource=docker depName=ghcr.io/tryghost/activitypub-migrations
           tag: 1.2.7@sha256:19724eca7b7669b01047c746738bf34c46dfa587e2be5b8641067d9ab707a7bb
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
         env:
           DB_HOST: ghost-mysql
           DB_PORT: "3306"
@@ -67,6 +74,10 @@ controllers:
           repository: docker.io/library/ghost
           # renovate: datasource=docker depName=ghost
           tag: 6.53.0-alpine@sha256:63b12cb176ffe9cfe651b839c18f6c7261004370f566d9ae218cacd67766b2b1
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
         env:
           NODE_ENV: production
           url: https://blog.darkflame.dev
@@ -107,6 +118,10 @@ controllers:
           repository: ghcr.io/tryghost/activitypub
           # renovate: datasource=docker depName=ghcr.io/tryghost/activitypub
           tag: 1.2.7@sha256:f677e8af8df41418c3bfd63b4ec76b9bf2bbd85bde7da0aa9ecd86e41a230835
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
         env:
           NODE_ENV: production
           MYSQL_HOST: ghost-mysql
