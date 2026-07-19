@@ -1,7 +1,7 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/clusterpolicy_v1.json
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/policies.kyverno.io/validatingpolicy_v1.json
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: require-requests-limits
   annotations:
@@ -14,38 +14,27 @@ metadata:
       validates that all containers have something specified for memory and
       CPU requests and memory limits.
 spec:
-  admission: true
-  background: true
-  validationFailureAction: Audit
-  rules:
-    - name: validate-resources
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        message: "CPU and memory resource requests and memory limits are required for containers."
-        pattern:
-          spec:
-            containers:
-              - resources:
-                  requests:
-                    memory: "?*"
-                    cpu: "?*"
-                  limits:
-                    memory: "?*"
-            =(initContainers):
-              - resources:
-                  requests:
-                    memory: "?*"
-                    cpu: "?*"
-                  limits:
-                    memory: "?*"
-            =(ephemeralContainers):
-              - resources:
-                  requests:
-                    memory: "?*"
-                    cpu: "?*"
-                  limits:
-                    memory: "?*"
+  validationActions:
+    - Audit
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  variables:
+    - name: allContainers
+      expression: >-
+        object.spec.containers + object.spec.?initContainers.orValue([]) +
+        object.spec.?ephemeralContainers.orValue([])
+  validations:
+    - expression: >-
+        variables.allContainers.all(c, has(c.resources) &&
+        has(c.resources.requests) && has(c.resources.requests.memory) &&
+        c.resources.requests.memory != '' && has(c.resources.requests.cpu) &&
+        c.resources.requests.cpu != '' && has(c.resources.limits) &&
+        has(c.resources.limits.memory) && c.resources.limits.memory != '')
+      message: "CPU and memory resource requests and memory limits are required for containers."

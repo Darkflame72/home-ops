@@ -1,7 +1,7 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/clusterpolicy_v1.json
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/policies.kyverno.io/validatingpolicy_v1.json
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: require-run-as-nonroot
   annotations:
@@ -13,44 +13,31 @@ metadata:
       ensures runAsNonRoot is set to `true`, either at the Pod level or on
       every container.
 spec:
-  admission: true
-  background: true
-  validationFailureAction: Audit
-  rules:
-    - name: run-as-non-root
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        message: >-
-          Running as root is not allowed. Either the field
-          spec.securityContext.runAsNonRoot must be set to `true`, or the
-          fields spec.containers[*].securityContext.runAsNonRoot,
-          spec.initContainers[*].securityContext.runAsNonRoot, and
-          spec.ephemeralContainers[*].securityContext.runAsNonRoot must be
-          set to `true`.
-        anyPattern:
-          - spec:
-              securityContext:
-                runAsNonRoot: "true"
-              =(ephemeralContainers):
-                - =(securityContext):
-                    =(runAsNonRoot): "true"
-              =(initContainers):
-                - =(securityContext):
-                    =(runAsNonRoot): "true"
-              containers:
-                - =(securityContext):
-                    =(runAsNonRoot): "true"
-          - spec:
-              =(ephemeralContainers):
-                - securityContext:
-                    runAsNonRoot: "true"
-              =(initContainers):
-                - securityContext:
-                    runAsNonRoot: "true"
-              containers:
-                - securityContext:
-                    runAsNonRoot: "true"
+  validationActions:
+    - Audit
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  variables:
+    - name: allContainers
+      expression: >-
+        object.spec.containers + object.spec.?initContainers.orValue([]) +
+        object.spec.?ephemeralContainers.orValue([])
+  validations:
+    - expression: >-
+        (object.spec.?securityContext.?runAsNonRoot.orValue(false) == true
+          && variables.allContainers.all(c, c.?securityContext.?runAsNonRoot.orValue(true) == true))
+        || variables.allContainers.all(c, c.?securityContext.?runAsNonRoot.orValue(false) == true)
+      message: >-
+        Running as root is not allowed. Either the field
+        spec.securityContext.runAsNonRoot must be set to `true`, or the
+        fields spec.containers[*].securityContext.runAsNonRoot,
+        spec.initContainers[*].securityContext.runAsNonRoot, and
+        spec.ephemeralContainers[*].securityContext.runAsNonRoot must be
+        set to `true`.
