@@ -584,10 +584,13 @@ metadata:
       container's cgroup, and a limit that doesn't cover that startup burst
       OOMKills it into a crash loop (documented in the chart's own
       values.yaml). The webhook and kopia-ui server carry the same
-      no-limits-by-default posture from the chart. Mover Jobs (one per
-      backup/restore/maintenance run) also ship with no resources set and
-      run in the WORKLOAD's namespace, not kopiur-system, so this is
-      matched by label across all namespaces rather than scoped to one.
+      no-limits-by-default posture from the chart, but are labeled
+      app.kubernetes.io/managed-by: Helm (the chart's own Deployments/Pods),
+      not managed-by: kopiur, so they need a namespace-scoped match of their
+      own. Mover Jobs (one per backup/restore/maintenance run) also ship
+      with no resources set and run in the WORKLOAD's namespace, not
+      kopiur-system, and are labeled managed-by: kopiur by the operator, so
+      those are matched by label across all namespaces instead.
 spec:
   exceptions:
     - policyName: require-requests-limits
@@ -601,6 +604,10 @@ spec:
             - Pod
             - Deployment
             - ReplicaSet
+          namespaces:
+            - kopiur-system
+      - resources:
+          kinds:
             - Job
           selector:
             matchLabels:
