@@ -5,6 +5,11 @@ kind: HTTPRoute
 metadata:
   name: kopia-primary-kopia-ui
   namespace: kopiur-system
+  annotations:
+    # Single-homed to envoy-internal: the auto-discovered check would be
+    # guarded (DNS-only). A real HTTP check is defined manually in
+    # apps/observability/gatus/config/config.yaml instead.
+    gatus.home-operations.com/enabled: "false"
 spec:
   hostnames:
     - kopia.darkflame.dev

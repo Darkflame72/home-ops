@@ -19,6 +19,13 @@ httpRoute:
   parentRefs:
     - name: envoy-external
       namespace: network
+  annotations:
+    # The gatus-sidecar auto-discovers the first rule on the route, which is
+    # the /.well-known/carddav redirect to WebDAV. Force it back to a
+    # bare-host probe so it checks the main page (redirects to /login, 200)
+    # instead.
+    gatus.home-operations.com/endpoint: |-
+      path: ""
 
 service:
   port: 80

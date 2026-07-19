@@ -147,6 +147,12 @@ route:
   app:
     hostnames:
       - blog.darkflame.dev
+    annotations:
+      # The gatus-sidecar auto-discovers the first rule on the route, which
+      # is the /.ghost/activitypub prefix (always 404 unauthenticated).
+      # Force it back to a bare-host probe so it checks the main page.
+      gatus.home-operations.com/endpoint: |-
+        path: ""
     parentRefs:
       - name: envoy-external
         namespace: network
