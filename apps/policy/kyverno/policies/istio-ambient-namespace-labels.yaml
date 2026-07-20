@@ -17,8 +17,10 @@ metadata:
       them onto the Istio ambient mesh. Explicit allow-list rather than
       exclude-all so new namespaces are never silently meshed. kube-system
       stays excluded (DNS-critical). "database" stays excluded — CNPG and
-      Dragonfly break under ambient. Currently empty/disabled; see git log
-      for rollout history before re-enabling.
+      Dragonfly break under ambient. "network" also stays excluded — caused
+      intermittent connection resets to unrelated backends last attempt; see
+      git log for rollout history. Being re-enabled one namespace at a time,
+      lowest blast-radius first, with health verification between each.
 spec:
   matchConstraints:
     resourceRules:
@@ -28,7 +30,7 @@ spec:
         resources: ["namespaces"]
   matchConditions:
     - name: namespace-in-allowlist
-      expression: "object.metadata.name in []"
+      expression: "object.metadata.name in [\"media\"]"
   evaluation:
     mutateExisting:
       enabled: true
