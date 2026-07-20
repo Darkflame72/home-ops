@@ -71,6 +71,7 @@ pkgs.mkShell {
     pkgs.yq-go
     pkgs.pre-commit
     pkgs.yamllint
+    pkgs.cosign
     pkgs.kopia
   ];
 
