@@ -968,6 +968,12 @@ spec:
           hashAlgorithm: sha512
         ctlog:
           insecureIgnoreTlog: true
+          # Kyverno bug (kyverno/kyverno#16012, unfixed as of chart 3.8.2):
+          # insecureIgnoreTlog alone still makes the verifier try to fetch
+          # Rekor public keys and fail with "rekor URL must be provided".
+          # Explicit url is never actually contacted (tlog is ignored) but
+          # satisfies that check — documented workaround from the issue.
+          url: "https://rekor.sigstore.dev"
   validations:
     - expression: >-
         images.containers.map(image,
