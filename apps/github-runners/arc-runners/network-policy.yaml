@@ -34,9 +34,12 @@ spec:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: argocd
             app.kubernetes.io/name: argocd-server
+      # Cilium enforces toPorts against the post-DNAT destination port, i.e.
+      # the container's actual targetPort (8080), not the Service's port 80
+      # that the workflow's ARGOCD_SERVER env var uses to reach it.
       toPorts:
         - ports:
-            - port: "80"
+            - port: "8080"
               protocol: TCP
     - toEntities:
         - world
