@@ -11,6 +11,15 @@
 # an unmeshed caller is denied even if listed by name. Callers that can't be
 # meshed (e.g. kube-system, forgejo-runners) instead get a workload-scoped
 # exception with no `from` clause, like the two below.
+#
+# synchronize:false + generateExisting:true (not the docs' recommended
+# synchronize:true) — with sync on, the Namespace-kind trigger hits a Kyverno
+# background-controller bug (create/delete loop, ~8/s, never converges; see
+# upstream kyverno/kyverno#14317, #9406, #8061 for the same symptom class
+# across versions). Verified fixed by this combo in isolation on 2026-07-20.
+# Trade-off: the generated AuthorizationPolicy won't auto-update if these
+# rules change, and won't auto-delete if the policy is deleted — both need
+# manual cleanup (see istio-ambient-namespace-labels.yaml's rollback note).
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
@@ -27,8 +36,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["agents"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -71,8 +82,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["comms"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -115,8 +128,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["default"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -162,8 +177,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["default"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -203,8 +220,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["games"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -247,8 +266,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["media"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -291,8 +312,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["observability"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -338,8 +361,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["observability"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
@@ -382,8 +407,10 @@ spec:
         resources: ["namespaces"]
         resourceNames: ["security"]
   evaluation:
-    synchronize:
+    generateExisting:
       enabled: true
+    synchronize:
+      enabled: false
   variables:
     - name: downstream
       expression: >-
