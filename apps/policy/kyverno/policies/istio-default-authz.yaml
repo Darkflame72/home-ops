@@ -109,7 +109,16 @@ metadata:
       (the controller, not the proxy) metrics port, scraped by the
       observability collector (also unmeshed, not yet enrolled) — same
       "no from clause" exception covers both unrelated unmeshed callers
-      since ports don't overlap.
+      since ports don't overlap. Port 15020 is Istio's own per-pod
+      stats/health endpoint, auto-exposed on every ambient-meshed pod;
+      agentgateway-proxy carries prometheus.io/scrape=true (set by its
+      chart, unlike other namespaces' apps which use ServiceMonitor CRDs
+      instead of annotation-based discovery), so the OTel collector polls
+      it directly — caught live after agents was enrolled. This exception
+      is not superseded once observability joins the mesh: agents'
+      default-allow source.namespaces is ["agents", "network"] only, it
+      was never given "observability" like the other namespaces' policies
+      were, so mesh-identity matching wouldn't cover this port anyway.
 spec:
   matchConstraints:
     resourceRules:
@@ -137,7 +146,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80", "9092"]}}
+                  {"operation": {"ports": ["80", "9092", "15020"]}}
                 ]
               })])
             })
@@ -902,6 +911,63 @@ spec:
               "rules": dyn([dyn({
                 "to": [
                   {"operation": {"ports": ["8000"]}}
+                ]
+              })])
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('observability', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: istio-authz-observability-allow-ingress
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — observability ingress exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Namespace-wide exception for envoy-external/envoy-internal (both
+      unmeshed, network namespace — see istio-authz-media-allow-ingress for
+      why this is needed). envoy-external: gatus 80, grafana 3000, kromgo
+      8080. envoy-internal: policy-reporter-ui 8080. Metrics scraping
+      (gatus-postgres's exporter, kromgo's own metrics, mimir/loki
+      memberlist gossip between their own pods) is NOT included here: the
+      scraper (observability's own OTel collector) and every target here
+      are all in observability itself, so once this namespace is meshed
+      that traffic is covered by default-allow's self-referential
+      source.namespaces=["observability", ...] via normal mesh-identity
+      matching — no unmeshed-caller gap, unlike every other namespace in
+      this rollout where the scraper lived elsewhere and wasn't meshed yet.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["observability"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-unmeshed-network-ingress",
+              "namespace": "observability"
+            }),
+            "spec": dyn({
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["80", "3000", "8080"]}}
                 ]
               })])
             })
