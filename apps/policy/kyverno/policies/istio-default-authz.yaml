@@ -4,47 +4,6 @@
 # One GeneratingPolicy per namespace rather than one policy with a branching
 # CEL expression, so each generated AuthorizationPolicy is reviewable
 # independently.
-#
-# An ALLOW AuthorizationPolicy switches a workload to implicit default-deny
-# for anything unmatched, so no separate deny-all rule is needed.
-# source.namespaces matching requires BOTH namespaces to be ambient-meshed —
-# an unmeshed caller is denied even if listed by name. Callers that can't be
-# meshed (e.g. kube-system, forgejo-runners) instead get a workload-scoped
-# exception with no `from` clause, like the two below.
-#
-# CNPG-owning namespaces (comms, default, media, observability, security —
-# every target namespace except agents) each also get an allow-cnpg exception:
-# the CNPG operator lives unmeshed in "database" and polls every CNPG
-# instance-manager's port 8000 cluster-wide, regardless of which namespace
-# the Cluster lives in. Missing this caused a live ~4min outage of media's
-# immich-v2 CNPG cluster on 2026-07-20 (operator's status polls got denied
-# the moment media was meshed) — added proactively for the other four so
-# the same incident doesn't repeat on their enrollment.
-#
-# The same "unmeshed caller listed by name still gets denied" gap also
-# broke ingress: enrolling media caused two live outages on 2026-07-20 —
-# https://photos.darkflame.dev (503s) and https://jelly.darkflame.dev
-# (Gatus caught it) — because envoy-external/envoy-internal live in
-# "network", which — like "database" — stays unmeshed indefinitely (see
-# istio-ambient-namespace-labels.yaml). This is namespace-specific, not
-# generic like the CNPG exception: each *-allow-ingress policy below was
-# built by auditing that namespace's live HTTPRoutes/Services/ServiceMonitors
-# (`kubectl get httproute -n <ns> -o jsonpath=...` cross-checked against
-# `kubectl get svc` for port->targetPort, since ztunnel enforces on the
-# container port, not the Service port) — comms/default/security were
-# audited proactively before enrollment to avoid repeating the media
-# incident. observability has NOT been audited yet as of 2026-07-20 — do
-# this before adding it to the allow-list, don't assume it's fine because
-# it's a monitoring namespace.
-#
-# synchronize:false + generateExisting:true (not the docs' recommended
-# synchronize:true) — with sync on, the Namespace-kind trigger hits a Kyverno
-# background-controller bug (create/delete loop, ~8/s, never converges; see
-# upstream kyverno/kyverno#14317, #9406, #8061 for the same symptom class
-# across versions). Verified fixed by this combo in isolation on 2026-07-20.
-# Trade-off: the generated AuthorizationPolicy won't auto-update if these
-# rules change, and won't auto-delete if the policy is deleted — both need
-# manual cleanup (see istio-ambient-namespace-labels.yaml's rollback note).
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
@@ -80,7 +39,7 @@ spec:
               "rules": [
                 {
                   "from": [
-                    {"source": {"namespaces": ["agents", "network"]}}
+                    {"source": {"namespaces": ["agents", "network", "observability"]}}
                   ]
                 }
               ]
@@ -105,20 +64,14 @@ metadata:
       agentgateway-proxy:80; agentgateway-proxy then forwards internally
       to mcp-backend via its own agentgateway-class Gateway, entirely
       within agents, already covered by default-allow's
-      source.namespaces=["agents", "network"]. Port 9092 is agentgateway's
-      (the controller, not the proxy) metrics port, scraped by the
-      observability collector (also unmeshed, not yet enrolled) — same
-      "no from clause" exception covers both unrelated unmeshed callers
-      since ports don't overlap. Port 15020 is Istio's own per-pod
-      stats/health endpoint, auto-exposed on every ambient-meshed pod;
-      agentgateway-proxy carries prometheus.io/scrape=true (set by its
-      chart, unlike other namespaces' apps which use ServiceMonitor CRDs
-      instead of annotation-based discovery), so the OTel collector polls
-      it directly — caught live after agents was enrolled. This exception
-      is not superseded once observability joins the mesh: agents'
-      default-allow source.namespaces is ["agents", "network"] only, it
-      was never given "observability" like the other namespaces' policies
-      were, so mesh-identity matching wouldn't cover this port anyway.
+      source.namespaces list. Previously also carried ports 9092/15020
+      (agentgateway's own metrics port, and Istio's per-pod stats endpoint
+      that agentgateway-proxy exposes via prometheus.io/scrape=true) as a
+      port-blanket workaround because observability wasn't enrolled yet.
+      Now that it is, those are covered by "observability" being added to
+      istio-authz-agents-default-allow's source.namespaces instead — real
+      mesh-identity matching, not a blanket port exception — so only the
+      genuinely-unmeshed network caller needs to stay here.
 spec:
   matchConstraints:
     resourceRules:
@@ -146,7 +99,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80", "9092", "15020"]}}
+                  {"operation": {"ports": ["80"]}}
                 ]
               })])
             })
@@ -210,7 +163,7 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — comms CNPG exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in comms, and for the observability collector (also unmeshed, not yet enrolled) scraping the same pods' built-in postgres-exporter on port 9187 — same gap as istio-authz-media-allow-metrics-scrape's immich-v2 entry, added here proactively rather than discovering it live like security's was.
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace, permanently out of scope) reaching its instance-manager API on port 8000 for any CNPG cluster in comms. Previously also carried port 9187 (the same pods' built-in postgres-exporter) as a port-blanket workaround for the observability collector before observability was enrolled — now that it is, that's covered by comms' default-allow already listing "observability" in source.namespaces (real mesh-identity matching), so only the permanently-unmeshed operator's port needs to stay here.
 spec:
   matchConstraints:
     resourceRules:
@@ -241,7 +194,7 @@ spec:
               }),
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["8000", "9187"]}}
+                  {"operation": {"ports": ["8000"]}}
                 ]
               })])
             })
@@ -404,7 +357,7 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — default CNPG exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in default, and for the observability collector (also unmeshed, not yet enrolled) scraping the same pods' built-in postgres-exporter on port 9187 — same gap as istio-authz-media-allow-metrics-scrape's immich-v2 entry, added here proactively rather than discovering it live like security's was.
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace, permanently out of scope) reaching its instance-manager API on port 8000 for any CNPG cluster in default. Previously also carried port 9187 (the same pods' built-in postgres-exporter) as a port-blanket workaround for the observability collector before observability was enrolled — now that it is, that's covered by default's default-allow already listing "observability" in source.namespaces (real mesh-identity matching), so only the permanently-unmeshed operator's port needs to stay here.
 spec:
   matchConstraints:
     resourceRules:
@@ -435,7 +388,7 @@ spec:
               }),
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["8000", "9187"]}}
+                  {"operation": {"ports": ["8000"]}}
                 ]
               })])
             })
@@ -699,81 +652,11 @@ spec:
   generate:
     - expression: "generator.Apply('media', variables.downstream)"
 
----
-apiVersion: policies.kyverno.io/v1
-kind: GeneratingPolicy
-metadata:
-  name: istio-authz-media-allow-metrics-scrape
-  annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — media metrics scrape exception
-    policies.kyverno.io/category: Istio
-    policies.kyverno.io/description: >-
-      Workload-scoped exception for the OTel/Prometheus collector (unmeshed,
-      observability namespace — observability is not yet enrolled) scraping
-      immich-server's metrics ports and immich-v2's postgres-exporter port.
-      Same "listed by name isn't enough while unmeshed" gap as
-      istio-authz-media-allow-ingress. Without this, media's metrics are
-      silently missing from dashboards/alerts while observability stays
-      unmeshed.
-spec:
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["namespaces"]
-        resourceNames: ["media"]
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: false
-  variables:
-    - name: downstream
-      expression: >-
-        [
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-observability-scrape-immich-server",
-              "namespace": "media"
-            }),
-            "spec": dyn({
-              "selector": dyn({
-                "matchLabels": {
-                  "app.kubernetes.io/instance": "immich",
-                  "app.kubernetes.io/name": "server"
-                }
-              }),
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["8081", "8082"]}}
-                ]
-              })])
-            })
-          },
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-observability-scrape-immich-v2",
-              "namespace": "media"
-            }),
-            "spec": dyn({
-              "selector": dyn({
-                "matchLabels": {"cnpg.io/cluster": "immich-v2"}
-              }),
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["9187"]}}
-                ]
-              })])
-            })
-          }
-        ]
-  generate:
-    - expression: "generator.Apply('media', variables.downstream)"
+# istio-authz-media-allow-metrics-scrape (immich-server + immich-v2's
+# postgres-exporter) removed 2026-07-20 — it was a port-blanket workaround
+# for observability scraping before observability was enrolled. media's
+# default-allow already lists "observability" in source.namespaces, so
+# that's now handled by real mesh-identity matching instead.
 
 ---
 apiVersion: policies.kyverno.io/v1
@@ -1124,23 +1007,25 @@ spec:
   generate:
     - expression: "generator.Apply('security', variables.downstream)"
 
+# istio-authz-security-allow-metrics-scrape (authentik-server metrics +
+# both CNPG clusters' postgres-exporters) removed 2026-07-20 — same reason
+# as media's equivalent above: security's default-allow already lists
+# "observability", so mesh-identity matching covers this now.
+
 ---
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
-  name: istio-authz-security-allow-metrics-scrape
+  name: istio-authz-renovate-default-allow
   annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — security metrics scrape exception
+    policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — renovate
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception for the OTel/Prometheus collector
-      (unmeshed, observability namespace — not yet enrolled) scraping:
-      authentik-server's metrics port via its ServiceMonitor, and both
-      CNPG clusters' built-in postgres-exporter sidecar (port 9187 — same
-      gap as istio-authz-media-allow-metrics-scrape's immich-v2 entry,
-      missed here initially and caught live after security was enrolled).
-      The vaultwarden app itself has no metrics endpoint, only its CNPG
-      cluster does.
+      Unlike every other namespace's default-allow, this one lists
+      "observability" directly instead of needing a port-blanket exception
+      for metrics scraping — observability is already enrolled by the time
+      renovate is, so real mesh-identity matching works here. No CNPG
+      cluster in renovate, so no allow-cnpg policy needed either.
 spec:
   matchConstraints:
     resourceRules:
@@ -1148,7 +1033,7 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["namespaces"]
-        resourceNames: ["security"]
+        resourceNames: ["renovate"]
   evaluation:
     generateExisting:
       enabled: true
@@ -1162,41 +1047,74 @@ spec:
             "apiVersion": dyn("security.istio.io/v1"),
             "kind": dyn("AuthorizationPolicy"),
             "metadata": dyn({
-              "name": "allow-observability-scrape-authentik",
-              "namespace": "security"
+              "name": "default-allow",
+              "namespace": "renovate"
             }),
             "spec": dyn({
-              "selector": dyn({
-                "matchLabels": {
-                  "app.kubernetes.io/name": "authentik",
-                  "app.kubernetes.io/component": "server"
+              "rules": [
+                {
+                  "from": [
+                    {"source": {"namespaces": ["renovate", "network", "observability"]}}
+                  ]
                 }
-              }),
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["9300"]}}
-                ]
-              })])
+              ]
             })
-          },
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('renovate', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: istio-authz-renovate-allow-ingress
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — renovate ingress exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Namespace-wide exception for envoy-internal (unmeshed, network
+      namespace — see istio-authz-media-allow-ingress for why this is
+      needed). renovate.darkflame.dev serves both the UI/API (8081) and the
+      forgejo webhook receiver (8082, unifiedWebhookHost: true — same
+      hostname, no dedicated route) via envoy-internal. Renovate itself
+      reaches forgejo via the public git.darkflame.dev through
+      envoy-external, not a cluster-internal path — that direction needs
+      no exception since the destination (envoy-external) is unmeshed and
+      ztunnel doesn't enforce policy for a meshed caller reaching an
+      unmeshed target.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["renovate"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
           {
             "apiVersion": dyn("security.istio.io/v1"),
             "kind": dyn("AuthorizationPolicy"),
             "metadata": dyn({
-              "name": "allow-observability-scrape-cnpg-exporters",
-              "namespace": "security"
+              "name": "allow-unmeshed-network-ingress",
+              "namespace": "renovate"
             }),
             "spec": dyn({
-              "selector": dyn({
-                "matchLabels": {"app.kubernetes.io/managed-by": "cloudnative-pg"}
-              }),
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["9187"]}}
+                  {"operation": {"ports": ["8081", "8082"]}}
                 ]
               })])
             })
           }
         ]
   generate:
-    - expression: "generator.Apply('security', variables.downstream)"
+    - expression: "generator.Apply('renovate', variables.downstream)"
