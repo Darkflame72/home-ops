@@ -5,9 +5,10 @@ kind: Kustomization
 resources:
   - ./grafana-dashboard-generate.yaml
   - ./infra-exceptions.yaml
-  # istio-ambient-namespace-labels.yaml and istio-default-authz.yaml are
-  # deliberately unwired, not deleted — see the former for the rollout
-  # failures blocking re-enablement.
+  # Re-enabling rollout one namespace at a time via the allow-list in
+  # istio-ambient-namespace-labels.yaml — see that file for rollout history.
+  - ./istio-ambient-namespace-labels.yaml
+  - ./istio-default-authz.yaml
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml
   - ./require-image-registry-allowlist.yaml
