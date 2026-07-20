@@ -31,6 +31,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: cilium
       cosign:
@@ -87,6 +89,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: k8s
       cosign:
@@ -130,6 +134,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: argocd
       cosign:
@@ -173,6 +179,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: cloudnativepg
       cosign:
@@ -222,6 +230,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: cloudnativepgpostgresql
       cosign:
@@ -272,6 +282,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: externalsecrets
       cosign:
@@ -320,6 +332,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: keda
       cosign:
@@ -368,6 +382,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: prometheusoperator
       cosign:
@@ -415,6 +431,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: rook
       cosign:
@@ -463,6 +481,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: otelloperator
       cosign:
@@ -510,6 +530,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: argorollouts
       cosign:
@@ -554,6 +576,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: dex
       cosign:
@@ -599,6 +623,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: spegel
       cosign:
@@ -652,6 +678,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: policyreporter
       cosign:
@@ -709,6 +737,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: policyreporterui
       cosign:
@@ -762,6 +792,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: otelcollectorcontrib
       cosign:
@@ -820,6 +852,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: renovateoperator
       cosign:
@@ -865,6 +899,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: meilisearch
       cosign:
@@ -920,6 +956,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: kyverno
       cosign:
@@ -978,6 +1016,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: certmanager
       cosign:
@@ -1044,6 +1084,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: accesslogexporter
       cosign:
@@ -1097,6 +1139,8 @@ spec:
     - Audit
   validationConfigurations:
     required: false
+  webhookConfiguration:
+    timeoutSeconds: 30
   attestors:
     - name: maddy
       cosign:
