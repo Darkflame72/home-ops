@@ -39,13 +39,13 @@ spec:
         '^(ghcr\\.io|quay\\.io|docker\\.io|registry\\.k8s\\.io|reg\\.kyverno\\.io|registry\\.istio\\.io|mirror\\.gcr\\.io|ecr-public\\.aws\\.com|cr\\.agentgateway\\.dev|code\\.forgejo\\.org)/'
     - name: hasExplicitRegistry
       expression: "'^[^/]+[.:][^/]*/'"
+    - name: allContainers
+      expression: >-
+        object.spec.containers + object.spec.?initContainers.orValue([]) +
+        object.spec.?ephemeralContainers.orValue([])
   validations:
     - expression: >-
-        object.spec.containers.all(c,
-          c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
-        && object.spec.?initContainers.orValue([]).all(c,
-          c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
-        && object.spec.?ephemeralContainers.orValue([]).all(c,
+        variables.allContainers.all(c,
           c.image.matches(variables.allowedRegistry) || !c.image.matches(variables.hasExplicitRegistry))
       message: >-
         Container image must come from an allowlisted registry (ghcr.io,
