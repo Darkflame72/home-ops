@@ -29,6 +29,8 @@ spec:
     - glob: "quay.io/cilium/cilium:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: cilium
       cosign:
@@ -83,6 +85,8 @@ spec:
     - glob: "registry.k8s.io/kube-scheduler:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: k8s
       cosign:
@@ -124,6 +128,8 @@ spec:
     - glob: "quay.io/argoproj/argocd:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: argocd
       cosign:
@@ -165,6 +171,8 @@ spec:
     - glob: "ghcr.io/cloudnative-pg/cloudnative-pg:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: cloudnativepg
       cosign:
@@ -212,6 +220,8 @@ spec:
     - glob: "ghcr.io/cloudnative-pg/postgresql:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: cloudnativepgpostgresql
       cosign:
@@ -260,6 +270,8 @@ spec:
     - glob: "ghcr.io/external-secrets/external-secrets:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: externalsecrets
       cosign:
@@ -306,6 +318,8 @@ spec:
     - glob: "ghcr.io/kedacore/keda-admission-webhooks:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: keda
       cosign:
@@ -352,6 +366,8 @@ spec:
     - glob: "quay.io/prometheus-operator/prometheus-config-reloader:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: prometheusoperator
       cosign:
@@ -397,6 +413,8 @@ spec:
     - glob: "ghcr.io/rook/ceph:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: rook
       cosign:
@@ -443,6 +461,8 @@ spec:
     - glob: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: otelloperator
       cosign:
@@ -488,6 +508,8 @@ spec:
     - glob: "quay.io/argoproj/kubectl-argo-rollouts:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: argorollouts
       cosign:
@@ -530,6 +552,8 @@ spec:
     - glob: "ghcr.io/dexidp/dex:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: dex
       cosign:
@@ -573,6 +597,8 @@ spec:
     - glob: "ghcr.io/spegel-org/spegel@*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: spegel
       cosign:
@@ -598,11 +624,19 @@ metadata:
     policies.kyverno.io/category: Supply Chain Security
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      Verifies cosign keyless signatures on ghcr.io/kyverno/policy-reporter,
-      signed via GoReleaser's docker_signs block in release-image.yaml,
-      confirmed against
-      https://github.com/kyverno/policy-reporter/blob/main/.github/workflows/release-image.yaml
-      and .../.goreleaser.yaml on 2026-07-20.
+      Verifies a cosign SLSA provenance ATTESTATION (not a plain signature —
+      ghcr.io/kyverno/policy-reporter carries no plain cosign signature at
+      all, confirmed empirically with `cosign download attestation` against
+      the live 3.8.1 digest on 2026-07-20, which returned only a
+      dev.sigstore.bundle attestation with predicate type
+      https://slsa.dev/provenance/v1, no separate signature artifact) on
+      ghcr.io/kyverno/policy-reporter. Same certificate identity as
+      originally configured (release-image.yaml, confirmed live in the
+      attestation's own SAN: .../release-image.yaml@refs/tags/v3.8.10) —
+      only the verification mechanism was wrong, not the identity. Unlike
+      policy-reporter-ui's attestation (predicate v0.2, signed by the
+      third-party slsa-github-generator builder), this one is predicate v1
+      and signed directly by policy-reporter's own release-image.yaml.
 spec:
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
@@ -615,6 +649,8 @@ spec:
     - glob: "ghcr.io/kyverno/policy-reporter:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: policyreporter
       cosign:
@@ -622,14 +658,18 @@ spec:
           identities:
             - issuer: "https://token.actions.githubusercontent.com"
               subjectRegExp: "^https://github\\.com/kyverno/policy-reporter/\\.github/workflows/release-image\\.yaml@refs/tags/v.*$"
+  attestations:
+    - name: provenance
+      intoto:
+        type: "https://slsa.dev/provenance/v1"
   validations:
     - expression: >-
         images.containers.map(image,
-        verifyImageSignatures(image, [attestors.policyreporter])).all(e, e > 0)
+        verifyAttestationSignatures(image, "provenance", [attestors.policyreporter])).all(e, e > 0)
       message: >-
-        ghcr.io/kyverno/policy-reporter image signature could not be
-        verified against Policy Reporter's published GitHub Actions
-        identity.
+        ghcr.io/kyverno/policy-reporter image SLSA provenance attestation
+        could not be verified against Policy Reporter's published GitHub
+        Actions identity.
 
 ---
 apiVersion: policies.kyverno.io/v1
@@ -666,6 +706,8 @@ spec:
     - glob: "ghcr.io/kyverno/policy-reporter-ui:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: policyreporterui
       cosign:
@@ -717,6 +759,8 @@ spec:
     - glob: "otel/opentelemetry-collector-contrib:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: otelcollectorcontrib
       cosign:
@@ -773,6 +817,8 @@ spec:
     - glob: "ghcr.io/mogenius/renovate-operator:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: renovateoperator
       cosign:
@@ -816,6 +862,8 @@ spec:
     - glob: "docker.io/getmeili/meilisearch:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: meilisearch
       cosign:
@@ -869,6 +917,8 @@ spec:
     - glob: "reg.kyverno.io/kyverno/*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: kyverno
       cosign:
@@ -925,6 +975,8 @@ spec:
     - glob: "quay.io/jetstack/cert-manager-cainjector:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: certmanager
       cosign:
@@ -989,6 +1041,8 @@ spec:
     - glob: "ghcr.io/jkroepke/access-log-exporter:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: accesslogexporter
       cosign:
@@ -1040,6 +1094,8 @@ spec:
     - glob: "ghcr.io/foxcpp/maddy:*"
   validationActions:
     - Audit
+  validationConfigurations:
+    required: false
   attestors:
     - name: maddy
       cosign:
