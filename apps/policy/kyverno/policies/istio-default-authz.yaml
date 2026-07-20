@@ -145,7 +145,7 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — comms CNPG exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in comms. Added proactively after the same gap caused a live outage in media on 2026-07-20 — see istio-ambient-namespace-labels.yaml.
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in comms, and for the observability collector (also unmeshed, not yet enrolled) scraping the same pods' built-in postgres-exporter on port 9187 — same gap as istio-authz-media-allow-metrics-scrape's immich-v2 entry, added here proactively rather than discovering it live like security's was.
 spec:
   matchConstraints:
     resourceRules:
@@ -176,7 +176,7 @@ spec:
               }),
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["8000"]}}
+                  {"operation": {"ports": ["8000", "9187"]}}
                 ]
               })])
             })
@@ -339,7 +339,7 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — default CNPG exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in default. Added proactively after the same gap caused a live outage in media on 2026-07-20 — see istio-ambient-namespace-labels.yaml.
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in default, and for the observability collector (also unmeshed, not yet enrolled) scraping the same pods' built-in postgres-exporter on port 9187 — same gap as istio-authz-media-allow-metrics-scrape's immich-v2 entry, added here proactively rather than discovering it live like security's was.
 spec:
   matchConstraints:
     resourceRules:
@@ -370,7 +370,7 @@ spec:
               }),
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["8000"]}}
+                  {"operation": {"ports": ["8000", "9187"]}}
                 ]
               })])
             })
@@ -1012,9 +1012,13 @@ metadata:
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
       Workload-scoped exception for the OTel/Prometheus collector
-      (unmeshed, observability namespace — not yet enrolled) scraping
-      authentik-server's metrics port via its ServiceMonitor. vaultwarden
-      has no metrics endpoint, so no equivalent entry for it.
+      (unmeshed, observability namespace — not yet enrolled) scraping:
+      authentik-server's metrics port via its ServiceMonitor, and both
+      CNPG clusters' built-in postgres-exporter sidecar (port 9187 — same
+      gap as istio-authz-media-allow-metrics-scrape's immich-v2 entry,
+      missed here initially and caught live after security was enrolled).
+      The vaultwarden app itself has no metrics endpoint, only its CNPG
+      cluster does.
 spec:
   matchConstraints:
     resourceRules:
@@ -1049,6 +1053,24 @@ spec:
               "rules": dyn([dyn({
                 "to": [
                   {"operation": {"ports": ["9300"]}}
+                ]
+              })])
+            })
+          },
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-observability-scrape-cnpg-exporters",
+              "namespace": "security"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {"app.kubernetes.io/managed-by": "cloudnative-pg"}
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["9187"]}}
                 ]
               })])
             })
