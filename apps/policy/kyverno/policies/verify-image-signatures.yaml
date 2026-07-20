@@ -279,48 +279,6 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: ImageValidatingPolicy
 metadata:
-  name: verify-image-signatures-tempo
-  annotations:
-    policies.kyverno.io/title: Verify Grafana Tempo Image Signatures
-    policies.kyverno.io/category: Supply Chain Security
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/description: >-
-      Verifies cosign keyless signatures on docker.io/grafana/tempo against
-      Tempo's own sign-and-attest.yml workflow identity, read directly from
-      https://github.com/grafana/tempo/blob/main/.github/workflows/sign-and-attest.yml
-      on 2026-07-20 (the workflow's own comments document the exact
-      verification identity).
-spec:
-  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["pods"]
-  matchImageReferences:
-    - glob: "docker.io/grafana/tempo:*"
-  validationActions:
-    - Audit
-  attestors:
-    - name: tempo
-      cosign:
-        keyless:
-          identities:
-            - issuer: "https://token.actions.githubusercontent.com"
-              subjectRegExp: "^https://github\\.com/grafana/tempo/\\.github/workflows/sign-and-attest\\.yml@.*$"
-  validations:
-    - expression: >-
-        images.containers.map(image,
-        verifyImageSignatures(image, [attestors.tempo])).all(e, e > 0)
-      message: >-
-        docker.io/grafana/tempo image signature could not be verified
-        against Tempo's published GitHub Actions identity.
-
----
-apiVersion: policies.kyverno.io/v1
-kind: ImageValidatingPolicy
-metadata:
   name: verify-image-signatures-keda
   annotations:
     policies.kyverno.io/title: Verify KEDA Image Signatures
@@ -683,13 +641,19 @@ metadata:
     policies.kyverno.io/category: Supply Chain Security
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      Verifies cosign keyless signatures on
-      ghcr.io/kyverno/policy-reporter-ui. This is a separate repo from
-      policy-reporter with its own release pipeline (ko-based, not
-      GoReleaser) and its own signing identity — confirmed directly (`cosign
-      sign --yes ... ${{ steps.ko-publish.outputs.digest }}`) against
-      https://github.com/kyverno/policy-reporter-ui/blob/main/.github/workflows/image.yaml
-      on 2026-07-20.
+      Verifies a cosign SLSA provenance ATTESTATION (not a plain signature)
+      on ghcr.io/kyverno/policy-reporter-ui. image.yaml does run a plain
+      `cosign sign` step, but it points COSIGN_REPOSITORY at
+      ghcr.io/kyverno/signatures/policy-reporter — a nonstandard location,
+      apparently copy-pasted from policy-reporter's own release workflow
+      without updating the repo name — so `cosign verify`'s default lookup
+      finds nothing there. The image DOES carry the same
+      slsa-framework/slsa-github-generator-built SLSA v0.2 attestation as
+      every other component in this repo's release pipeline (same identity
+      as verify-image-signatures-kyverno; policy-reporter-ui is a Kyverno
+      org repo). Confirmed empirically with `cosign verify-attestation
+      --type slsaprovenance` and confirmed live in-cluster on 2026-07-20
+      (the plain-signature version above produced "no signatures found").
 spec:
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
@@ -708,13 +672,18 @@ spec:
         keyless:
           identities:
             - issuer: "https://token.actions.githubusercontent.com"
-              subjectRegExp: "^https://github\\.com/kyverno/policy-reporter-ui/\\.github/workflows/image\\.yaml@refs/tags/v.*$"
+              subjectRegExp: "^https://github\\.com/slsa-framework/slsa-github-generator/\\.github/workflows/generator_container_slsa3\\.yml@refs/tags/v.*$"
+  attestations:
+    - name: provenance
+      intoto:
+        type: "https://slsa.dev/provenance/v0.2"
   validations:
     - expression: >-
         images.containers.map(image,
-        verifyImageSignatures(image, [attestors.policyreporterui])).all(e, e > 0)
+        verifyAttestationSignatures(image, "provenance", [attestors.policyreporterui])).all(e, e > 0)
       message: >-
-        ghcr.io/kyverno/policy-reporter-ui image signature could not be
+        ghcr.io/kyverno/policy-reporter-ui image SLSA provenance
+        attestation could not be
         verified against Policy Reporter UI's published GitHub Actions
         identity.
 
@@ -779,9 +748,19 @@ metadata:
       (mogenius/github-actions), not mogenius/renovate-operator itself —
       renovate-operator's own build workflow delegates the actual build and
       `cosign sign --yes --recursive` step to
-      mogenius/github-actions/.github/workflows/build-multiarch.yml, pinned
-      to tag v1.7.0. Confirmed on 2026-07-20. If mogenius/renovate-operator
-      ever bumps that pinned tag, this identity needs re-confirming.
+      mogenius/github-actions/.github/workflows/build-multiarch.yml. That
+      reusable workflow is pinned by COMMIT SHA, not by tag — confirmed
+      live in-cluster on 2026-07-20 that the real certificate SAN is
+      `.../build-multiarch.yml@9bbef6f2531206a2cc3e41b0649704a80f2d4185`
+      (a bare 40-hex commit SHA, no refs/tags or refs/heads prefix at all —
+      an earlier `refs/tags/v.*` version of this regex never matched
+      anything, confirmed by `cosign verify`'s exact rejected-SAN error
+      message). This is the most fragile identity in this file: the SHA is
+      an implementation detail of renovate-operator's own workflow file
+      that changes whenever they bump their pinned mogenius/github-actions
+      dependency, with no advance notice. If this policy ever starts
+      failing, re-run `cosign verify` against the live image to get the
+      new SHA before assuming the image itself is unsigned.
 spec:
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
@@ -800,7 +779,7 @@ spec:
         keyless:
           identities:
             - issuer: "https://token.actions.githubusercontent.com"
-              subjectRegExp: "^https://github\\.com/mogenius/github-actions/\\.github/workflows/build-multiarch\\.yml@refs/tags/v.*$"
+              subjectRegExp: "^https://github\\.com/mogenius/github-actions/\\.github/workflows/build-multiarch\\.yml@9bbef6f2531206a2cc3e41b0649704a80f2d4185$"
   validations:
     - expression: >-
         images.containers.map(image,
@@ -1037,11 +1016,18 @@ metadata:
     policies.kyverno.io/description: >-
       Verifies a cosign SLSA provenance ATTESTATION (not a plain signature
       — ghcr.io/foxcpp/maddy carries no separate plain cosign signature,
-      only the `actions/attest-build-provenance` SLSA attestation attached
+      only the `actions/attest-build-provenance` SLSA attestation, stored
       as an OCI 1.1 referrer) on ghcr.io/foxcpp/maddy, signed by the repo's
       own release.yml at the release tag. Confirmed empirically with
       `cosign verify-attestation --type slsaprovenance1` against the live
-      image on 2026-07-20.
+      image on 2026-07-20. Uses `intoto.type`, NOT `referrer.type`, despite
+      the artifact actually being stored as an OCI 1.1 referrer — Kyverno's
+      cosign attestation verifier (pkg/image/verifiers/ivpol/cosign/verifier.go)
+      hard-rejects anything but `attestation.InToto` with "cosign verifier
+      only supports intoto referrers as attestations"; `referrer.type` is
+      apparently Notary-attestor-only despite being a sibling field on the
+      same schema. Confirmed live in-cluster on 2026-07-20 (a `referrer.type`
+      version produced no signature match at all).
 spec:
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
@@ -1063,7 +1049,7 @@ spec:
               subjectRegExp: "^https://github\\.com/foxcpp/maddy/\\.github/workflows/release\\.yml@refs/tags/v.*$"
   attestations:
     - name: provenance
-      referrer:
+      intoto:
         type: "https://slsa.dev/provenance/v1"
   validations:
     - expression: >-
