@@ -54,8 +54,21 @@ metadata:
     policies.kyverno.io/category: Supply Chain Security
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      Verifies cosign keyless signatures on registry.k8s.io images against
-      the Kubernetes release identity.
+      Verifies cosign keyless signatures on the core Kubernetes control-plane
+      images against the Kubernetes release identity. Scoped to the three
+      exact control-plane binaries rather than "registry.k8s.io/*" —
+      Kyverno's glob crosses "/" (confirmed against
+      github.com/kyverno/kyverno's own pkg/cel/matching/image_test.go, where
+      "ghcr.io/*" matches "ghcr.io/kyverno/kyverno"), so a bare
+      "registry.k8s.io/*" would also match sig-storage/kube-state-metrics/
+      external-dns/descheduler/metrics-server images, none of which are
+      cosign-signed at all (confirmed on 2026-07-20 via GitHub code search
+      returning zero cosign references across kubernetes-csi/*,
+      kubernetes-sigs/external-dns, kubernetes-sigs/descheduler,
+      kubernetes/kube-state-metrics, kubernetes-sigs/metrics-server — they
+      ship via the Prow/k8s-infra Cloud Build image-promotion pipeline,
+      which has no signing step). Matching them against the krel-trust
+      identity would just be a permanent, meaningless failure.
 spec:
   failurePolicy: Ignore
   matchConstraints:
@@ -65,7 +78,9 @@ spec:
         operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
   matchImageReferences:
-    - glob: "registry.k8s.io/*"
+    - glob: "registry.k8s.io/kube-apiserver:*"
+    - glob: "registry.k8s.io/kube-controller-manager:*"
+    - glob: "registry.k8s.io/kube-scheduler:*"
   validationActions:
     - Audit
   attestors:
@@ -82,3 +97,972 @@ spec:
       message: >-
         registry.k8s.io image signature could not be verified against the
         Kubernetes release identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-argocd
+  annotations:
+    policies.kyverno.io/title: Verify Argo CD Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on quay.io/argoproj/argocd against
+      Argo CD's published GitHub Actions identity, confirmed against
+      https://argo-cd.readthedocs.io/en/stable/operator-manual/signed-release-assets/
+      on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "quay.io/argoproj/argocd:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: argocd
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/argoproj/argo-cd/\\.github/workflows/image-reuse\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.argocd])).all(e, e > 0)
+      message: >-
+        quay.io/argoproj/argocd image signature could not be verified
+        against Argo CD's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-cloudnative-pg
+  annotations:
+    policies.kyverno.io/title: Verify CloudNativePG Operator Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on
+      ghcr.io/cloudnative-pg/cloudnative-pg against CloudNativePG's published
+      GitHub Actions identity, confirmed against
+      https://cloudnative-pg.io/docs/1.28/security/ on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/cloudnative-pg/cloudnative-pg:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: cloudnativepg
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/cloudnative-pg/cloudnative-pg/\\.github/workflows/release-publish\\.yml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.cloudnativepg])).all(e, e > 0)
+      message: >-
+        ghcr.io/cloudnative-pg/cloudnative-pg image signature could not be
+        verified against CloudNativePG's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-cloudnative-pg-postgresql
+  annotations:
+    policies.kyverno.io/title: Verify CloudNativePG Postgres Operand Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on ghcr.io/cloudnative-pg/postgresql
+      (the Postgres operand image used by CNPG Cluster resources) against
+      the cloudnative-pg/postgres-containers repo identity. This repo builds
+      images from several workflows (bake.yml, bake_targets.yml,
+      bake_update.yml) rather than one tagged release workflow, so the
+      subject is scoped to the whole repo rather than a single workflow
+      file — matching the identity CloudNativePG's own docs recommend for
+      operand images. Confirmed against
+      https://cloudnative-pg.io/docs/1.28/security/ and
+      https://github.com/cloudnative-pg/postgres-containers on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/cloudnative-pg/postgresql:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: cloudnativepgpostgresql
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/cloudnative-pg/postgres-containers/.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image,
+        [attestors.cloudnativepgpostgresql])).all(e, e > 0)
+      message: >-
+        ghcr.io/cloudnative-pg/postgresql image signature could not be
+        verified against the cloudnative-pg/postgres-containers identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-external-secrets
+  annotations:
+    policies.kyverno.io/title: Verify External Secrets Operator Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on
+      ghcr.io/external-secrets/external-secrets against the
+      external-secrets/external-secrets repo identity — the same
+      certificate-identity-regexp
+      (https://github.com/$GITHUB_REPOSITORY/.*) their own release workflow
+      uses to self-verify attestations, since release.yml is triggered by
+      workflow_dispatch rather than a tag push and isn't pinned to one ref.
+      Confirmed against
+      https://github.com/external-secrets/external-secrets/blob/main/.github/actions/sign/action.yml
+      on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/external-secrets/external-secrets:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: externalsecrets
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/external-secrets/external-secrets/.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.externalsecrets])).all(e, e > 0)
+      message: >-
+        ghcr.io/external-secrets/external-secrets image signature could not
+        be verified against the external-secrets/external-secrets identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-tempo
+  annotations:
+    policies.kyverno.io/title: Verify Grafana Tempo Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on docker.io/grafana/tempo against
+      Tempo's own sign-and-attest.yml workflow identity, read directly from
+      https://github.com/grafana/tempo/blob/main/.github/workflows/sign-and-attest.yml
+      on 2026-07-20 (the workflow's own comments document the exact
+      verification identity).
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "docker.io/grafana/tempo:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: tempo
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/grafana/tempo/\\.github/workflows/sign-and-attest\\.yml@.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.tempo])).all(e, e > 0)
+      message: >-
+        docker.io/grafana/tempo image signature could not be verified
+        against Tempo's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-keda
+  annotations:
+    policies.kyverno.io/title: Verify KEDA Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on ghcr.io/kedacore/keda,
+      keda-metrics-apiserver and keda-admission-webhooks — all three built
+      and cosign-signed (via `make sign-images`) by the same
+      release-build.yml workflow, confirmed directly against
+      https://github.com/kedacore/keda/blob/main/.github/workflows/release-build.yml
+      and https://github.com/kedacore/keda/blob/main/Makefile on 2026-07-20.
+      release-build.yml triggers only on `v*` tag pushes.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/kedacore/keda:*"
+    - glob: "ghcr.io/kedacore/keda-metrics-apiserver:*"
+    - glob: "ghcr.io/kedacore/keda-admission-webhooks:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: keda
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/kedacore/keda/\\.github/workflows/release-build\\.yml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.keda])).all(e, e > 0)
+      message: >-
+        KEDA image signature could not be verified against KEDA's published
+        GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-prometheus-operator
+  annotations:
+    policies.kyverno.io/title: Verify Prometheus Operator Config Reloader Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on
+      quay.io/prometheus-operator/prometheus-config-reloader, signed by the
+      same publish.yaml / scripts/push-docker-image.sh flow as the main
+      prometheus-operator image (both built and signed together), confirmed
+      against
+      https://github.com/prometheus-operator/prometheus-operator/blob/main/.github/workflows/publish.yaml
+      and .../scripts/push-docker-image.sh on 2026-07-20. publish.yaml runs
+      on both branch and tag pushes, so the subject is scoped to the
+      workflow file rather than a tag-anchored ref.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "quay.io/prometheus-operator/prometheus-config-reloader:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: prometheusoperator
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/prometheus-operator/prometheus-operator/\\.github/workflows/publish\\.yaml@.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.prometheusoperator])).all(e, e > 0)
+      message: >-
+        quay.io/prometheus-operator/prometheus-config-reloader image
+        signature could not be verified against the prometheus-operator
+        identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-rook
+  annotations:
+    policies.kyverno.io/title: Verify Rook Ceph Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on ghcr.io/rook/ceph, signed via
+      `cosign sign` in build/release/Makefile, invoked by
+      .github/workflows/push-build.yaml. Confirmed against
+      https://github.com/rook/rook/blob/master/.github/workflows/push-build.yaml
+      and .../build/release/Makefile on 2026-07-20. push-build.yaml runs on
+      pushes to master, release-* branches, and v* tags — this cluster
+      tracks release tags (v1.20.2), so the subject is tag-anchored.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/rook/ceph:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: rook
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/rook/rook/\\.github/workflows/push-build\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.rook])).all(e, e > 0)
+      message: >-
+        ghcr.io/rook/ceph image signature could not be verified against
+        Rook's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-opentelemetry-operator
+  annotations:
+    policies.kyverno.io/title: Verify OpenTelemetry Operator Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on
+      ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator,
+      signed (`make cosign-sign`) only on refs/heads/main and refs/tags/v*
+      by publish-images.yaml, confirmed against
+      https://github.com/open-telemetry/opentelemetry-operator/blob/main/.github/workflows/publish-images.yaml
+      on 2026-07-20. Deliberately does NOT cover
+      ghcr.io/open-telemetry/opentelemetry-operator/target-allocator —
+      publish-target-allocator.yaml builds and pushes that image but never
+      calls cosign at all, confirmed by reading the full workflow file.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: otelloperator
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/open-telemetry/opentelemetry-operator/\\.github/workflows/publish-images\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.otelloperator])).all(e, e > 0)
+      message: >-
+        ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
+        image signature could not be verified against the
+        opentelemetry-operator identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-argo-rollouts
+  annotations:
+    policies.kyverno.io/title: Verify Argo Rollouts Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on quay.io/argoproj/argo-rollouts
+      and quay.io/argoproj/kubectl-argo-rollouts, both signed by the local
+      reusable workflow image-reuse.yaml (called from release.yaml),
+      confirmed against
+      https://github.com/argoproj/argo-rollouts/blob/master/.github/workflows/image-reuse.yaml
+      on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "quay.io/argoproj/argo-rollouts:*"
+    - glob: "quay.io/argoproj/kubectl-argo-rollouts:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: argorollouts
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/argoproj/argo-rollouts/\\.github/workflows/image-reuse\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.argorollouts])).all(e, e > 0)
+      message: >-
+        Argo Rollouts image signature could not be verified against Argo
+        Rollouts' published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-dex
+  annotations:
+    policies.kyverno.io/title: Verify Dex Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on ghcr.io/dexidp/dex (the OIDC
+      provider bundled with the Argo CD chart), signed by the local reusable
+      workflow artifacts.yaml (called from release.yaml), confirmed against
+      https://github.com/dexidp/dex/blob/master/.github/workflows/artifacts.yaml
+      on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/dexidp/dex:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: dex
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/dexidp/dex/\\.github/workflows/artifacts\\.yaml@refs/(heads/main|tags/v.*)$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.dex])).all(e, e > 0)
+      message: >-
+        ghcr.io/dexidp/dex image signature could not be verified against
+        Dex's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-spegel
+  annotations:
+    policies.kyverno.io/title: Verify Spegel Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on ghcr.io/spegel-org/spegel,
+      signed directly in release.yaml, confirmed against
+      https://github.com/spegel-org/spegel/blob/main/.github/workflows/release.yaml
+      on 2026-07-20. This cluster pins the image by digest rather than tag,
+      so both reference forms are matched.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/spegel-org/spegel:*"
+    - glob: "ghcr.io/spegel-org/spegel@*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: spegel
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/spegel-org/spegel/\\.github/workflows/release\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.spegel])).all(e, e > 0)
+      message: >-
+        ghcr.io/spegel-org/spegel image signature could not be verified
+        against Spegel's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-policy-reporter
+  annotations:
+    policies.kyverno.io/title: Verify Kyverno Policy Reporter Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on ghcr.io/kyverno/policy-reporter,
+      signed via GoReleaser's docker_signs block in release-image.yaml,
+      confirmed against
+      https://github.com/kyverno/policy-reporter/blob/main/.github/workflows/release-image.yaml
+      and .../.goreleaser.yaml on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/kyverno/policy-reporter:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: policyreporter
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/kyverno/policy-reporter/\\.github/workflows/release-image\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.policyreporter])).all(e, e > 0)
+      message: >-
+        ghcr.io/kyverno/policy-reporter image signature could not be
+        verified against Policy Reporter's published GitHub Actions
+        identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-policy-reporter-ui
+  annotations:
+    policies.kyverno.io/title: Verify Kyverno Policy Reporter UI Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on
+      ghcr.io/kyverno/policy-reporter-ui. This is a separate repo from
+      policy-reporter with its own release pipeline (ko-based, not
+      GoReleaser) and its own signing identity — confirmed directly (`cosign
+      sign --yes ... ${{ steps.ko-publish.outputs.digest }}`) against
+      https://github.com/kyverno/policy-reporter-ui/blob/main/.github/workflows/image.yaml
+      on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/kyverno/policy-reporter-ui:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: policyreporterui
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/kyverno/policy-reporter-ui/\\.github/workflows/image\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.policyreporterui])).all(e, e > 0)
+      message: >-
+        ghcr.io/kyverno/policy-reporter-ui image signature could not be
+        verified against Policy Reporter UI's published GitHub Actions
+        identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-otel-collector-contrib
+  annotations:
+    policies.kyverno.io/title: Verify OpenTelemetry Collector Contrib Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on the bare-shorthand Docker Hub
+      image otel/opentelemetry-collector-contrib (no explicit registry host
+      in this cluster's pod spec, matching require-image-registry-allowlist.yaml's
+      documented bare-shorthand exception). Signed by the local reusable
+      workflow base-release.yaml (called from release-contrib.yaml) via
+      GoReleaser's cosign-backed docker_signs, confirmed against
+      https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/.github/workflows/base-release.yaml
+      on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "otel/opentelemetry-collector-contrib:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: otelcollectorcontrib
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/open-telemetry/opentelemetry-collector-releases/\\.github/workflows/base-release\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.otelcollectorcontrib])).all(e, e > 0)
+      message: >-
+        otel/opentelemetry-collector-contrib image signature could not be
+        verified against the opentelemetry-collector-releases identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-renovate-operator
+  annotations:
+    policies.kyverno.io/title: Verify Renovate Operator Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on
+      ghcr.io/mogenius/renovate-operator. Unlike every other entry in this
+      file, the trust anchor here is a third-party reusable workflow repo
+      (mogenius/github-actions), not mogenius/renovate-operator itself —
+      renovate-operator's own build workflow delegates the actual build and
+      `cosign sign --yes --recursive` step to
+      mogenius/github-actions/.github/workflows/build-multiarch.yml, pinned
+      to tag v1.7.0. Confirmed on 2026-07-20. If mogenius/renovate-operator
+      ever bumps that pinned tag, this identity needs re-confirming.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/mogenius/renovate-operator:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: renovateoperator
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/mogenius/github-actions/\\.github/workflows/build-multiarch\\.yml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.renovateoperator])).all(e, e > 0)
+      message: >-
+        ghcr.io/mogenius/renovate-operator image signature could not be
+        verified against the mogenius/github-actions build identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-meilisearch
+  annotations:
+    policies.kyverno.io/title: Verify Meilisearch Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on docker.io/getmeili/meilisearch,
+      signed directly in publish-docker-images.yml, confirmed against
+      https://github.com/meilisearch/meilisearch/blob/main/.github/workflows/publish-docker-images.yml
+      on 2026-07-20. The workflow runs on any tag push (except "latest")
+      and also nightly via schedule/workflow_dispatch on main, so both ref
+      forms are matched.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "docker.io/getmeili/meilisearch:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: meilisearch
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/meilisearch/meilisearch/\\.github/workflows/publish-docker-images\\.yml@refs/(tags/v.+|heads/main)$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.meilisearch])).all(e, e > 0)
+      message: >-
+        docker.io/getmeili/meilisearch image signature could not be
+        verified against Meilisearch's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-kyverno
+  annotations:
+    policies.kyverno.io/title: Verify Kyverno Image Attestations
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies a cosign SLSA provenance ATTESTATION (not a plain signature —
+      reg.kyverno.io/kyverno/* carries no plain cosign signature at all,
+      confirmed empirically with `cosign verify`, which fails with "no
+      signatures found") on all six reg.kyverno.io/kyverno/* component
+      images. The attestation's builder identity is the third-party
+      slsa-framework/slsa-github-generator reusable workflow, pinned to
+      v2.1.0 — Kyverno's own release.yaml invokes that trusted SLSA3
+      builder rather than signing with its own workflow identity, which is
+      the SLSA3 build model working as intended (the builder identity is
+      fixed and audited, independent of what the calling repo's workflow
+      does). Confirmed empirically with `cosign verify-attestation --type
+      slsaprovenance` against reg.kyverno.io/kyverno/{kyverno,
+      background-controller,cleanup-controller,reports-controller,
+      kyvernopre,kyverno-cli}:v1.18.2 on 2026-07-20; all six share this
+      identity. If Kyverno ever bumps its pinned slsa-github-generator
+      version, this identity needs re-confirming.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "reg.kyverno.io/kyverno/*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: kyverno
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/slsa-framework/slsa-github-generator/\\.github/workflows/generator_container_slsa3\\.yml@refs/tags/v.*$"
+  attestations:
+    - name: provenance
+      intoto:
+        type: "https://slsa.dev/provenance/v0.2"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyAttestationSignatures(image, "provenance", [attestors.kyverno])).all(e, e > 0)
+      message: >-
+        reg.kyverno.io/kyverno image SLSA provenance attestation could not
+        be verified against the slsa-github-generator builder identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-cert-manager
+  annotations:
+    policies.kyverno.io/title: Verify cert-manager Image Signatures (Key-Based)
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign KEY-BASED (not keyless) signatures on
+      quay.io/jetstack/cert-manager-{controller,webhook,cainjector} — the
+      only key-based entry in this file alongside cert-manager's own
+      documented approach: the signing key is held in Google Cloud KMS by
+      the cert-manager maintainers (not GitHub Actions OIDC), and the
+      signatures are not logged to a public Rekor transparency log, so
+      insecureIgnoreTlog is required (matching cert-manager's own
+      documented `--insecure-ignore-tlog` verification command). Public key
+      and exact command from
+      https://cert-manager.io/docs/installation/code-signing/, confirmed
+      empirically with `cosign verify --signature-digest-algorithm sha512
+      --insecure-ignore-tlog --key <this key>` against this cluster's exact
+      deployed tag (v1.21.0) on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "quay.io/jetstack/cert-manager-controller:*"
+    - glob: "quay.io/jetstack/cert-manager-webhook:*"
+    - glob: "quay.io/jetstack/cert-manager-cainjector:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: certmanager
+      cosign:
+        key:
+          data: |
+            -----BEGIN PUBLIC KEY-----
+            MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAsZZKaaIRjOpzbiWYIDKO
+            yry9XGBqAfve1iOGmt5VO1jpjNoEseT6zewozHfWTM7osxayy2WjN8G+QV39MlT3
+            Vxo91/31g+Zcq8KcvxG+iB8GRaD9pNgLmghorv+eYDiPYMO/+fhsLImyG5WEoPct
+            MeCBD7umZ/A2t96U9DQxVDqQbTHlsNludno1p1wsgRnfUM3QHexNljDvJg5FcDMo
+            dCpVLpRNvbw0lbJVfybJ4siJ5o/MmXzy0QCJpw+yMIqvqMc8qgKJ1yooJtuTVF4t
+            4/luP+EG/oVIiSWCFeRMqYdbJ3R+CJi+4LN7vFNYQM1Q/NwOB52RteaR7wnqmcBz
+            qSYK32MM8xdPCQ5tioWwnPTRbPZuzsZsRmJsKBO9JUrBYdDntZX1xY5g4QNSufxi
+            QgJgJSU7E4VGMvagEzB1JzvOr6A/qNFCO1Z6JsA3jw3cJLV1rSHfxqfSXBACTLDf
+            6bOPWRILRKydTJA6uLKNKmo1/nFm3jvd5tHKOjy4VAQLJ/Vx9wBsAAiLa+06veun
+            Oz3AJ9sNh3wLp21RL11u9TuOKRBipE/TYsBYp8jpIyWPXDSV+JcD/TZqoT8y0Z6S
+            0damfUmspuK9DTQFL2crpeaqJSG9RA+OuPZLxGD1IMURTsPJB7kXhPtmceeirBnw
+            sVcRHHDitVt8oO/x4Wus1c0CAwEAAQ==
+            -----END PUBLIC KEY-----
+          hashAlgorithm: sha512
+        ctlog:
+          insecureIgnoreTlog: true
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.certmanager])).all(e, e > 0)
+      message: >-
+        cert-manager image signature could not be verified against
+        cert-manager's published Cloud KMS public key.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-access-log-exporter
+  annotations:
+    policies.kyverno.io/title: Verify access-log-exporter Image Signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies cosign keyless signatures on
+      ghcr.io/jkroepke/access-log-exporter. Confirmed empirically with
+      `cosign verify` against the live image on 2026-07-20 — this image
+      carries a genuine plain cosign signature (not just the SLSA
+      attestation `actions/attest-build-provenance` also attaches), signed
+      by the repo's own ci.yaml at the release tag.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/jkroepke/access-log-exporter:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: accesslogexporter
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/jkroepke/access-log-exporter/\\.github/workflows/ci\\.yaml@refs/tags/v.*$"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyImageSignatures(image, [attestors.accesslogexporter])).all(e, e > 0)
+      message: >-
+        ghcr.io/jkroepke/access-log-exporter image signature could not be
+        verified against jkroepke's published GitHub Actions identity.
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: ImageValidatingPolicy
+metadata:
+  name: verify-image-signatures-maddy
+  annotations:
+    policies.kyverno.io/title: Verify Maddy Image Attestations
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Verifies a cosign SLSA provenance ATTESTATION (not a plain signature
+      — ghcr.io/foxcpp/maddy carries no separate plain cosign signature,
+      only the `actions/attest-build-provenance` SLSA attestation attached
+      as an OCI 1.1 referrer) on ghcr.io/foxcpp/maddy, signed by the repo's
+      own release.yml at the release tag. Confirmed empirically with
+      `cosign verify-attestation --type slsaprovenance1` against the live
+      image on 2026-07-20.
+spec:
+  failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  matchImageReferences:
+    - glob: "ghcr.io/foxcpp/maddy:*"
+  validationActions:
+    - Audit
+  attestors:
+    - name: maddy
+      cosign:
+        keyless:
+          identities:
+            - issuer: "https://token.actions.githubusercontent.com"
+              subjectRegExp: "^https://github\\.com/foxcpp/maddy/\\.github/workflows/release\\.yml@refs/tags/v.*$"
+  attestations:
+    - name: provenance
+      referrer:
+        type: "https://slsa.dev/provenance/v1"
+  validations:
+    - expression: >-
+        images.containers.map(image,
+        verifyAttestationSignatures(image, "provenance", [attestors.maddy])).all(e, e > 0)
+      message: >-
+        ghcr.io/foxcpp/maddy image SLSA provenance attestation could not be
+        verified against maddy's published GitHub Actions identity.
