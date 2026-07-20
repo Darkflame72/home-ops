@@ -12,6 +12,15 @@
 # meshed (e.g. kube-system, forgejo-runners) instead get a workload-scoped
 # exception with no `from` clause, like the two below.
 #
+# CNPG-owning namespaces (comms, default, media, observability, security —
+# every target namespace except agents) each also get an allow-cnpg exception:
+# the CNPG operator lives unmeshed in "database" and polls every CNPG
+# instance-manager's port 8000 cluster-wide, regardless of which namespace
+# the Cluster lives in. Missing this caused a live ~4min outage of media's
+# immich-v2 CNPG cluster on 2026-07-20 (operator's status polls got denied
+# the moment media was meshed) — added proactively for the other four so
+# the same incident doesn't repeat on their enrollment.
+#
 # synchronize:false + generateExisting:true (not the docs' recommended
 # synchronize:true) — with sync on, the Namespace-kind trigger hits a Kyverno
 # background-controller bug (create/delete loop, ~8/s, never converges; see
@@ -115,6 +124,55 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
+  name: istio-authz-comms-allow-cnpg
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — comms CNPG exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in comms. Added proactively after the same gap caused a live outage in media on 2026-07-20 — see istio-ambient-namespace-labels.yaml.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["comms"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-cnpg-instance-manager",
+              "namespace": "comms"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {"app.kubernetes.io/managed-by": "cloudnative-pg"}
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["8000"]}}
+                ]
+              })])
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('comms', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
   name: istio-authz-default-default-allow
   annotations:
     policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — default
@@ -207,6 +265,55 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
+  name: istio-authz-default-allow-cnpg
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — default CNPG exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in default. Added proactively after the same gap caused a live outage in media on 2026-07-20 — see istio-ambient-namespace-labels.yaml.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["default"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-cnpg-instance-manager",
+              "namespace": "default"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {"app.kubernetes.io/managed-by": "cloudnative-pg"}
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["8000"]}}
+                ]
+              })])
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('default', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
   name: istio-authz-games-default-allow
   annotations:
     policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — games
@@ -289,6 +396,55 @@ spec:
                   ]
                 }
               ]
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('media', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: istio-authz-media-allow-cnpg
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — media CNPG exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for CNPG clusters in media. Missing this caused a live ~4min outage of immich-v2's CNPG cluster on 2026-07-20 when media was first meshed — see istio-ambient-namespace-labels.yaml for context.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["media"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-cnpg-instance-manager",
+              "namespace": "media"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {"app.kubernetes.io/managed-by": "cloudnative-pg"}
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["8000"]}}
+                ]
+              })])
             })
           }
         ]
@@ -394,6 +550,55 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
+  name: istio-authz-observability-allow-cnpg
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — observability CNPG exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in observability. Added proactively after the same gap caused a live outage in media on 2026-07-20 — see istio-ambient-namespace-labels.yaml.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["observability"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-cnpg-instance-manager",
+              "namespace": "observability"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {"app.kubernetes.io/managed-by": "cloudnative-pg"}
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["8000"]}}
+                ]
+              })])
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('observability', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
   name: istio-authz-security-default-allow
   annotations:
     policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — security
@@ -430,6 +635,54 @@ spec:
                   ]
                 }
               ]
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('security', variables.downstream)"
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: istio-authz-security-allow-cnpg
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — security CNPG exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for any CNPG cluster in security. Added proactively after the same gap caused a live outage in media on 2026-07-20 — see istio-ambient-namespace-labels.yaml.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["security"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-cnpg-instance-manager",
+              "namespace": "security"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {"app.kubernetes.io/managed-by": "cloudnative-pg"}
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["8000"]}}
+                ]
+              })])
             })
           }
         ]
