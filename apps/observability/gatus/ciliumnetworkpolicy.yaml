@@ -1,0 +1,68 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumnetworkpolicy_v2.json
+#
+# Same default-deny-egress pattern as agents/security. observability's
+# real external dependencies, audited 2026-07-20: discord.com (webhook
+# alerts from both gatus and mimir's Alertmanager) and ICMP-only reachability
+# to 1.1.1.1/8.8.8.8/9.9.9.9 (gatus's own internet-connectivity checks —
+# these exist specifically to detect when the cluster's own internet
+# uplink is down, so they need to stay real external checks, not
+# in-cluster substitutes). Grafana's analytics/update-check phone-home is
+# already disabled in grafana.yaml. kromgo and blackbox-exporter have no
+# external targets configured currently.
+#
+# The DNS toEndpoints rule needs an explicit L7 dns visibility block
+# (rules.dns) — without it, Cilium allows the DNS *query* at L3-L4 but
+# never inspects the *response*, so it never learns the toFQDNs IP mapping
+# and every connection to a toFQDNs host gets dropped as unmatched "world"
+# traffic. Confirmed live 2026-07-20 (empty `cilium-dbg fqdn cache list`
+# and policy-verdict "match none" on an otherwise-identical unmeshed test
+# pod, fixed immediately by adding this block).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: observability-egress-default-deny
+  namespace: observability
+spec:
+  endpointSelector: {}
+  enableDefaultDeny:
+    egress: true
+    ingress: false
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEntities:
+        - cluster
+        - kube-apiserver
+    - toFQDNs:
+        - matchName: "discord.com"
+        - matchPattern: "*.darkflame.dev"
+        # Pod resolver tries the namespace search suffix before the bare
+        # name (ndots:5 in /etc/resolv.conf), and Cilium tracks the FQDN
+        # exactly as queried/answered — confirmed live 2026-07-20 via
+        # `cilium-dbg fqdn cache list` showing entries like
+        # "pdf.darkflame.dev.observability.svc.cluster.local", which
+        # *.darkflame.dev alone doesn't match. Without this, every gatus
+        # "external" group check breaks and fires false-positive alerts.
+        - matchPattern: "*.darkflame.dev.observability.svc.cluster.local"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+    - toCIDR:
+        - "1.1.1.1/32"
+        - "8.8.8.8/32"
+        - "9.9.9.9/32"
+      icmps:
+        - fields:
+            - type: EchoRequest
+              family: IPv4

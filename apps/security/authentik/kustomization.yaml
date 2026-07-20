@@ -7,3 +7,4 @@ resources:
   - ./cluster.yaml
   - ./scheduled-backup.yaml
   - ./podmonitor.yaml
+  - ./ciliumnetworkpolicy.yaml

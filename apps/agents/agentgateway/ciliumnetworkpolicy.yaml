@@ -1,0 +1,44 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumnetworkpolicy_v2.json
+#
+# Pilot for default-deny egress: agents' only current external dependency
+# is none at all — agentgateway-proxy routes purely to in-cluster MCP
+# backends (grafana-mcp.observability, argocd-mcp.argocd), both reached
+# over the mesh (ztunnel HBONE, a pod-to-pod flow). Istio's AuthorizationPolicy
+# layer already governs which specific in-cluster identities can reach
+# which service — this policy's job is coarser: cluster-internal vs
+# external. Verified live 2026-07-20: in-cluster targets and DNS still
+# work, a raw external destination (example.com) is fully blocked (no TLS
+# handshake at all, not just an app-level rejection), and both real MCP
+# tool paths (grafana, argocd) still work end-to-end.
+#
+# If agents ever needs real external egress (e.g. an agent calling an LLM
+# API directly), add a toFQDNs entry here rather than disabling this — but
+# the DNS toEndpoints rule below needs the rules.dns block for toFQDNs to
+# work at all (see observability/ciliumnetworkpolicy.yaml for why); kept
+# here even though unused today so this file is copy-paste safe.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: agents-egress-default-deny
+  namespace: agents
+spec:
+  endpointSelector: {}
+  enableDefaultDeny:
+    egress: true
+    ingress: false
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEntities:
+        - cluster
+        - kube-apiserver

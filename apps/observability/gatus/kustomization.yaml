@@ -9,6 +9,7 @@ resources:
   - ./podmonitor.yaml
   - ./kopiur.yaml
   - ./serviceentry.yaml
+  - ./ciliumnetworkpolicy.yaml
 configMapGenerator:
   - name: gatus-configmap
     files:

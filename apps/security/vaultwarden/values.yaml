@@ -25,6 +25,11 @@ controllers:
             value: "false"
           - name: WEBSOCKET_ENABLED
             value: "true"
+          # Icon fetching hits arbitrary external domains (whatever site a
+          # saved login is for) — cosmetic only, disabled to keep security's
+          # egress bounded to known destinations (see ciliumnetworkpolicy.yaml).
+          - name: DISABLE_ICON_DOWNLOAD
+            value: "true"
           - name: SMTP_HOST
             value: smtp-relay.default.svc.cluster.local
           - name: SMTP_FROM
