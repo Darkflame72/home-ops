@@ -7,9 +7,12 @@
 # to 1.1.1.1/8.8.8.8/9.9.9.9 (gatus's own internet-connectivity checks —
 # these exist specifically to detect when the cluster's own internet
 # uplink is down, so they need to stay real external checks, not
-# in-cluster substitutes). Grafana's analytics/update-check phone-home is
-# already disabled in grafana.yaml. kromgo and blackbox-exporter have no
-# external targets configured currently.
+# in-cluster substitutes) and to 10.0.60.15 (TrueNAS, a LAN appliance, not
+# a cluster address — missed in the original audit, broke gatus's TrueNAS
+# check the moment this synced; caught live 2026-07-20). Grafana's
+# analytics/update-check phone-home is already disabled in grafana.yaml.
+# kromgo and blackbox-exporter have no external targets configured
+# currently.
 #
 # The DNS toEndpoints rule needs an explicit L7 dns visibility block
 # (rules.dns) — without it, Cilium allows the DNS *query* at L3-L4 but
@@ -62,6 +65,7 @@ spec:
         - "1.1.1.1/32"
         - "8.8.8.8/32"
         - "9.9.9.9/32"
+        - "10.0.60.15/32"
       icmps:
         - fields:
             - type: EchoRequest
