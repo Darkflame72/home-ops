@@ -13,6 +13,7 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: forgejo-runner-default-deny
+  namespace: forgejo-runners
 spec:
   endpointSelector: {}
   ingress:
