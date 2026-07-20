@@ -5,12 +5,18 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
+  contents: read
   pull-requests: write
+
+concurrency:
+  group: argocd-diff-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   diff:
     name: Diff
     runs-on: arc-home-ops
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Install ArgoCD CLI
         run: |

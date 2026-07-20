@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumnetworkpolicy_v2.json
+#
+# This runner executes arbitrary CI job steps (via the dind sidecar), so
+# lateral movement into the rest of the cluster is the risk to contain —
+# not internet egress, since job requirements there are unbounded by
+# design. Ingress is denied outright: nothing calls into this pod, the
+# runner only long-polls forgejo-http outbound. Egress is DNS + Forgejo's
+# API (needed to pick up jobs/report status, see external-secret.yaml) +
+# unrestricted internet for whatever a given job pulls/curls; everything
+# else in-cluster (kube-apiserver, database, infisical, etc.) is denied.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: forgejo-runner-default-deny
+spec:
+  endpointSelector: {}
+  ingress:
+    - fromEntities:
+        - host
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: default
+            app.kubernetes.io/name: forgejo
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - toEntities:
+        - world

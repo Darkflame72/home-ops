@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: runner
-          image: code.forgejo.org/forgejo/runner:12.7.3
+          image: code.forgejo.org/forgejo/runner:12.7.3@sha256:48b0539854bfc769fbf629725e089e35cfa1227ddedc7e45436b83bb9502ae27
           securityContext:
             # Stays root (runAsUser: 0): the image has no non-root user, and
             # it needs to reach the dind sidecar's docker.sock, which is
@@ -50,7 +50,7 @@ spec:
             - name: docker-sock
               mountPath: /var/run
         - name: dind
-          image: docker:29.3.1-dind
+          image: docker:29.3.1-dind@sha256:686d2c5464787b0ca42420e0aa03a94fc9781ff9bf8b5ff947614b9fa4c3c3e0
           securityContext:
             privileged: true
           resources:
