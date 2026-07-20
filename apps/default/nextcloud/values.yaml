@@ -51,6 +51,11 @@ nextcloud:
       $CONFIG = array (
         'hide_login_form' => true,
       );
+    maintenance-window.config.php: |-
+      <?php
+      $CONFIG = array (
+        'maintenance_window_start' => 2,
+      );
 
 internalDatabase:
   enabled: false
