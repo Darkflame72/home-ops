@@ -21,6 +21,19 @@
 # the moment media was meshed) — added proactively for the other four so
 # the same incident doesn't repeat on their enrollment.
 #
+# The same "unmeshed caller listed by name still gets denied" gap also
+# broke ingress: enrolling media caused a live 503 outage of
+# https://photos.darkflame.dev because envoy-external lives in "network",
+# which — like "database" — stays unmeshed indefinitely (see
+# istio-ambient-namespace-labels.yaml). media-allow-ingress and
+# media-allow-metrics-scrape below fix this for media specifically. This
+# is namespace-specific, not generic like the CNPG exception: before
+# enrolling comms/default/observability/security, audit each namespace's
+# HTTPRoutes (and observability-scraped ports) for the same gap and add
+# equivalent exceptions first — don't assume default-allow's
+# source.namespaces list is sufficient just because network/observability
+# are named in it.
+#
 # synchronize:false + generateExisting:true (not the docs' recommended
 # synchronize:true) — with sync on, the Namespace-kind trigger hits a Kyverno
 # background-controller bug (create/delete loop, ~8/s, never converges; see
@@ -443,6 +456,142 @@ spec:
               "rules": dyn([dyn({
                 "to": [
                   {"operation": {"ports": ["8000"]}}
+                ]
+              })])
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('media', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: istio-authz-media-allow-ingress
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — media ingress exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Namespace-wide (not workload-scoped — see below) exception for
+      envoy-external and envoy-internal (both unmeshed, network namespace —
+      network stays out of the mesh indefinitely, see
+      istio-ambient-namespace-labels.yaml) reaching media's HTTP ports.
+      Being listed in default-allow's source.namespaces is not enough: an
+      unmeshed caller is denied even if listed by name. Missing this caused
+      two live outages on 2026-07-20: photos.darkflame.dev (immich-server,
+      Cloudflare-tunnel path via envoy-external) and jelly.darkflame.dev
+      (jellyfin, LAN path via envoy-internal — Gatus caught this one, see
+      apps/observability/gatus/config/config.yaml). Namespace-wide by ports
+      rather than per-workload selector, because both ingress gateways can
+      reach any HTTP-exposed workload in the namespace and enumerating
+      every workload+port here is the same maintenance burden as just
+      listing the ports; add new ports here as new workloads in media gain
+      an envoy-internal/envoy-external route.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["media"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-unmeshed-network-ingress",
+              "namespace": "media"
+            }),
+            "spec": dyn({
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["2283", "8096"]}}
+                ]
+              })])
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('media', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: istio-authz-media-allow-metrics-scrape
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — media metrics scrape exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Workload-scoped exception for the OTel/Prometheus collector (unmeshed,
+      observability namespace — observability is not yet enrolled) scraping
+      immich-server's metrics ports and immich-v2's postgres-exporter port.
+      Same "listed by name isn't enough while unmeshed" gap as
+      istio-authz-media-allow-ingress. Without this, media's metrics are
+      silently missing from dashboards/alerts while observability stays
+      unmeshed.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["media"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-observability-scrape-immich-server",
+              "namespace": "media"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {
+                  "app.kubernetes.io/instance": "immich",
+                  "app.kubernetes.io/name": "server"
+                }
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["8081", "8082"]}}
+                ]
+              })])
+            })
+          },
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-observability-scrape-immich-v2",
+              "namespace": "media"
+            }),
+            "spec": dyn({
+              "selector": dyn({
+                "matchLabels": {"cnpg.io/cluster": "immich-v2"}
+              }),
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["9187"]}}
                 ]
               })])
             })
