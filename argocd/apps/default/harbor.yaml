@@ -1,0 +1,45 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: harbor
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    link.argocd.argoproj.io/external-link: https://harbor.darkflame.dev
+    argocd.argoproj.io/sync-wave: '3'
+spec:
+  project: default
+  sources:
+    - repoURL: "https://github.com/Darkflame72/home-ops.git"
+      path: apps/default/harbor
+      targetRevision: main
+      ref: repo
+    - repoURL: https://helm.goharbor.io
+      chart: harbor
+      targetRevision: 1.19.1
+      helm:
+        releaseName: harbor
+        valueFiles:
+          - $repo/apps/default/harbor/values.yaml
+  destination:
+    name: in-cluster
+    namespace: default
+  syncPolicy:
+    automated:
+      allowEmpty: true
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true

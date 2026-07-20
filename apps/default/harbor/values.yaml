@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/goharbor/harbor-helm/refs/heads/main/values.schema.json
+expose:
+  type: route
+  tls:
+    enabled: false
+  route:
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: envoy-internal
+        namespace: network
+        sectionName: https
+    hosts:
+      - harbor.darkflame.dev
+
+externalURL: https://harbor.darkflame.dev
+
+existingSecretAdminPassword: harbor-admin-secret
+existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
+
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      storageClass: ceph-block
+      size: 50Gi
+    jobservice:
+      jobLog:
+        storageClass: ceph-block
+    trivy:
+      storageClass: ceph-block
+  imageChartStorage:
+    type: filesystem
+
+# Dedicated CNPG cluster (harbor-postgres), see cluster.yaml
+database:
+  type: external
+  external:
+    host: harbor-postgres-rw.default.svc.cluster.local
+    port: "5432"
+    username: app
+    coreDatabase: app
+    existingSecret: harbor-postgres-app
+    sslmode: disable
+
+# Dedicated dragonfly instance (see redis.yaml), so the chart's default
+# db-index layout (core=0, jobservice=1, registry=2, trivy=5) is fine as-is.
+redis:
+  type: external
+  external:
+    addr: harbor-redis.default.svc.cluster.local:6379
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
