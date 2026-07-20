@@ -624,19 +624,20 @@ metadata:
     policies.kyverno.io/category: Supply Chain Security
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      Verifies a cosign SLSA provenance ATTESTATION (not a plain signature —
-      ghcr.io/kyverno/policy-reporter carries no plain cosign signature at
-      all, confirmed empirically with `cosign download attestation` against
-      the live 3.8.1 digest on 2026-07-20, which returned only a
-      dev.sigstore.bundle attestation with predicate type
-      https://slsa.dev/provenance/v1, no separate signature artifact) on
-      ghcr.io/kyverno/policy-reporter. Same certificate identity as
+      Verifies a cosign bundle on ghcr.io/kyverno/policy-reporter — NOT a
+      SLSA provenance attestation despite what's attached via the OCI
+      referrers API (a separate, unsigned BuildKit provenance/SBOM
+      attachment with predicate types spdx.dev/Document and
+      slsa.dev/provenance/v1, confirmed via plain `crane manifest`, present
+      alongside but unrelated to the actual signed artifact). The real
+      cosign-signed bundle, found via `cosign download attestation` against
+      the live 3.8.1 digest on 2026-07-20, carries predicate type
+      https://sigstore.dev/cosign/sign/v1 — cosign's own generic signing
+      predicate, confirmed live (an earlier https://slsa.dev/provenance/v1
+      version produced "required predicate type ... not found, found
+      [https://sigstore.dev/cosign/sign/v1]"). Same certificate identity as
       originally configured (release-image.yaml, confirmed live in the
-      attestation's own SAN: .../release-image.yaml@refs/tags/v3.8.10) —
-      only the verification mechanism was wrong, not the identity. Unlike
-      policy-reporter-ui's attestation (predicate v0.2, signed by the
-      third-party slsa-github-generator builder), this one is predicate v1
-      and signed directly by policy-reporter's own release-image.yaml.
+      bundle's own SAN: .../release-image.yaml@refs/tags/v3.8.10).
 spec:
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
@@ -661,15 +662,15 @@ spec:
   attestations:
     - name: provenance
       intoto:
-        type: "https://slsa.dev/provenance/v1"
+        type: "https://sigstore.dev/cosign/sign/v1"
   validations:
     - expression: >-
         images.containers.map(image,
         verifyAttestationSignatures(image, "provenance", [attestors.policyreporter])).all(e, e > 0)
       message: >-
-        ghcr.io/kyverno/policy-reporter image SLSA provenance attestation
-        could not be verified against Policy Reporter's published GitHub
-        Actions identity.
+        ghcr.io/kyverno/policy-reporter image signature bundle could not be
+        verified against Policy Reporter's published GitHub Actions
+        identity.
 
 ---
 apiVersion: policies.kyverno.io/v1
