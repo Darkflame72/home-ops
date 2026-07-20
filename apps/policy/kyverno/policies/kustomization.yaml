@@ -5,10 +5,16 @@ kind: Kustomization
 resources:
   - ./grafana-dashboard-generate.yaml
   - ./infra-exceptions.yaml
-  # Re-enabling rollout one namespace at a time via the allow-list in
-  # istio-ambient-namespace-labels.yaml — see that file for rollout history.
-  - ./istio-ambient-namespace-labels.yaml
-  - ./istio-default-authz.yaml
+  # istio-ambient-namespace-labels.yaml and istio-default-authz.yaml are
+  # deliberately unwired, not deleted. Re-enabling them on 2026-07-20 caused
+  # every GeneratingPolicy's generated resource to loop create/delete at
+  # ~8/s indefinitely (0 successful "created generate target resource" in
+  # 10min, 1400+ UR churn) — a background-controller reconcile bug, not an
+  # RBAC issue (ruled out via feedback_kyverno_generate_rbac memory check).
+  # grafana-dashboard-generate exhibited the same loop while these were
+  # wired in, so this may be a pre-existing/broader background-controller
+  # regression, not specific to these two files. Needs root-causing before
+  # re-enabling.
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml
   - ./require-image-registry-allowlist.yaml
