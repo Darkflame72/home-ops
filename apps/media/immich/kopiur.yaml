@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: immich-machine-learning
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

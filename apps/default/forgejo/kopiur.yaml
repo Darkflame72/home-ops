@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: forgejo
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: thelounge
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

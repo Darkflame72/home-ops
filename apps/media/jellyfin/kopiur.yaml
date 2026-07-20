@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: jellyfin
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

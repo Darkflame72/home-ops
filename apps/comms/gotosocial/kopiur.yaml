@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: gotosocial
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

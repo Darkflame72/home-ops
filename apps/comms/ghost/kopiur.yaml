@@ -31,6 +31,7 @@ spec:
   sources:
   - pvc:
       name: ghost-mysql
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:
@@ -80,6 +81,7 @@ spec:
   sources:
   - pvc:
       name: ghost-content
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

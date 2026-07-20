@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: config-gatus-0
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

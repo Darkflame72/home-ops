@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: redbot
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:

@@ -33,6 +33,7 @@ spec:
   sources:
   - pvc:
       name: atuin
+    readOnly: true
     sourcePathOverride: /data
     sourcePathStrategy: PvcName
   upload:
