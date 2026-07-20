@@ -30,7 +30,7 @@ spec:
         resources: ["namespaces"]
   matchConditions:
     - name: namespace-in-allowlist
-      expression: "object.metadata.name in [\"media\", \"security\", \"comms\", \"default\"]"
+      expression: "object.metadata.name in [\"media\", \"security\", \"comms\", \"default\", \"agents\"]"
   evaluation:
     mutateExisting:
       enabled: true

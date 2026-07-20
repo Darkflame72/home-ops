@@ -94,6 +94,62 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
+  name: istio-authz-agents-allow-ingress
+  annotations:
+    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — agents ingress exception
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Namespace-wide exception for envoy-internal (unmeshed, network
+      namespace — see istio-authz-media-allow-ingress for why this is
+      needed). agentgateway.darkflame.dev routes envoy-internal ->
+      agentgateway-proxy:80; agentgateway-proxy then forwards internally
+      to mcp-backend via its own agentgateway-class Gateway, entirely
+      within agents, already covered by default-allow's
+      source.namespaces=["agents", "network"]. Port 9092 is agentgateway's
+      (the controller, not the proxy) metrics port, scraped by the
+      observability collector (also unmeshed, not yet enrolled) — same
+      "no from clause" exception covers both unrelated unmeshed callers
+      since ports don't overlap.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+        resourceNames: ["agents"]
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: false
+  variables:
+    - name: downstream
+      expression: >-
+        [
+          {
+            "apiVersion": dyn("security.istio.io/v1"),
+            "kind": dyn("AuthorizationPolicy"),
+            "metadata": dyn({
+              "name": "allow-unmeshed-network-ingress",
+              "namespace": "agents"
+            }),
+            "spec": dyn({
+              "rules": dyn([dyn({
+                "to": [
+                  {"operation": {"ports": ["80", "9092"]}}
+                ]
+              })])
+            })
+          }
+        ]
+  generate:
+    - expression: "generator.Apply('agents', variables.downstream)"
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
   name: istio-authz-comms-default-allow
   annotations:
     policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — comms
