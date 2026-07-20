@@ -8,6 +8,19 @@ target:
     host: http://mimir-alertmanager.observability.svc.cluster.local:8080/alertmanager
     minimumSeverity: medium
 
+# Chart default only excludes ReplicaSet (Deployment->ReplicaSet->Pod chains).
+# CronJob->Job->Pod chains weren't covered, so every CronJob run's own Job and
+# Pod generated their own separate, alertable reports on top of the CronJob's
+# own autogen'd report — one-shot noise for a workload that's already gone by
+# the time anyone could act on it. Explicitly exclude Job and Pod too so only
+# the top-level controller (Deployment/DaemonSet/StatefulSet/CronJob) reports.
+sourceFilters:
+  - selector:
+      sources: [kyverno, KyvernoValidatingPolicy, KyvernoImageValidatingPolicy]
+    uncontrolledOnly: true
+    kinds:
+      exclude: [ReplicaSet, Job, Pod]
+
 resources:
   requests:
     cpu: 15m

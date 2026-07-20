@@ -5,6 +5,15 @@ features:
     # Restrict to the policy namespace so exceptions stay reviewable in one
     # place rather than any namespace being able to opt itself out of rules.
     namespace: policy
+  backgroundScan:
+    # Default of 2 workers churning through 22 image-signature policies plus
+    # the rest of the ruleset across every resource in the cluster caused
+    # intermittent "policy not evaluated" false-fail results (confirmed
+    # 2026-07-20: policies whose matchImageReferences didn't even match the
+    # resource's image, e.g. verify-image-signatures-dex against
+    # kopia-primary-kopia-ui, which only runs a kopiur-mover image) —
+    # background scan contention, not a real signature failure.
+    backgroundScanWorkers: 6
 
 reportsServer:
   enabled: false
