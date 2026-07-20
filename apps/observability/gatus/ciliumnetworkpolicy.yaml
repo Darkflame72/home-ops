@@ -57,6 +57,14 @@ spec:
         # *.darkflame.dev alone doesn't match. Without this, every gatus
         # "external" group check breaks and fires false-positive alerts.
         - matchPattern: "*.darkflame.dev.observability.svc.cluster.local"
+        # Same search-suffix issue hits discord.com too, but only for some
+        # clients: gatus's own Go resolver queries the bare name cleanly,
+        # but mimir-alertmanager's queries get search-suffixed — confirmed
+        # live 2026-07-20 (`cilium-dbg fqdn cache list` showing
+        # "discord.com.observability.svc.cluster.local", not
+        # "discord.com."), which silently broke every Alertmanager Discord
+        # notification (TLS handshake timeout / connection reset).
+        - matchName: "discord.com.observability.svc.cluster.local"
       toPorts:
         - ports:
             - port: "443"
