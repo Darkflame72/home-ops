@@ -6,5 +6,6 @@ resources:
   - ./external-secret.yaml
   - ./pvc.yaml
   - ./cluster.yaml
+  - ./redis.yaml
   - ./scheduled-backup.yaml
   - ./podmonitor.yaml

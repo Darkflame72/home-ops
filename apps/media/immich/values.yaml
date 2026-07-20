@@ -17,7 +17,7 @@ controllers:
           # renovate: datasource=github-releases depName=immich-app/immich
           tag: v3.0.3
         env:
-          REDIS_HOSTNAME: dragonfly.database.svc.cluster.local
+          REDIS_HOSTNAME: immich-redis.media.svc.cluster.local
           REDIS_PORT: "6379"
           TZ: "Pacific/Auckland"
           DB_URL:

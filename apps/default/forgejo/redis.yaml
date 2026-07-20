@@ -3,10 +3,11 @@
 apiVersion: dragonflydb.io/v1alpha1
 kind: Dragonfly
 metadata:
-  name: dragonfly
+  name: forgejo-redis
+  namespace: default
 spec:
   image: ghcr.io/dragonflydb/dragonfly:v1.35.1@sha256:af7f7f1143269c7ffe4128451dff8f8fc09e157d885abcc9bafeec832d2928e6
-  replicas: 8 # set to the number of nodes in the cluster
+  replicas: 1
   env:
     - name: MAX_MEMORY
       valueFrom:
@@ -16,11 +17,10 @@ spec:
   args:
     - --maxmemory=$(MAX_MEMORY)Mi
     - --proactor_threads=2
-    - --cluster_mode=emulated
     - --default_lua_flags=allow-undeclared-keys
   resources:
     requests:
-      cpu: 100m
-      memory: 96Mi
+      cpu: 10m
+      memory: 64Mi
     limits:
-      memory: 512Mi
+      memory: 128Mi

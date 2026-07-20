@@ -381,8 +381,13 @@ spec:
   matchConditions:
     - name: dragonfly-workloads
       expression: >-
-        object.metadata.namespace == 'database' &&
-        object.metadata.name.startsWith('dragonfly')
+        (object.metadata.namespace == 'default' &&
+         (object.metadata.name.startsWith('forgejo-redis') ||
+          object.metadata.name.startsWith('nextcloud-redis') ||
+          object.metadata.name.startsWith('bar-assistant-redis') ||
+          object.metadata.name.startsWith('harbor-redis'))) ||
+        (object.metadata.namespace == 'media' &&
+         object.metadata.name.startsWith('immich-redis'))
 
 ---
 apiVersion: policies.kyverno.io/v1

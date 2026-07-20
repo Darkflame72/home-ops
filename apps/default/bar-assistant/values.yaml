@@ -27,7 +27,7 @@ controllers:
               secretKeyRef:
                 name: "bar-assistant-secret"
                 key: meili-master-key
-          REDIS_HOST: dragonfly.database.svc.cluster.local
+          REDIS_HOST: bar-assistant-redis.default.svc.cluster.local
           CACHE_DRIVER: redis
           SESSION_DRIVER: redis
           ALLOW_REGISTRATION: false

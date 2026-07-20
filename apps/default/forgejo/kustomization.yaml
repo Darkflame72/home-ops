@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./external-secret.yaml
   - ./cluster.yaml
+  - ./redis.yaml
   - ./scheduled-backup.yaml
   - ./anubis.yaml
   - ./podmonitor.yaml

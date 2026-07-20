@@ -49,13 +49,13 @@ gitea:
       SMTP_PORT: 25
     queue:
       TYPE: redis
-      CONN_STR: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+      CONN_STR: redis://forgejo-redis.default.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
     cache:
       ADAPTER: redis
-      HOST: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+      HOST: redis://forgejo-redis.default.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
     session:
       PROVIDER: redis
-      PROVIDER_CONFIG: redis://dragonfly.database.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
+      PROVIDER_CONFIG: redis://forgejo-redis.default.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
     database:
       DB_TYPE: postgres
   metrics:

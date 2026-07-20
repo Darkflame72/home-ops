@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./pvc.yaml
   - ./cluster-v2.yaml
+  - ./redis.yaml
   - ./scheduled-backup.yaml
   - ./scaledobject.yaml
   - ./podmonitor.yaml
