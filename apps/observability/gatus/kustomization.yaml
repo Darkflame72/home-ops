@@ -8,6 +8,7 @@ resources:
   - ./external-secret.yaml
   - ./podmonitor.yaml
   - ./kopiur.yaml
+  - ./serviceentry.yaml
 configMapGenerator:
   - name: gatus-configmap
     files:

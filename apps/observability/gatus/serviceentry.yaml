@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/networking.istio.io/serviceentry_v1.json
+#
+# Lets gatus's internal-group checks (config.yaml) use their real
+# darkflame.dev hostnames and still resolve entirely on-cluster. ztunnel's
+# ambient DNS proxy is on by default since Istio 1.25 — it intercepts these
+# lookups and answers with an auto-allocated VIP (240.240.0.0/16), then
+# routes connections to that VIP to the endpoint below. No CoreDNS/pihole
+# involvement at all, so it's unaffected by the "ambient-meshed pod's
+# direct egress to a LAN DNS server gets refused" issue that broke this on
+# 2026-07-20 (see git history on config.yaml). All of these hostnames are
+# meant to resolve to envoy-internal specifically, even the ones
+# ("dual-homed") that also have a public record — probing the internal
+# route is the point of these checks.
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: gatus-internal-checks
+spec:
+  hosts:
+    - git.darkflame.dev
+    - cd.darkflame.dev
+    - jelly.darkflame.dev
+    - thelounge.darkflame.dev
+    - sh.darkflame.dev
+    - miniflux.darkflame.dev
+    - bar.darkflame.dev
+    - kopia.darkflame.dev
+    - renovate.darkflame.dev
+    - rook.darkflame.dev
+    - agentgateway.darkflame.dev
+    - rollouts.darkflame.dev
+    - policy-reporter.darkflame.dev
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+  resolution: DNS
+  location: MESH_EXTERNAL
+  endpoints:
+    - address: envoy-internal.network.svc.cluster.local
