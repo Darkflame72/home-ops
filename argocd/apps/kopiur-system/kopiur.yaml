@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/home-operations/charts
       chart: kopiur
-      targetRevision: 0.7.5
+      targetRevision: 0.8.0
       helm:
         releaseName: kopiur
         valueFiles:
