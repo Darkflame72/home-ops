@@ -49,6 +49,23 @@ servers:
       - name: log
         configBlock: |-
           class error
+  - zones:
+      - zone: darkflame.dev
+        scheme: dns://
+        use_tcp: true
+    port: 53
+    plugins:
+      - name: errors
+      - name: cache
+        configBlock: |-
+          prefetch 20
+      - name: forward
+        # darkflame.dev has private-only records (e.g. harbor.darkflame.dev)
+        # that only exist in Pi-hole, not public DNS — the default `.` zone
+        # block below forwards to /etc/resolv.conf (Cloudflare), which can't
+        # see them. Stub this one zone to Pi-hole instead of repointing every
+        # node's base resolver, so only darkflame.dev lookups depend on it.
+        parameters: . 192.168.1.2
 affinity:
   nodeAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
