@@ -49,6 +49,8 @@ spec:
               mountPath: /etc/runner
             - name: docker-sock
               mountPath: /var/run
+            - name: runner-data
+              mountPath: /data
         - name: dind
           image: docker:29.3.1-dind@sha256:686d2c5464787b0ca42420e0aa03a94fc9781ff9bf8b5ff947614b9fa4c3c3e0
           securityContext:
@@ -68,3 +70,10 @@ spec:
         - name: runner-configfile
           secret:
             secretName: forgejo-runner-configfile
+        # The image bakes in /data owned by uid/gid 1000, but this container
+        # runs as root (see above) and was getting "permission denied"
+        # writing to it — breaking every job at the actions/checkout step,
+        # which clones into $data/.cache/act. A fresh emptyDir sidesteps the
+        # image's pre-baked ownership entirely.
+        - name: runner-data
+          emptyDir: {}
