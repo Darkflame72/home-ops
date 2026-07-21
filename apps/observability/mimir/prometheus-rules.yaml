@@ -92,6 +92,38 @@ spec:
             summary: "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} replica mismatch"
             description: "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has not matched its desired ready replica count for more than 30 minutes."
 
+    - name: kyverno-policy-violations
+      rules:
+        # Kyverno's reports-controller only fully re-verifies an unchanged
+        # resource once per backgroundScanInterval (1h, see
+        # apps/policy/kyverno/values.yaml). A single fail is frequently just
+        # transient scan noise (cosign/Rekor cold-evaluation blips on
+        # recently-touched resources) that clears on the very next pass.
+        # `for: 75m` requires the violation to still be present after that
+        # next independent rescan before it counts as real — i.e. it has to
+        # fail twice, not once. policy-reporter's direct AlertManager push
+        # (apps/policy/policy-reporter/values.yaml) is disabled in favor of
+        # this rule so we don't double-alert.
+        #
+        # Only policy_report_result (namespaced reports) is queried, not
+        # cluster_policy_report_result — every policy we alert on here
+        # (require-requests-limits/disallow-latest-tag/require-run-as-nonroot/
+        # verify-image-signatures-*) matches namespaced Pods, so it never
+        # produces a ClusterPolicyReport. The policy-reporter-monitoring
+        # ServiceMonitor scrapes the policy-reporter pod itself (namespace
+        # observability), so the metric's own resource-namespace label is
+        # relabeled to exported_namespace to avoid colliding with the scrape
+        # target's namespace — group/annotate on that, not `namespace`.
+        - alert: KyvernoPolicyViolationPersistent
+          expr: >-
+            max by (exported_namespace, name, kind, policy, rule, category, severity) (
+              policy_report_result{status=~"fail|error", severity=~"medium|high|critical"}
+            ) == 1
+          for: 75m
+          annotations:
+            summary: "Kyverno policy {{ $labels.policy }} still failing on {{ $labels.exported_namespace }}/{{ $labels.kind }}/{{ $labels.name }}"
+            description: "{{ $labels.policy }} ({{ $labels.category }}) has failed continuously for over 75 minutes on {{ $labels.exported_namespace }}/{{ $labels.kind }}/{{ $labels.name }} — this survived at least one full Kyverno background-scan cycle, so it's unlikely to be transient scan noise."
+
     - name: certificates
       rules:
         - alert: CertManagerCertExpiringSoon

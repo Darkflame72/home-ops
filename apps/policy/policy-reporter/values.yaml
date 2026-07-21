@@ -1,12 +1,4 @@
 # No yaml-language-server schema available: kyverno/policy-reporter (no values.schema.json)
-target:
-  alertManager:
-    # Mimir's embedded Alertmanager serves its API under /alertmanager, not root.
-    # Reuses the existing Discord routing in apps/observability/mimir/values.yaml
-    # (severity=critical -> discord-critical, else -> discord) instead of a
-    # second, separate Discord webhook integration.
-    host: http://mimir-alertmanager.observability.svc.cluster.local:8080/alertmanager
-    minimumSeverity: medium
 
 # Chart default only excludes ReplicaSet (Deployment->ReplicaSet->Pod chains).
 # CronJob->Job->Pod chains weren't covered, so every CronJob run's own Job and
