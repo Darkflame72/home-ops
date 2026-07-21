@@ -15,6 +15,11 @@ expose:
 
 externalURL: https://harbor.darkflame.dev
 
+# jobservice and registry mount RWO ceph-block PVCs, so a rolling update
+# deadlocks (new pod can't attach while the old one still holds the volume).
+updateStrategy:
+  type: Recreate
+
 existingSecretAdminPassword: harbor-admin-secret
 existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
 
