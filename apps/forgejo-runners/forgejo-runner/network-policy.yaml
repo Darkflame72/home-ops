@@ -40,3 +40,9 @@ spec:
               protocol: TCP
     - toEntities:
         - world
+    - toCIDR:
+        # harbor.darkflame.dev (10.0.60.12) — same /24 as the cluster nodes,
+        # so Cilium doesn't classify it as `world`. Without this, egress to
+        # it is silently dropped (context deadline exceeded) even though the
+        # `world` rule above looks like it should cover "the internet".
+        - 10.0.60.12/32
