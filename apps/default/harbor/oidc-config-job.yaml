@@ -26,7 +26,7 @@ spec:
             - -c
             - |
               set -eu
-              curl -fsS -X PUT "https://harbor.darkflame.dev/api/v2.0/configurations" \
+              curl -fsS -X PUT "http://harbor-core.default.svc.cluster.local/api/v2.0/configurations" \
                 -u "admin:${HARBOR_ADMIN_PASSWORD}" \
                 -H "Content-Type: application/json" \
                 -d "{
