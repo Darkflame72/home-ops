@@ -9,6 +9,12 @@ spec:
   # renovate: datasource=docker depName=ghcr.io/dragonflydb/dragonfly
   image: ghcr.io/dragonflydb/dragonfly:v1.39.0@sha256:0fa01a2b929e704c7a9300d23e7f52002ebd39e90996fb8bb63826aed92fa06f
   replicas: 1
+  # default is enrolled in the Istio ambient mesh, which intercepts and
+  # breaks the operator's raw redis/admin-port connections used for
+  # readiness and master-election. Opt this pod out of ambient capture.
+  podMetadata:
+    labels:
+      istio.io/dataplane-mode: none
   env:
     - name: MAX_MEMORY
       valueFrom:
