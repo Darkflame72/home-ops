@@ -158,11 +158,14 @@ reportsController:
     enabled: true
   resources:
     # Chart default (128Mi limit) OOMKilled once after adding 4 more active
-    # CEL background-scan policies (2026-07-19) — background scanning now
-    # evaluates 5 ValidatingPolicies across every resource in the cluster
-    # per cycle instead of 1.
+    # CEL background-scan policies (2026-07-19); bumped to 512Mi. Now
+    # OOMKilling again (6 restarts/13h, observed exitCode 137) with ~22
+    # verify-image-signatures-* ImageValidatingPolicies added since —
+    # each background-scan cycle does cosign/Rekor verification per image
+    # per policy across every pod in the cluster. Crashes mid-cycle leave
+    # stale/incomplete PolicyReport results until the next full rescan.
     limits:
-      memory: 512Mi
+      memory: 1Gi
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 150m
+      memory: 256Mi
