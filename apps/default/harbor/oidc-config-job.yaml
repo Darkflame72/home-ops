@@ -1,0 +1,67 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/batch/job_v1.json
+# The harbor-helm chart only exposes OIDC config via core.configureUserSettings, a raw
+# JSON string with no secretRef support, which would mean committing the OIDC client
+# secret to git. Configure it through Harbor's API instead, using credentials pulled
+# from Infisical. Re-run on every ArgoCD sync so it self-heals if the setting drifts.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: harbor-oidc-config
+  namespace: default
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: configure-oidc
+          # renovate: datasource=docker depName=curlimages/curl
+          image: curlimages/curl:8.21.0@sha256:7c12af72ceb38b7432ab85e1a265cff6ae58e06f95539d539b654f2cfa64bb13
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              curl -fsS -X PUT "https://harbor.darkflame.dev/api/v2.0/configurations" \
+                -u "admin:${HARBOR_ADMIN_PASSWORD}" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  \"auth_mode\": \"oidc_auth\",
+                  \"oidc_name\": \"authentik\",
+                  \"oidc_endpoint\": \"https://auth.darkflame.dev/application/o/harbor/\",
+                  \"oidc_client_id\": \"${OIDC_CLIENT_ID}\",
+                  \"oidc_client_secret\": \"${OIDC_CLIENT_SECRET}\",
+                  \"oidc_scope\": \"openid,profile,email,offline_access\",
+                  \"oidc_verify_cert\": true,
+                  \"oidc_auto_onboard\": true,
+                  \"oidc_user_claim\": \"preferred_username\",
+                  \"oidc_groups_claim\": \"groups\",
+                  \"oidc_admin_group\": \"harbor-admins\"
+                }"
+          env:
+            - name: HARBOR_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-admin-secret
+                  key: HARBOR_ADMIN_PASSWORD
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-admin-secret
+                  key: OIDC_CLIENT_ID
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-admin-secret
+                  key: OIDC_CLIENT_SECRET
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            capabilities:
+              drop: ["ALL"]

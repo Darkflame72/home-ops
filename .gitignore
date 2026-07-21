@@ -14,3 +14,4 @@ talosconfig
 Thumbs.db
 .direnv
 infisical-credentials.yaml
+.infisical.json

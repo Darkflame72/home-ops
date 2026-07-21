@@ -9,3 +9,4 @@ resources:
   - ./scheduled-backup.yaml
   - ./podmonitor.yaml
   - ./kopiur.yaml
+  - ./oidc-config-job.yaml
