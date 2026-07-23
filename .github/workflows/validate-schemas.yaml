@@ -21,7 +21,7 @@ jobs:
       - name: Validate Kubernetes manifests
         env:
           # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-          KUBERNETES_VERSION: v1.36.2
+          KUBERNETES_VERSION: v1.36.3
         run: |
           find apps -name '*.yaml' -not -name 'values.yaml' \
             | xargs grep -l '^apiVersion:' \
