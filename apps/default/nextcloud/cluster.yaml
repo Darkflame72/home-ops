@@ -40,6 +40,9 @@ spec:
         secretAccessKey:
           name: cnpg-backup-secret
           key: ACCESS_SECRET_KEY
+        region:
+          name: cnpg-backup-secret
+          key: REGION
       wal:
         compression: gzip
       data:
