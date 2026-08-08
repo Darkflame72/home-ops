@@ -825,19 +825,7 @@ metadata:
       (mogenius/github-actions), not mogenius/renovate-operator itself —
       renovate-operator's own build workflow delegates the actual build and
       `cosign sign --yes --recursive` step to
-      mogenius/github-actions/.github/workflows/build-multiarch.yml. That
-      reusable workflow is pinned by COMMIT SHA, not by tag — confirmed
-      live in-cluster on 2026-07-20 that the real certificate SAN is
-      `.../build-multiarch.yml@9bbef6f2531206a2cc3e41b0649704a80f2d4185`
-      (a bare 40-hex commit SHA, no refs/tags or refs/heads prefix at all —
-      an earlier `refs/tags/v.*` version of this regex never matched
-      anything, confirmed by `cosign verify`'s exact rejected-SAN error
-      message). This is the most fragile identity in this file: the SHA is
-      an implementation detail of renovate-operator's own workflow file
-      that changes whenever they bump their pinned mogenius/github-actions
-      dependency, with no advance notice. If this policy ever starts
-      failing, re-run `cosign verify` against the live image to get the
-      new SHA before assuming the image itself is unsigned.
+      mogenius/github-actions/.github/workflows/build-multiarch.yml.
 spec:
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
@@ -860,7 +848,7 @@ spec:
         keyless:
           identities:
             - issuer: "https://token.actions.githubusercontent.com"
-              subjectRegExp: "^https://github\\.com/mogenius/github-actions/\\.github/workflows/build-multiarch\\.yml@9bbef6f2531206a2cc3e41b0649704a80f2d4185$"
+              subjectRegExp: "^https://github\\.com/mogenius/github-actions/\\.github/workflows/build-multiarch\\.yml@[0-9a-f]{40}$"
   validations:
     - expression: >-
         images.containers.map(image,
