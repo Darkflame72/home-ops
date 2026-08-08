@@ -1,0 +1,65 @@
+version: 1
+metadata:
+  name: groups
+entries:
+  - model: authentik_core.group
+    identifiers:
+      name: "authentik Admins"
+    attrs:
+      is_superuser: true
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: "authentik Read-only"
+    attrs:
+      is_superuser: false
+      attributes:
+        notes: "An group with an auto-generated role that allows read-only permissions on all objects.\n"
+  - model: authentik_core.group
+    identifiers:
+      name: family
+    attrs:
+      is_superuser: false
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: friends
+    attrs:
+      is_superuser: false
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: gitadmin
+    attrs:
+      is_superuser: false
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: gitrestricted
+    attrs:
+      is_superuser: false
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: gituser
+    attrs:
+      is_superuser: false
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: harbor-admins
+    attrs:
+      is_superuser: false
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: jellyfin-admin
+    attrs:
+      is_superuser: false
+      attributes: {}
+  - model: authentik_core.group
+    identifiers:
+      name: jellyfin-user
+    attrs:
+      is_superuser: false
+      attributes: {}

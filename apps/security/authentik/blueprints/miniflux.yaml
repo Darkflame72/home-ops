@@ -1,0 +1,49 @@
+version: 1
+metadata:
+  name: miniflux
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: miniflux-provider
+    identifiers:
+      pk: 4
+      name: "Provider for Miniflux"
+    attrs:
+      client_type: confidential
+      client_id: 2nTCstfxMtnUsBwbJigrKweabiURLKvVAOEAK7m9
+      client_secret: !Env MINIFLUX_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://miniflux.darkflame.dev/oauth2/oidc/callback"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: miniflux-application
+    identifiers:
+      pk: 161d3e59-4685-406f-8938-ce36812b674a
+      slug: miniflux
+    attrs:
+      name: Miniflux
+      provider: !KeyOf miniflux-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 4ca03467-53d4-469f-94be-08e5811d3062
+    attrs:
+      target: !KeyOf miniflux-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30

@@ -1,0 +1,91 @@
+version: 1
+metadata:
+  name: forgejo
+entries:
+  - model: authentik_providers_oauth2.scopemapping
+    id: forgejo-scope-mapping
+    identifiers:
+      pk: f89c8f62-1bad-499e-8902-dbc3108405b0
+      name: "authentik forgejo OAuth Mapping: OpenID 'forgejo'"
+    attrs:
+      scope_name: forgejo
+      expression: |
+        forgejo_claims = {}
+
+        if request.user.ak_groups.filter(name="gituser").exists():
+            forgejo_claims["forgejo"]= "user"
+        if request.user.ak_groups.filter(name="gitadmin").exists():
+            forgejo_claims["forgejo"]= "admin"
+        if request.user.ak_groups.filter(name="gitrestricted").exists():
+            forgejo_claims["forgejo"]= "restricted"
+
+        return forgejo_claims
+
+  - model: authentik_providers_oauth2.oauth2provider
+    id: forgejo-provider
+    identifiers:
+      pk: 6
+      name: "Provider for Forgejo"
+    attrs:
+      client_type: confidential
+      client_id: a7pMrchRfyw6eQGTpIGnGT6XYufdHo4CqkOrlUeU
+      client_secret: !Env FORGEJO_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://git.darkflame.dev/user/oauth2/authentik/callback"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !KeyOf forgejo-scope-mapping
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: forgejo-application
+    identifiers:
+      pk: 152f7bf3-2bbe-4de6-a3b7-3f0e1f7a6b48
+      slug: forgejo
+    attrs:
+      name: Forgejo
+      provider: !KeyOf forgejo-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: f1c3962e-4d7c-41b7-9277-6f5510992656
+    attrs:
+      target: !KeyOf forgejo-application
+      group: !Find [authentik_core.group, [name, gituser]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 1feeb68f-10d2-4145-bd76-ad75afed3049
+    attrs:
+      target: !KeyOf forgejo-application
+      group: !Find [authentik_core.group, [name, gitadmin]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 91612177-09ce-4b93-80ab-ad8ab2567cde
+    attrs:
+      target: !KeyOf forgejo-application
+      group: !Find [authentik_core.group, [name, gitrestricted]]
+      order: 2
+      enabled: true
+      negate: false
+      timeout: 30

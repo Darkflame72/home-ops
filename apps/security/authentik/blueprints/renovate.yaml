@@ -1,0 +1,49 @@
+version: 1
+metadata:
+  name: renovate
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: renovate-provider
+    identifiers:
+      pk: 86
+      name: "Provider for renovate"
+    attrs:
+      client_type: confidential
+      client_id: 5QCqRHGc0shjhX8raHtX2kyXajIOYStF7ST943j3
+      client_secret: !Env RENOVATE_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://renovate.darkflame.dev/auth/callback"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: renovate-application
+    identifiers:
+      pk: 724907ae-c58a-4789-85b1-d1d17287e406
+      slug: renovate
+    attrs:
+      name: Renovate
+      provider: !KeyOf renovate-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: ae6fd648-9059-4997-97e6-e7ae7f3863cf
+    attrs:
+      target: !KeyOf renovate-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30

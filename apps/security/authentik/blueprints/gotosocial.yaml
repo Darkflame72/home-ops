@@ -1,0 +1,49 @@
+version: 1
+metadata:
+  name: gotosocial
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: gotosocial-provider
+    identifiers:
+      pk: 16
+      name: "Provider for GoToSocial"
+    attrs:
+      client_type: confidential
+      client_id: 2wkNxC8AsuGrNZex3zAQqBuNmvVW5bYBb7EVM9mM
+      client_secret: !Env GOTOSOCIAL_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://social.darkflame.dev/auth/callback"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: gotosocial-application
+    identifiers:
+      pk: 0ed57e55-8680-4ce5-b2d0-fcd51fef1e47
+      slug: gotosocial
+    attrs:
+      name: GoToSocial
+      provider: !KeyOf gotosocial-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 6ebba653-7c43-4e0d-bd35-63ce9b1831a1
+    attrs:
+      target: !KeyOf gotosocial-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30

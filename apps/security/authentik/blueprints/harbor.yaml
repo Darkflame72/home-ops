@@ -1,0 +1,61 @@
+version: 1
+metadata:
+  name: harbor
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: harbor-provider
+    identifiers:
+      pk: 87
+      name: "Provider for Harbor"
+    attrs:
+      client_type: confidential
+      client_id: zyKiUs3hfzRw0WmxwPUqZcPt2ut9IgyaqVfu2YJL
+      client_secret: !Env HARBOR_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://harbor.darkflame.dev/c/oidc/callback"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: hours=1
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'offline_access'"]]
+
+  - model: authentik_core.application
+    id: harbor-application
+    identifiers:
+      pk: f7d0cf60-110c-4314-b161-722f478a4d65
+      slug: harbor
+    attrs:
+      name: Harbor
+      provider: !KeyOf harbor-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 524dd319-1b07-48db-965a-3b4233e01db0
+    attrs:
+      target: !KeyOf harbor-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 8c58f2bf-d1fc-4cd3-8362-2bbd70b3a18c
+    attrs:
+      target: !KeyOf harbor-application
+      group: !Find [authentik_core.group, [name, "harbor-admins"]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30

@@ -1,0 +1,49 @@
+version: 1
+metadata:
+  name: matrix
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: matrix-provider
+    identifiers:
+      pk: 20
+      name: "Provider for Matrix"
+    attrs:
+      client_type: confidential
+      client_id: haDmpDgX7sbZNaghEq9DGDQmS9kRRxCoDKGkU2sY
+      client_secret: !Env MATRIX_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://mas.darkflame.dev/upstream/callback/01KDXZWZM5FWV042SW6470N0BT"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: matrix-application
+    identifiers:
+      pk: d1ea9ca7-7276-44ec-adc8-7f2078bfa5b9
+      slug: matrix
+    attrs:
+      name: Matrix
+      provider: !KeyOf matrix-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 53f80e6f-992f-45c1-8ff2-d93bec3c32bd
+    attrs:
+      target: !KeyOf matrix-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30

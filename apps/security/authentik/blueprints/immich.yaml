@@ -1,0 +1,66 @@
+version: 1
+metadata:
+  name: immich
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: immich-provider
+    identifiers:
+      pk: 12
+      name: "Provider for Immich"
+    attrs:
+      client_type: confidential
+      client_id: wxp4DH7uqbZiZkXCwAogNFANgD5a3K4N3UqRPAVE
+      client_secret: !Env IMMICH_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "app.immich:///oauth-callback"
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://photos.darkflame.dev/auth/login"
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://photos.darkflame.dev/user-settings"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: immich-application
+    identifiers:
+      pk: 6104ae4f-ae2a-4d82-a09d-ad1df3ea09e2
+      slug: immich
+    attrs:
+      name: Immich
+      provider: !KeyOf immich-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 4ef51cbf-48ca-450a-8698-6b1fd68bc5f4
+    attrs:
+      target: !KeyOf immich-application
+      group: !Find [authentik_core.group, [name, family]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 39ffd9b6-a90d-4959-b32c-f55f412a4bbb
+    attrs:
+      target: !KeyOf immich-application
+      group: !Find [authentik_core.group, [name, friends]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30

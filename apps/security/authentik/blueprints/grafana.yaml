@@ -1,0 +1,49 @@
+version: 1
+metadata:
+  name: grafana
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: grafana-provider
+    identifiers:
+      pk: 53
+      name: "Provider for Grafana"
+    attrs:
+      client_type: confidential
+      client_id: GzpEDQrnWpL8P24HaMoUJ1DF4hKMn25SD0FUCoKa
+      client_secret: !Env GRAFANA_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://grafana.darkflame.dev/login/generic_oauth"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: grafana-application
+    identifiers:
+      pk: 675d7006-1cf6-4256-82a7-51cf876abe7a
+      slug: grafana
+    attrs:
+      name: Grafana
+      provider: !KeyOf grafana-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 74a4bba6-66ad-4d76-b3d6-cb8f4d215cde
+    attrs:
+      target: !KeyOf grafana-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30

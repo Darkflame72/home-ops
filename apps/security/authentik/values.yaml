@@ -2,6 +2,9 @@
 global:
   podAnnotations:
     reloader.stakater.com/auto: "true"
+  envFrom:
+    - secretRef:
+        name: authentik-blueprint-secrets
   env:
     - name: AUTHENTIK_POSTGRESQL__HOST
       valueFrom:
@@ -42,6 +45,9 @@ authentik:
     from: "Authentik <noreply@darkflame.dev>"
 postgresql:
   enabled: false
+blueprints:
+  configMaps:
+    - authentik-blueprints
 prometheus:
   rules:
     enabled: true

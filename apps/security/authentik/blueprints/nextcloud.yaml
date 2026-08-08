@@ -1,0 +1,87 @@
+version: 1
+metadata:
+  name: nextcloud
+entries:
+  - model: authentik_providers_oauth2.scopemapping
+    id: nextcloud-scope-mapping
+    identifiers:
+      pk: 66a5f3cf-fa63-4dd0-90db-805ca2527d7b
+      name: "authentik nextcloud OAuth Mapping: OpenID 'nextcloud'"
+    attrs:
+      scope_name: nextcloud
+      expression: |
+        # Extract all groups the user is a member of
+        groups = [group.name for group in user.ak_groups.all()]
+
+        # In Nextcloud, administrators must be members of a fixed group called "admin".
+
+        # If a user is an admin in authentik, ensure that "admin" is appended to their group list.
+        if user.is_superuser and "admin" not in groups:
+            groups.append("admin")
+
+        return {
+            "name": request.user.name,
+            "groups": groups,
+            # Set a quota by using the "nextcloud_quota" property in the user's attributes
+            "quota": user.group_attributes().get("nextcloud_quota", None),
+            # To connect an existing Nextcloud user, set "nextcloud_user_id" to the Nextcloud username.
+            "user_id": user.attributes.get("nextcloud_user_id", str(user.uuid)),
+        }
+
+  - model: authentik_providers_oauth2.oauth2provider
+    id: nextcloud-provider
+    identifiers:
+      pk: 14
+      name: "Provider for Nextcloud"
+    attrs:
+      client_type: confidential
+      client_id: 0zoKUqZ9JBQRNJPa2GOHGpkUADpiRXd7xHtGvpp6
+      client_secret: !Env NEXTCLOUD_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://cloud.darkflame.dev/apps/user_oidc/code"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: user_uuid
+      property_mappings:
+        - !KeyOf nextcloud-scope-mapping
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: nextcloud-application
+    identifiers:
+      pk: 0f273957-1306-48c3-939c-985879a245e4
+      slug: nextcloud
+    attrs:
+      name: Nextcloud
+      provider: !KeyOf nextcloud-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 29402bdf-b19c-4184-8fbf-722524f5d871
+    attrs:
+      target: !KeyOf nextcloud-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 26585ffc-0aa7-4668-b6f5-9f9173adc4af
+    attrs:
+      target: !KeyOf nextcloud-application
+      group: !Find [authentik_core.group, [name, family]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30
