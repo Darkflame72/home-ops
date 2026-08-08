@@ -25,7 +25,5 @@ configMapGenerator:
       - blueprints/jellyfin.yaml
       - blueprints/immich.yaml
       - blueprints/mailcow.yaml
-      - blueprints/matrix.yaml
-      - blueprints/paperless.yaml
 generatorOptions:
   disableNameSuffixHash: true

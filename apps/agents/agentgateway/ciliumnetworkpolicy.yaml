@@ -1,22 +1,22 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumnetworkpolicy_v2.json
 #
-# Pilot for default-deny egress: agents' only current external dependency
-# is none at all — agentgateway-proxy routes purely to in-cluster MCP
-# backends (grafana-mcp.observability, argocd-mcp.argocd), both reached
-# over the mesh (ztunnel HBONE, a pod-to-pod flow). Istio's AuthorizationPolicy
-# layer already governs which specific in-cluster identities can reach
-# which service — this policy's job is coarser: cluster-internal vs
-# external. Verified live 2026-07-20: in-cluster targets and DNS still
-# work, a raw external destination (example.com) is fully blocked (no TLS
-# handshake at all, not just an app-level rejection), and both real MCP
-# tool paths (grafana, argocd) still work end-to-end.
+# Pilot for default-deny egress, originally with no external dependencies at
+# all (agentgateway-proxy routed purely to in-cluster MCP backends,
+# grafana-mcp.observability / argocd-mcp.argocd, reached over the mesh --
+# ztunnel HBONE, a pod-to-pod flow). Istio's AuthorizationPolicy layer
+# already governs which specific in-cluster identities can reach which
+# service — this policy's job is coarser: cluster-internal vs external.
+# Verified live 2026-07-20: in-cluster targets and DNS still work, a raw
+# external destination (example.com) is fully blocked (no TLS handshake at
+# all, not just an app-level rejection), and both real MCP tool paths
+# (grafana, argocd) still work end-to-end.
 #
-# If agents ever needs real external egress (e.g. an agent calling an LLM
-# API directly), add a toFQDNs entry here rather than disabling this — but
-# the DNS toEndpoints rule below needs the rules.dns block for toFQDNs to
-# work at all (see observability/ciliumnetworkpolicy.yaml for why); kept
-# here even though unused today so this file is copy-paste safe.
+# 2026-08-09: added a toFQDNs entry for api.openai.com -- agentgateway now
+# also fronts an LLM backend (llm.yaml) for kagent's sre-agent, which is
+# real external egress. The DNS toEndpoints rule below needs the
+# rules.dns block for toFQDNs to work at all (see
+# observability/ciliumnetworkpolicy.yaml for why).
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -42,3 +42,9 @@ spec:
     - toEntities:
         - cluster
         - kube-apiserver
+    - toFQDNs:
+        - matchName: "api.openai.com"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

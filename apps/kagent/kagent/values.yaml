@@ -1,0 +1,37 @@
+# No yaml-language-server schema available: kagent-dev/kagent
+fullnameOverride: kagent
+
+# No `providers:` block here — unlike the July attempt (Ollama-only), the
+# ModelConfig this cluster uses is hand-authored in
+# apps/kagent/sre-agent/model-config.yaml and points at agentgateway's
+# OpenAI-compatible LLM route instead of relying on this chart's
+# providers.default templating.
+
+kmcp:
+  enabled: false
+
+k8s-agent:
+  enabled: true
+
+cilium-manager-agent:
+  enabled: true
+
+cilium-debug-agent:
+  enabled: true
+
+helm-agent:
+  enabled: true
+
+istio-agent:
+  enabled: false
+
+kgateway-agent:
+  enabled: false
+
+argo-rollouts-agent:
+  enabled: false
+
+ui:
+  # ui.httpRoute is a no-op on chart 0.9.11 (Gateway API support landed after
+  # this release) -- see apps/kagent/kagent/httproute.yaml for the real route.
+  externalUrl: https://kagent.darkflame.dev
