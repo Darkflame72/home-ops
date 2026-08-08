@@ -56,6 +56,14 @@ nextcloud:
       $CONFIG = array (
         'maintenance_window_start' => 2,
       );
+    allow-local-remote-servers.config.php: |-
+      <?php
+      $CONFIG = array (
+        // auth.darkflame.dev resolves to an internal (private) IP via
+        // pi-hole split-horizon DNS; without this, Nextcloud's SSRF guard
+        // blocks user_oidc's outgoing discovery/token requests to Authentik.
+        'allow_local_remote_servers' => true,
+      );
 
 internalDatabase:
   enabled: false
