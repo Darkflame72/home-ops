@@ -5,4 +5,3 @@ kind: Kustomization
 resources:
   - ./remote-mcp-server.yaml
   - ./agent.yaml
-  - ./model-config.yaml

@@ -1,11 +1,29 @@
 # No yaml-language-server schema available: kagent-dev/kagent
 fullnameOverride: kagent
 
-# No `providers:` block here — unlike the July attempt (Ollama-only), the
-# ModelConfig this cluster uses is hand-authored in
-# apps/kagent/sre-agent/model-config.yaml and points at agentgateway's
-# OpenAI-compatible LLM route instead of relying on this chart's
-# providers.default templating.
+# The chart *always* templates a ModelConfig named "default-model-config"
+# from providers.<default> (hardcoded name, no way to opt out) -- omitting
+# this block entirely does NOT disable that, it just falls back to the
+# chart's own packaged default (providers.openAI.apiKeySecretRef:
+# kagent-openai, a secret that doesn't exist). Learned the hard way: an
+# earlier attempt hand-authored a *second*, separate ModelConfig object
+# with the same name in apps/kagent/sre-agent/, and because ArgoCD applies
+# both via ServerSideApply from two different Applications, they fought
+# over field ownership every reconcile (kagent-controller alternated
+# between "secret kagent-openai not found" and working). Configuring the
+# real provider here instead makes the chart the single owner.
+providers:
+  default: openAI
+  openAI:
+    provider: OpenAI
+    model: "gpt-5-mini"
+    apiKeySecretRef: kagent-agentgateway-llm
+    apiKeySecretKey: OPENAI_API_KEY
+    config:
+      # Routes through agentgateway's OpenAI-compatible LLM backend
+      # (apps/agents/agentgateway/llm.yaml) instead of api.openai.com
+      # directly -- see that file for why.
+      baseUrl: "http://agentgateway-proxy.agents.svc.cluster.local/v1"
 
 kmcp:
   enabled: false
