@@ -107,6 +107,14 @@ endpoints:
       - "[STATUS] == 200"
     alerts: *alerts
 
+  - name: harbor
+    group: internal
+    url: https://harbor.darkflame.dev/api/v2.0/health
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
   # kopiur's UI always requires auth (never defaults to no-login), so an
   # unauthenticated probe gets 401, not 200.
   - name: kopia

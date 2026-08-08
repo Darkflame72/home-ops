@@ -3,6 +3,12 @@ expose:
   tls:
     enabled: false
   route:
+    annotations:
+      # Single-homed to envoy-internal (no public DNS record), so the
+      # gatus-sidecar's auto-discovered check would be "guarded" (DNS-only)
+      # rather than a real healthcheck. Disabled in favor of a manual check
+      # in apps/observability/gatus/config/config.yaml.
+      gatus.home-operations.com/enabled: "false"
     parentRefs:
       - group: gateway.networking.k8s.io
         kind: Gateway
