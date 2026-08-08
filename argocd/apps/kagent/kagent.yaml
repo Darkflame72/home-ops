@@ -19,7 +19,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/kagent-dev/kagent/helm
       chart: kagent
-      targetRevision: 0.9.11
+      targetRevision: 0.9.12
       helm:
         releaseName: kagent
         valueFiles:
