@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/goharbor/harbor-helm/refs/heads/main/values.schema.json
 expose:
   type: route
   tls:

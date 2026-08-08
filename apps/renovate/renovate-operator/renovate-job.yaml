@@ -5,6 +5,7 @@ metadata:
   name: forgejo
 spec:
   schedule: "0 3 * * *"
+  # renovate: datasource=docker depName=renovate/renovate
   image: renovate/renovate:43.255.0
   secretRef: renovate-secret
   parallelism: 1
