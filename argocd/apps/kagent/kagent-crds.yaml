@@ -14,7 +14,7 @@ spec:
   sources:
     - repoURL: ghcr.io/kagent-dev/kagent/helm
       chart: kagent-crds
-      targetRevision: 0.9.11
+      targetRevision: 0.9.12
       helm:
         releaseName: kagent-crds
   destination:
