@@ -1,15 +1,5 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumnetworkpolicy_v2.json
-#
-# Same default-deny-egress pattern as agents/ciliumnetworkpolicy.yaml.
-# authentik and vaultwarden both use smtp-relay.default.svc.cluster.local
-# for email — in-cluster, already covered by the "cluster" entity below,
-# not an external dependency. vaultwarden's icon/favicon fetching (hits
-# arbitrary external domains per saved login, cosmetic only) is disabled
-# via DISABLE_ICON_DOWNLOAD in vaultwarden/values.yaml rather than left to
-# silently fail here. No other external dependency found for either app.
-# DNS rule's rules.dns block is required for any future toFQDNs entry to
-# work at all — see observability/ciliumnetworkpolicy.yaml.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -35,3 +25,9 @@ spec:
     - toEntities:
         - cluster
         - kube-apiserver
+    - toCIDR:
+        - "10.0.60.15/32"
+      toPorts:
+        - ports:
+            - port: "30188"
+              protocol: TCP
