@@ -20,7 +20,26 @@ controllers:
         # the password never ends up baked into the pod spec.
         command: ["/bin/sh", "-c"]
         args:
-          - 'opencloud init --admin-password "$INITIAL_ADMIN_PASSWORD" || true; opencloud server'
+          - |
+            opencloud init --admin-password "$INITIAL_ADMIN_PASSWORD" || true
+            # role_mapping (claim value -> OpenCloud role name) can ONLY be
+            # set in the config file, not via env vars (confirmed in the
+            # binary's own field description: "This setting can only be
+            # configured in the configuration file and not via environment
+            # variables"). driver/role_claim below stay as env vars since
+            # those ARE settable that way. Idempotent across restarts since
+            # opencloud.yaml persists on the config PVC.
+            grep -q '^  role_assignment:' /etc/opencloud/opencloud.yaml || sed -i '/^proxy:/a\
+              role_assignment:\
+                driver: oidc\
+                oidc_role_mapper:\
+                  role_claim: opencloudRoles\
+                  role_mapping:\
+                    - role_name: admin\
+                      claim_value: admin\
+                    - role_name: user\
+                      claim_value: user' /etc/opencloud/opencloud.yaml
+            opencloud server
         env:
           OC_URL: "https://opencloud.darkflame.dev"
           OC_INSECURE: "false"
@@ -38,7 +57,10 @@ controllers:
           WEB_OIDC_AUTHORITY: "https://auth.darkflame.dev/application/o/opencloud/"
           WEB_OIDC_METADATA_URL: "https://auth.darkflame.dev/application/o/opencloud/.well-known/openid-configuration"
           WEB_OIDC_RESPONSE_TYPE: code
-          WEB_OIDC_SCOPE: "openid profile email"
+          # "opencloud" scope pulls in the custom opencloudRoles claim mapping
+          # (apps/security/authentik/blueprints/opencloud.yaml) used for role
+          # assignment below.
+          WEB_OIDC_SCOPE: "openid profile email opencloud"
           PROXY_OIDC_CLIENT_ID: opencloud-web
           PROXY_AUTOPROVISION_ACCOUNTS: "true"
           PROXY_AUTOPROVISION_CLAIM_USERNAME: preferred_username
@@ -46,7 +68,13 @@ controllers:
           PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME: name
           PROXY_USER_OIDC_CLAIM: preferred_username
           PROXY_USER_CS3_CLAIM: username
-          GRAPH_ASSIGN_DEFAULT_USER_ROLE: "true"
+          # Role (admin vs user) comes from Authentik's opencloudRoles claim
+          # instead of a flat default - see role_mapping patch above.
+          # GRAPH_ASSIGN_DEFAULT_USER_ROLE=false is the documented pairing
+          # for PROXY_ROLE_ASSIGNMENT_DRIVER=oidc.
+          PROXY_ROLE_ASSIGNMENT_DRIVER: oidc
+          PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM: opencloudRoles
+          GRAPH_ASSIGN_DEFAULT_USER_ROLE: "false"
           # The default embedded CSP only allowlists opencloud.eu's own
           # domains in connect-src, so the browser blocks the OIDC discovery
           # fetch to an external IdP (confirmed via browser console: "blocked

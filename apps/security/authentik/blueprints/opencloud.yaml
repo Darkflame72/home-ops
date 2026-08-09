@@ -2,6 +2,23 @@ version: 1
 metadata:
   name: opencloud
 entries:
+  - model: authentik_providers_oauth2.scopemapping
+    id: opencloud-scope-mapping
+    identifiers:
+      pk: 38496fe2-fae4-4e1e-93e0-ac2b01557297
+      name: "authentik OpenCloud OAuth Mapping: OpenID 'opencloud'"
+    attrs:
+      scope_name: opencloud
+      expression: |
+        # OpenCloud's PROXY_ROLE_ASSIGNMENT_DRIVER=oidc reads role names from
+        # the opencloudRoles claim (mapped to role_mapping.claim_value in
+        # /etc/opencloud/opencloud.yaml - see apps/opencloud/opencloud/values.yaml).
+        groups = [group.name for group in user.ak_groups.all()]
+        role = "admin" if (user.is_superuser or "authentik Admins" in groups) else "user"
+        return {
+            "opencloudRoles": [role],
+        }
+
   - model: authentik_providers_oauth2.oauth2provider
     id: opencloud-provider
     identifiers:
@@ -25,6 +42,7 @@ entries:
       include_claims_in_id_token: true
       sub_mode: user_uuid
       property_mappings:
+        - !KeyOf opencloud-scope-mapping
         - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
         - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
         - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
