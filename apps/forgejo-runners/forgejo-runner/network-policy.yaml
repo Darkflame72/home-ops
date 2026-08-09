@@ -50,6 +50,13 @@ spec:
         # envoy-internal pod directly, and drops it (confirmed via `cilium
         # monitor --type drop`: "Policy denied ... 63521->6685 ... :10443").
         # Match the real backend instead.
+        #
+        # envoy-internal is a shared Gateway backend for every
+        # internal.darkflame.dev route (Grafana, ArgoCD, etc.), not just
+        # Harbor, so an L3/L4-only rule here would open all of them to the
+        # runner. serverNames pins this to the Harbor SNI specifically —
+        # Cilium's embedded L7 proxy checks the TLS ClientHello without
+        # terminating it.
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: network
             gateway.networking.k8s.io/gateway-name: envoy-internal
@@ -57,3 +64,5 @@ spec:
         - ports:
             - port: "10443"
               protocol: TCP
+          serverNames:
+            - harbor.darkflame.dev
