@@ -117,6 +117,18 @@ endpoints:
       - "[STATUS] == 401"
     alerts: *alerts
 
+  # dmarc-report-viewer is basic-auth gated on every path, so the
+  # gatus-sidecar auto-discovered check is disabled
+  # (gatus.home-operations.com/enabled: "false" on its route) and replaced
+  # with this direct check expecting 401.
+  - name: dmarc-report-viewer
+    group: internal
+    url: https://dmarc.darkflame.dev
+    interval: 1m
+    conditions:
+      - "[STATUS] == 401"
+    alerts: *alerts
+
   # OIDC-gated: gatus follows the redirect to the login page, which is the
   # final 200 response for an unauthenticated request.
   - name: renovate

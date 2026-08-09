@@ -1,0 +1,86 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
+controllers:
+  dmarc-report-viewer:
+    containers:
+      app:
+        image:
+          repository: ghcr.io/cry-inc/dmarc-report-viewer
+          tag: 2.6.0@sha256:34068890aedb7fbaaf39b0b5de97f11e0a462f1805d28845f69b1c68d9aabdbb
+        env:
+          IMAP_HOST: mail.darkflame.dev
+          IMAP_USER: mailauth-reports@darkflame.dev
+          IMAP_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: dmarc-report-viewer-secret
+                key: IMAP_PASSWORD
+          HTTP_SERVER_PORT: &port 8080
+          HTTP_SERVER_USER:
+            valueFrom:
+              secretKeyRef:
+                name: dmarc-report-viewer-secret
+                key: HTTP_SERVER_USER
+          HTTP_SERVER_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: dmarc-report-viewer-secret
+                key: HTTP_SERVER_PASSWORD
+        probes:
+          # /health is the one unauthenticated endpoint the app exposes -
+          # everything else is behind HTTP basic auth.
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 256Mi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  app:
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    annotations:
+      # Basic-auth gated on every path, so the auto-discovered check (which
+      # expects 200) would always report down. Replaced with a manual
+      # gatus config.yaml entry expecting 401 instead.
+      gatus.home-operations.com/enabled: "false"
+    hostnames:
+      - dmarc.darkflame.dev
+    parentRefs:
+      - name: envoy-internal
+        namespace: network
+        sectionName: https
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
