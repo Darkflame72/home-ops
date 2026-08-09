@@ -30,6 +30,7 @@ spec:
       - media
       - observability
       - security
+      - opencloud
   server:
     namespace: kopiur-system
     auth:
