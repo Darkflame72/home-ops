@@ -86,7 +86,7 @@ route:
     hostnames: ["opencloud.darkflame.dev"]
     rules:
       - matches: [{path: {type: PathPrefix, value: /}}]
-        backendRefs: [{name: opencloud-app, port: 9200}]
+        backendRefs: [{name: opencloud, port: 9200}]
 persistence:
   config:
     existingClaim: opencloud-config
