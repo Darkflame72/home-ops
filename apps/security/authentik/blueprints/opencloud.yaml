@@ -10,6 +10,9 @@ entries:
     attrs:
       client_type: public
       client_id: opencloud-web
+      grant_types:
+        - authorization_code
+        - refresh_token
       redirect_uris:
         - matching_mode: strict
           redirect_uri_type: authorization
