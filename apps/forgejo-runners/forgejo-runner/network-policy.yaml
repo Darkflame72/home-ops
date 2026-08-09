@@ -40,9 +40,20 @@ spec:
               protocol: TCP
     - toEntities:
         - world
-    - toCIDR:
-        # harbor.darkflame.dev (10.0.60.12) — same /24 as the cluster nodes,
-        # so Cilium doesn't classify it as `world`. Without this, egress to
-        # it is silently dropped (context deadline exceeded) even though the
-        # `world` rule above looks like it should cover "the internet".
-        - 10.0.60.12/32
+    - toEndpoints:
+        # harbor.darkflame.dev resolves to the envoy-internal Gateway's LB IP
+        # (10.0.60.12), which is same-/24 as the cluster nodes so Cilium
+        # doesn't classify it as `world`. A toCIDR rule on that IP looks like
+        # the fix, but Cilium's kube-proxy-replacement DNATs Service traffic
+        # to the backend pod (identity+port) *before* egress policy is
+        # evaluated — so the policy engine never sees 10.0.60.12, it sees the
+        # envoy-internal pod directly, and drops it (confirmed via `cilium
+        # monitor --type drop`: "Policy denied ... 63521->6685 ... :10443").
+        # Match the real backend instead.
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: network
+            gateway.networking.k8s.io/gateway-name: envoy-internal
+      toPorts:
+        - ports:
+            - port: "10443"
+              protocol: TCP
