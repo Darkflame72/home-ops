@@ -62,10 +62,12 @@ controllers:
           WEB_OIDC_AUTHORITY: "https://auth.darkflame.dev/application/o/opencloud/"
           WEB_OIDC_METADATA_URL: "https://auth.darkflame.dev/application/o/opencloud/.well-known/openid-configuration"
           WEB_OIDC_RESPONSE_TYPE: code
-          # "opencloud" scope pulls in the custom opencloudRoles claim mapping
-          # (apps/security/authentik/blueprints/opencloud.yaml) used for role
-          # assignment below.
-          WEB_OIDC_SCOPE: "openid profile email opencloud"
+          # The custom opencloudRoles claim mapping used for role assignment
+          # below rides on the standard "profile" scope, not a dedicated
+          # "opencloud" one - the desktop client hardcodes its scope list and
+          # won't request a custom scope (see
+          # apps/security/authentik/blueprints/opencloud.yaml).
+          WEB_OIDC_SCOPE: "openid profile email"
           PROXY_OIDC_CLIENT_ID: OpenCloudDesktop
           PROXY_AUTOPROVISION_ACCOUNTS: "true"
           PROXY_AUTOPROVISION_CLAIM_USERNAME: preferred_username

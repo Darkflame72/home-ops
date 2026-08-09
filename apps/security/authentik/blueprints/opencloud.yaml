@@ -8,7 +8,16 @@ entries:
       pk: 38496fe2-fae4-4e1e-93e0-ac2b01557297
       name: "authentik OpenCloud OAuth Mapping: OpenID 'opencloud'"
     attrs:
-      scope_name: opencloud
+      # Piggybacks on the "profile" scope (rather than a dedicated
+      # "opencloud" scope) because the desktop client hardcodes its scope
+      # list (openid offline_access email profile - no way to add a custom
+      # scope) and won't request one we invent. A custom scope was silently
+      # dropped, leaving opencloudRoles absent from desktop-issued tokens,
+      # which left the account role-less (GRAPH_ASSIGN_DEFAULT_USER_ROLE is
+      # false) and broke the client's post-login user-info fetch. Multiple
+      # scope mappings can share a scope_name - authentik merges the claims
+      # from all of them whenever that scope is granted.
+      scope_name: profile
       expression: |
         # OpenCloud's PROXY_ROLE_ASSIGNMENT_DRIVER=oidc reads role names from
         # the opencloudRoles claim (mapped to role_mapping.claim_value in
