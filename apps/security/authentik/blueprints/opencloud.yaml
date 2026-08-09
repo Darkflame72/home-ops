@@ -26,7 +26,12 @@ entries:
       name: "Provider for OpenCloud"
     attrs:
       client_type: public
-      client_id: opencloud-web
+      # The OpenCloud desktop client hardcodes this client_id (it doesn't
+      # pick up WEB_OIDC_CLIENT_ID/webfinger overrides yet) and OpenCloud only
+      # supports a single OIDC issuer server-wide, so the web and desktop
+      # clients must share this one provider/issuer with this exact
+      # client_id - see apps/opencloud/opencloud/values.yaml.
+      client_id: OpenCloudDesktop
       grant_types:
         - authorization_code
         - refresh_token
@@ -34,6 +39,11 @@ entries:
         - matching_mode: strict
           redirect_uri_type: authorization
           url: "https://opencloud.darkflame.dev/oidc-callback.html"
+        - matching_mode: regex
+          redirect_uri_type: authorization
+          # Desktop client (RFC 8252 loopback): binds an ephemeral port each
+          # run, so an exact/strict match is impossible.
+          url: "^http://(127\\.0\\.0\\.1|localhost)(:\\d+)?/?$"
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]

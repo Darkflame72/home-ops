@@ -53,7 +53,12 @@ controllers:
           PROXY_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
           PROXY_OIDC_REWRITE_WELLKNOWN: "true"
           PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: jwt
-          WEB_OIDC_CLIENT_ID: opencloud-web
+          # client_id is "OpenCloudDesktop" (not e.g. "opencloud-web") because
+          # the OpenCloud desktop app hardcodes that client_id and OpenCloud
+          # only supports one OIDC issuer server-wide, so web + desktop must
+          # share the same Authentik provider/client_id - see
+          # apps/security/authentik/blueprints/opencloud.yaml.
+          WEB_OIDC_CLIENT_ID: OpenCloudDesktop
           WEB_OIDC_AUTHORITY: "https://auth.darkflame.dev/application/o/opencloud/"
           WEB_OIDC_METADATA_URL: "https://auth.darkflame.dev/application/o/opencloud/.well-known/openid-configuration"
           WEB_OIDC_RESPONSE_TYPE: code
@@ -61,7 +66,7 @@ controllers:
           # (apps/security/authentik/blueprints/opencloud.yaml) used for role
           # assignment below.
           WEB_OIDC_SCOPE: "openid profile email opencloud"
-          PROXY_OIDC_CLIENT_ID: opencloud-web
+          PROXY_OIDC_CLIENT_ID: OpenCloudDesktop
           PROXY_AUTOPROVISION_ACCOUNTS: "true"
           PROXY_AUTOPROVISION_CLAIM_USERNAME: preferred_username
           PROXY_AUTOPROVISION_CLAIM_EMAIL: email
