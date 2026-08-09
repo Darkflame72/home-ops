@@ -158,13 +158,20 @@
         // version: 1.15.1
         // # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
         // KUBERNETES_VERSION=v1.31.1
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>[^\\s:]+)(?=\\s|$)",
         // # renovate: datasource=docker depName=ghcr.io/prometheus-operator/prometheus-operator
         // https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.80.0/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
         "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n[^#].+/(?<currentValue>(v|\\d)[^/]+)",
         // # renovate: datasource=github-releases depName=cilium/cilium
         // # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/v1.19.5/...
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n# yaml-language-server: \\$schema=https://raw\\.githubusercontent\\.com/[^/\\s]+/[^/\\s]+/(?<currentValue>[^/\\s]+)/"
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n# yaml-language-server: \\$schema=https://raw\\.githubusercontent\\.com/[^/\\s]+/[^/\\s]+/(?<currentValue>[^/\\s]+)/",
+        // Combined `repo:tag` image fields (version-only pattern above can't capture these,
+        // since it would swallow the whole repo:tag string as currentValue). Excludes
+        // "@" so it doesn't collide with digest-pinned `tag: 1.2.3@sha256:...` fields,
+        // which the built-in kubernetes/helm-values managers already handle natively.
+        // # renovate: datasource=docker depName=renovate/renovate
+        // image: renovate/renovate:43.255.0
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s*[\\w.-]+:\\s*[^\\s@]+:(?<currentValue>[^\\s@]+)"
       ],
       "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}"
     }
