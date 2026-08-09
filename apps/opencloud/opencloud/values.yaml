@@ -1,0 +1,100 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
+controllers:
+  opencloud:
+    type: deployment
+    containers:
+      app:
+        image:
+          repository: docker.io/opencloudeu/opencloud
+          # renovate: datasource=docker depName=opencloudeu/opencloud
+          tag: 7.2.3@sha256:707727b771e3267fc5558e228911007c35a206e5241bde3ffde3c76f6aef1f4c
+        # The official image's CMD is just ["server"], which crash-loops with
+        # "jwt_secret has not been set properly" unless `opencloud init` has
+        # already run against /etc/opencloud. Mirrors the official
+        # opencloud-compose reference command. `opencloud init` alone does NOT
+        # pick up $INITIAL_ADMIN_PASSWORD (tested locally - it silently
+        # generates a random password instead), so it must be passed
+        # explicitly via --admin-password. The bare $VAR (not $(VAR)) is
+        # expanded by the container's shell at runtime, not by Kubernetes, so
+        # the password never ends up baked into the pod spec.
+        command: ["/bin/sh", "-c"]
+        args:
+          - 'opencloud init --admin-password "$INITIAL_ADMIN_PASSWORD" || true; opencloud server'
+        env:
+          OC_URL: "https://opencloud.darkflame.dev"
+          OC_INSECURE: "false"
+          PROXY_TLS: "false"
+          INITIAL_ADMIN_PASSWORD:
+            valueFrom:
+              secretKeyRef: {name: "opencloud-secret", key: INITIAL_ADMIN_PASSWORD}
+          # --- External OIDC (Authentik), public client w/ PKCE ---
+          OC_EXCLUDE_RUN_SERVICES: idp
+          OC_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
+          PROXY_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
+          PROXY_OIDC_REWRITE_WELLKNOWN: "true"
+          PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: jwt
+          WEB_OIDC_CLIENT_ID: opencloud-web
+          WEB_OIDC_AUTHORITY: "https://auth.darkflame.dev/application/o/opencloud/"
+          WEB_OIDC_METADATA_URL: "https://auth.darkflame.dev/application/o/opencloud/.well-known/openid-configuration"
+          WEB_OIDC_RESPONSE_TYPE: code
+          WEB_OIDC_SCOPE: "openid profile email"
+          PROXY_OIDC_CLIENT_ID: opencloud-web
+          PROXY_AUTOPROVISION_ACCOUNTS: "true"
+          PROXY_AUTOPROVISION_CLAIM_USERNAME: preferred_username
+          PROXY_AUTOPROVISION_CLAIM_EMAIL: email
+          PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME: name
+          PROXY_USER_OIDC_CLAIM: preferred_username
+          PROXY_USER_CS3_CLAIM: username
+          GRAPH_ASSIGN_DEFAULT_USER_ROLE: "true"
+        securityContext:
+          # Confirmed via `docker inspect` - the upstream image's own USER is
+          # already 1000, this just makes it explicit/enforced.
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet: {path: /, port: 9200}
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              timeoutSeconds: 5
+              failureThreshold: 6
+          readiness: *probe
+        resources:
+          requests: {cpu: 100m, memory: 256Mi}
+          limits: {memory: 1Gi}
+defaultPodOptions:
+  securityContext:
+    fsGroup: 1000
+service:
+  app:
+    controller: opencloud
+    ports:
+      http: {port: 9200}
+route:
+  external:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: envoy-external
+        namespace: network
+        sectionName: https
+    hostnames: ["opencloud.darkflame.dev"]
+    rules:
+      - matches: [{path: {type: PathPrefix, value: /}}]
+        backendRefs: [{name: opencloud-app, port: 9200}]
+persistence:
+  config:
+    existingClaim: opencloud-config
+    advancedMounts:
+      opencloud:
+        app: [{path: /etc/opencloud}]
+  data:
+    existingClaim: opencloud-data
+    advancedMounts:
+      opencloud:
+        app: [{path: /var/lib/opencloud}]

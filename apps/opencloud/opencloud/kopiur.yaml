@@ -1,0 +1,102 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: opencloud-data
+  namespace: opencloud
+spec:
+  compression:
+    compressor: zstd-fastest
+  copyMethod: Snapshot
+  defaultDeletionPolicy: Delete
+  groupBy: VolumeGroupSnapshot
+  identity:
+    hostname: opencloud
+    username: opencloud-data
+  mover:
+    cache:
+      capacity: 5Gi
+      storageClassName: openebs-hostpath
+    podSecurityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  retention:
+    keepDaily: 7
+    keepHourly: 24
+  sources:
+  - pvc:
+      name: opencloud-data
+    readOnly: true
+    sourcePathOverride: /data
+    sourcePathStrategy: PvcName
+  upload:
+    maxParallelFileReads: 2
+  volumeSnapshotClassName: csi-ceph-blockpool
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: opencloud-data
+  namespace: opencloud
+spec:
+  policyRef:
+    name: opencloud-data
+  schedule:
+    cron: 0 * * * *
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: opencloud-config
+  namespace: opencloud
+spec:
+  compression:
+    compressor: zstd-fastest
+  copyMethod: Snapshot
+  defaultDeletionPolicy: Delete
+  groupBy: VolumeGroupSnapshot
+  identity:
+    hostname: opencloud
+    username: opencloud-config
+  mover:
+    cache:
+      capacity: 1Gi
+      storageClassName: openebs-hostpath
+    podSecurityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  retention:
+    keepDaily: 7
+    keepHourly: 24
+  sources:
+  - pvc:
+      name: opencloud-config
+    readOnly: true
+    sourcePathOverride: /data
+    sourcePathStrategy: PvcName
+  upload:
+    maxParallelFileReads: 2
+  volumeSnapshotClassName: csi-ceph-blockpool
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: opencloud-config
+  namespace: opencloud
+spec:
+  policyRef:
+    name: opencloud-config
+  schedule:
+    cron: 0 * * * *

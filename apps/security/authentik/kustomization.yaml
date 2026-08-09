@@ -25,5 +25,6 @@ configMapGenerator:
       - blueprints/jellyfin.yaml
       - blueprints/immich.yaml
       - blueprints/mailcow.yaml
+      - blueprints/opencloud.yaml
 generatorOptions:
   disableNameSuffixHash: true
