@@ -59,6 +59,20 @@ servers:
       - name: cache
         configBlock: |-
           prefetch 20
+      - name: template
+        # Cloudflare-proxied darkflame.dev hosts (auth, blog, kromgo, kagent,
+        # renovate's OIDC redirect target, etc.) have real public AAAA
+        # records, but Pi-hole only holds local A overrides for them — AAAA
+        # queries fall through Pi-hole to its public upstream and come back
+        # with a real Cloudflare IPv6 address. The cluster has no IPv6
+        # route, so clients that race A/AAAA (gatus, and anything else doing
+        # HTTPS to these hosts) intermittently dial the unreachable v6
+        # address and fail outright instead of falling back to v4. Short-
+        # circuit AAAA for the whole zone with NODATA so only the
+        # (reachable) A record is ever returned. Confirmed live 2026-08-09
+        # investigating gatus false-positive alerts for renovate/ghost/
+        # authentik-server/kromgo/grafana/kagent-ui.
+        parameters: IN AAAA darkflame.dev
       - name: forward
         # darkflame.dev has private-only records (e.g. harbor.darkflame.dev)
         # that only exist in Pi-hole, not public DNS — the default `.` zone
