@@ -1,0 +1,65 @@
+version: 1
+metadata:
+  name: opencloud
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: opencloud-provider
+    identifiers:
+      pk: 88
+      name: "Provider for OpenCloud"
+    attrs:
+      client_type: public
+      client_id: opencloud-web
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://opencloud.darkflame.dev/"
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://opencloud.darkflame.dev/oidc-callback.html"
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://opencloud.darkflame.dev/oidc-silent-redirect.html"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: user_uuid
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: opencloud-application
+    identifiers:
+      pk: 4ddafb80-c485-4ec7-bd8a-b331b01cf8a7
+      slug: opencloud
+    attrs:
+      name: OpenCloud
+      provider: !KeyOf opencloud-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 525e55ba-8a6f-4cde-aca2-b1304dd6a38c
+    attrs:
+      target: !KeyOf opencloud-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: e5ad167b-d01f-4f66-8c5d-3201682e9e64
+    attrs:
+      target: !KeyOf opencloud-application
+      group: !Find [authentik_core.group, [name, family]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30
