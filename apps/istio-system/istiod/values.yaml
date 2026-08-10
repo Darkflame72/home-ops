@@ -2,5 +2,12 @@
 # No yaml-language-server schema available: istio/istiod
 profile: ambient
 resources:
+  # requests explicitly overridden (2026-08-10) - chart defaults (500m cpu /
+  # 2Gi memory) reserved far more than observed usage: 7-day peak across
+  # both replicas was ~8m cpu / ~123Mi memory. Left a generous multiple of
+  # peak given istiod's control-plane role, rather than shaving it tight.
+  requests:
+    cpu: 50m
+    memory: 512Mi
   limits:
     memory: 4096Mi
