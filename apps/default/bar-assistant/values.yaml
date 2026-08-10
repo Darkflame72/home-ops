@@ -56,7 +56,7 @@ controllers:
                 name: "bar-assistant-secret"
                 key: meili-master-key
           MEILI_NO_ANALYTICS: true
-          MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE: true
+          MEILI_UPGRADE_DB: true
         resources:
           requests:
             cpu: 10m
