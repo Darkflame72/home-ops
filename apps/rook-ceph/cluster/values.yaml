@@ -132,6 +132,18 @@ cephBlockPoolsVolumeSnapshotClass:
 # ceph-blockpool's pool ID — which unconditionally blocks RBD self-managed snapshots
 # on any pool the FSMap considers CephFS-attached (OSDMonitor::prepare_pool_op).
 # See docs/ceph-blockpool-migration.md for the full investigation.
+#
+# IMPORTANT (2026-08-10): omitting cephFileSystems here does NOT disable it -
+# the rook-ceph-cluster chart's own default values.yaml ships a non-empty
+# default cephFileSystems entry (a "ceph-filesystem" example matching this
+# cluster's naming), which Helm's merge-of-missing-keys silently falls back
+# to. ArgoCD selfHeal was continuously re-creating the CephFilesystem CR,
+# its default CSI subvolumegroup, and 2 idle MDS pods (~8Gi memory request,
+# 4Gi each) every time they were manually deleted. Setting an explicit
+# empty override is required to actually disable it.
+cephFileSystems: []
+cephFileSystemVolumeSnapshotClass:
+  enabled: false
 cephObjectStores:
   - name: ceph-objectstore
     spec:
