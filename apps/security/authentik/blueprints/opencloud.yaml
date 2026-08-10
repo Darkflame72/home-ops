@@ -9,14 +9,15 @@ entries:
       name: "authentik OpenCloud OAuth Mapping: OpenID 'opencloud'"
     attrs:
       # Piggybacks on the "profile" scope (rather than a dedicated
-      # "opencloud" scope) because the desktop client hardcodes its scope
-      # list (openid offline_access email profile - no way to add a custom
-      # scope) and won't request one we invent. A custom scope was silently
-      # dropped, leaving opencloudRoles absent from desktop-issued tokens,
-      # which left the account role-less (GRAPH_ASSIGN_DEFAULT_USER_ROLE is
-      # false) and broke the client's post-login user-info fetch. Multiple
-      # scope mappings can share a scope_name - authentik merges the claims
-      # from all of them whenever that scope is granted.
+      # "opencloud" scope) because the desktop/mobile clients hardcode their
+      # scope list (openid offline_access email profile - no way to add a
+      # custom scope) and won't request one we invent. A custom scope was
+      # silently dropped, leaving opencloudRoles absent from client-issued
+      # tokens, which left the account role-less (GRAPH_ASSIGN_DEFAULT_USER_ROLE
+      # is false) and broke the post-login user-info fetch. Multiple scope
+      # mappings can share a scope_name - authentik merges the claims from
+      # all of them whenever that scope is granted. Shared by all four
+      # OpenCloud providers below (web/desktop/android/ios).
       scope_name: profile
       expression: |
         # OpenCloud's PROXY_ROLE_ASSIGNMENT_DRIVER=oidc reads role names from
@@ -28,19 +29,18 @@ entries:
             "opencloudRoles": [role],
         }
 
+  # --- Web ---
+  # Owns the "opencloud" application slug/issuer, which is what
+  # OC_OIDC_ISSUER/PROXY_OIDC_ISSUER/WEB_OIDC_AUTHORITY in
+  # apps/opencloud/opencloud/values.yaml point at.
   - model: authentik_providers_oauth2.oauth2provider
-    id: opencloud-provider
+    id: opencloud-web-provider
     identifiers:
       pk: 88
       name: "Provider for OpenCloud"
     attrs:
       client_type: public
-      # The OpenCloud desktop client hardcodes this client_id (it doesn't
-      # pick up WEB_OIDC_CLIENT_ID/webfinger overrides yet) and OpenCloud only
-      # supports a single OIDC issuer server-wide, so the web and desktop
-      # clients must share this one provider/issuer with this exact
-      # client_id - see apps/opencloud/opencloud/values.yaml.
-      client_id: OpenCloudDesktop
+      client_id: web
       grant_types:
         - authorization_code
         - refresh_token
@@ -48,11 +48,16 @@ entries:
         - matching_mode: strict
           redirect_uri_type: authorization
           url: "https://opencloud.darkflame.dev/oidc-callback.html"
-        - matching_mode: regex
+        - matching_mode: strict
           redirect_uri_type: authorization
-          # Desktop client (RFC 8252 loopback): binds an ephemeral port each
-          # run, so an exact/strict match is impossible.
-          url: "^http://(127\\.0\\.0\\.1|localhost)(:\\d+)?/?$"
+          # Web client's silent token renewal (oidc-client-ts hidden iframe,
+          # prompt=none) redirects here instead of oidc-callback.html. Without
+          # this registered, Authentik rejects the silent-renew request as an
+          # invalid redirect_uri, the access token is never refreshed, and
+          # every API call fails with "token is expired" ~access_token_validity
+          # after login until the page is reloaded (confirmed in proxy logs -
+          # matches web CSP frame-src fix in apps/opencloud/opencloud/values.yaml).
+          url: "https://opencloud.darkflame.dev/oidc-silent-redirect.html"
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
@@ -74,7 +79,7 @@ entries:
       slug: opencloud
     attrs:
       name: OpenCloud
-      provider: !KeyOf opencloud-provider
+      provider: !KeyOf opencloud-web-provider
       policy_engine_mode: any
 
   - model: authentik_policies.policybinding
@@ -93,6 +98,207 @@ entries:
       pk: e5ad167b-d01f-4f66-8c5d-3201682e9e64
     attrs:
       target: !KeyOf opencloud-application
+      group: !Find [authentik_core.group, [name, family]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30
+
+  # --- Desktop ---
+  # Own provider/issuer, separate from web. Only possible because
+  # PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD=none (see values.yaml) - OpenCloud
+  # validates tokens by calling Authentik's userinfo endpoint live instead of
+  # checking a JWT's issuer/audience locally, and that userinfo endpoint is
+  # shared across all providers (not slug-scoped), so multiple client_ids
+  # under OpenCloud's single OC_OIDC_ISSUER config all work. Without that,
+  # OpenCloud only supports one external issuer server-wide and this
+  # client_id would have to alias onto the web provider instead (as it did
+  # previously - see git history).
+  - model: authentik_providers_oauth2.oauth2provider
+    id: opencloud-desktop-provider
+    identifiers:
+      pk: 89
+      name: "Provider for OpenCloud Desktop"
+    attrs:
+      client_type: public
+      # Hardcoded by the desktop client - not configurable (unlike the web
+      # client's WEB_OIDC_CLIENT_ID).
+      client_id: OpenCloudDesktop
+      grant_types:
+        - authorization_code
+        - refresh_token
+      redirect_uris:
+        - matching_mode: regex
+          redirect_uri_type: authorization
+          # Desktop client (RFC 8252 loopback): binds an ephemeral port each
+          # run, so an exact/strict match is impossible.
+          url: "^http://(127\\.0\\.0\\.1|localhost)(:\\d+)?/?$"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: user_uuid
+      property_mappings:
+        - !KeyOf opencloud-scope-mapping
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'offline_access'"]]
+
+  - model: authentik_core.application
+    id: opencloud-desktop-application
+    identifiers:
+      pk: c3855292-deaa-4692-bbdc-1f45372a684a
+      slug: opencloud-desktop
+    attrs:
+      name: OpenCloud Desktop
+      provider: !KeyOf opencloud-desktop-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 3f291a0f-40d7-4786-9fb0-91fb8c671882
+    attrs:
+      target: !KeyOf opencloud-desktop-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: debb1373-fa34-45f5-811d-1fa7127a2347
+    attrs:
+      target: !KeyOf opencloud-desktop-application
+      group: !Find [authentik_core.group, [name, family]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30
+
+  # --- Android ---
+  - model: authentik_providers_oauth2.oauth2provider
+    id: opencloud-android-provider
+    identifiers:
+      pk: 90
+      name: "Provider for OpenCloud Android"
+    attrs:
+      client_type: public
+      # Hardcoded by the Android client - not configurable.
+      client_id: OpenCloudAndroid
+      grant_types:
+        - authorization_code
+        - refresh_token
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "oc://android.opencloud.eu"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: user_uuid
+      property_mappings:
+        - !KeyOf opencloud-scope-mapping
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'offline_access'"]]
+
+  - model: authentik_core.application
+    id: opencloud-android-application
+    identifiers:
+      pk: fef30307-9a6b-48cf-87c2-6fd0a624ce59
+      slug: opencloud-android
+    attrs:
+      name: OpenCloud Android
+      provider: !KeyOf opencloud-android-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: a4662eb1-77b1-4c1d-bd5a-46bd0f8c285f
+    attrs:
+      target: !KeyOf opencloud-android-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 5b797b65-8bd3-47db-9a2d-163ce888837a
+    attrs:
+      target: !KeyOf opencloud-android-application
+      group: !Find [authentik_core.group, [name, family]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30
+
+  # --- iOS ---
+  - model: authentik_providers_oauth2.oauth2provider
+    id: opencloud-ios-provider
+    identifiers:
+      pk: 91
+      name: "Provider for OpenCloud iOS"
+    attrs:
+      client_type: public
+      # Hardcoded by the iOS client - not configurable.
+      client_id: OpenCloudIOS
+      grant_types:
+        - authorization_code
+        - refresh_token
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "oc://ios.opencloud.eu"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: user_uuid
+      property_mappings:
+        - !KeyOf opencloud-scope-mapping
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'offline_access'"]]
+
+  - model: authentik_core.application
+    id: opencloud-ios-application
+    identifiers:
+      pk: 110face2-5942-4967-9186-807326e01c78
+      slug: opencloud-ios
+    attrs:
+      name: OpenCloud iOS
+      provider: !KeyOf opencloud-ios-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: abd1b1fc-60e8-42a3-9722-2df8bbfa1846
+    attrs:
+      target: !KeyOf opencloud-ios-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: f0ce60f6-521f-4112-921b-50ddd6422a65
+    attrs:
+      target: !KeyOf opencloud-ios-application
       group: !Find [authentik_core.group, [name, family]]
       order: 1
       enabled: true

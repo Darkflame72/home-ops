@@ -52,23 +52,34 @@ controllers:
           OC_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
           PROXY_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
           PROXY_OIDC_REWRITE_WELLKNOWN: "true"
-          PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: jwt
-          # client_id is "OpenCloudDesktop" (not e.g. "opencloud-web") because
-          # the OpenCloud desktop app hardcodes that client_id and OpenCloud
-          # only supports one OIDC issuer server-wide, so web + desktop must
-          # share the same Authentik provider/client_id - see
-          # apps/security/authentik/blueprints/opencloud.yaml.
-          WEB_OIDC_CLIENT_ID: OpenCloudDesktop
+          # OpenCloud only supports one OIDC issuer server-wide, and
+          # verifying access tokens as JWTs (the "jwt" method) means checking
+          # their "iss" claim locally against that one issuer - which would
+          # only ever match tokens from a single Authentik provider/client_id.
+          # "none" instead validates each token by calling Authentik's
+          # userinfo endpoint live (which is shared/global across all
+          # providers, unlike the per-slug discovery/JWKS docs), so the
+          # desktop/android/ios clients' separate hardcoded client_ids all
+          # work against this one OC_OIDC_ISSUER. Confirmed safe by an
+          # ownCloud/OCIS maintainer (this proxy is a fork of ocis) - an
+          # invalid token can't retrieve userinfo either, so this doesn't
+          # weaken verification: https://github.com/owncloud/ocis/issues/6479#issuecomment-2309819585
+          PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: none
+          # "web" is OpenCloud's own default web client_id (see
+          # WEBFINGER_WEB_OIDC_CLIENT_ID upstream) - it gets its own
+          # Authentik provider now rather than aliasing onto the desktop
+          # client's hardcoded id, see apps/security/authentik/blueprints/opencloud.yaml.
+          WEB_OIDC_CLIENT_ID: web
           WEB_OIDC_AUTHORITY: "https://auth.darkflame.dev/application/o/opencloud/"
           WEB_OIDC_METADATA_URL: "https://auth.darkflame.dev/application/o/opencloud/.well-known/openid-configuration"
           WEB_OIDC_RESPONSE_TYPE: code
           # The custom opencloudRoles claim mapping used for role assignment
           # below rides on the standard "profile" scope, not a dedicated
-          # "opencloud" one - the desktop client hardcodes its scope list and
-          # won't request a custom scope (see
+          # "opencloud" one - the desktop/mobile clients hardcode their scope
+          # list and won't request a custom scope (see
           # apps/security/authentik/blueprints/opencloud.yaml).
           WEB_OIDC_SCOPE: "openid profile email"
-          PROXY_OIDC_CLIENT_ID: OpenCloudDesktop
+          PROXY_OIDC_CLIENT_ID: web
           PROXY_AUTOPROVISION_ACCOUNTS: "true"
           PROXY_AUTOPROVISION_CLAIM_USERNAME: preferred_username
           PROXY_AUTOPROVISION_CLAIM_EMAIL: email
@@ -155,6 +166,13 @@ configMaps:
             - "'self'"
             - 'blob:'
             - 'https://embed.diagrams.net/'
+            # Web client's silent OIDC renewal loads the IdP's authorize
+            # endpoint in a hidden iframe (prompt=none, redirects to
+            # oidc-silent-redirect.html) - without this the browser blocks
+            # the iframe navigation outright and the access token can never
+            # be silently refreshed (pairs with the matching redirect_uri
+            # added in apps/security/authentik/blueprints/opencloud.yaml).
+            - 'https://auth.darkflame.dev/'
           img-src:
             - "'self'"
             - 'data:'
