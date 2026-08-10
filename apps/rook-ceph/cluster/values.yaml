@@ -65,7 +65,21 @@ cephClusterSpec:
     connections:
       requireMsgr2: true
   resources:
+    # mon/mgr/osd cpu requests explicitly overridden (2026-08-10) - chart
+    # defaults (mon/osd 1000m, mgr 500m) reserved ~10 cores cluster-wide
+    # against ~0.3 cores of actual 1h-avg usage, pushing the cluster to
+    # 99.9% of total CPU requests and leaving forgejo-postgres-2 unable to
+    # schedule. Memory left at chart defaults - not the constrained
+    # dimension here.
+    mon:
+      requests:
+        cpu: 100m
+    mgr:
+      requests:
+        cpu: 100m
     osd:
+      requests:
+        cpu: 250m
       limits:
         memory: 8Gi
     prepareosd:
