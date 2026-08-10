@@ -3,6 +3,9 @@ expose:
   tls:
     enabled: false
   route:
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        path: ""
     parentRefs:
       - group: gateway.networking.k8s.io
         kind: Gateway
