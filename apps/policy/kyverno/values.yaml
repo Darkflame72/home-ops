@@ -13,7 +13,15 @@ features:
     # resource's image, e.g. verify-image-signatures-dex against
     # kopia-primary-kopia-ui, which only runs a kopiur-mover image) —
     # background scan contention, not a real signature failure.
-    backgroundScanWorkers: 6
+    #
+    # Bumped to 6 workers then caused a *different* problem (confirmed
+    # 2026-08-10): concurrent workers racing to write .status on the same
+    # ImageValidatingPolicy objects (verify-image-signatures-argocd,
+    # verify-image-signatures-maddy) hit constant 409 conflicts and retried
+    # in a tight loop — reports-controller pegged at 1.6-2.4 CPU cores and
+    # crash-looping every 30-90min. Dropped to 3 as a middle ground; may
+    # need further tuning in either direction.
+    backgroundScanWorkers: 3
 
 reportsServer:
   enabled: false
@@ -165,6 +173,14 @@ reportsController:
     # per policy across every pod in the cluster. Crashes mid-cycle leave
     # stale/incomplete PolicyReport results until the next full rescan.
     limits:
+      # CPU limit added deliberately, as a circuit breaker (2026-08-10) -
+      # this controller has a history of resource runaways (prior OOMs at
+      # 128Mi/512Mi, now a status-write conflict-retry storm burning 1.6-2.4
+      # cores unbounded with no cap). Repo convention elsewhere is to skip
+      # CPU limits (see require-requests-limits.yaml, which doesn't require
+      # one) to avoid CFS throttling, but this controller's track record
+      # justifies the exception.
+      cpu: 1000m
       memory: 1Gi
     requests:
       cpu: 150m
