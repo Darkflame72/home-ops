@@ -16,6 +16,15 @@ controllers:
               secretKeyRef:
                 name: argocd-mcp-secret
                 key: api_token
+          # v0.9.0 defaults the http listener to 127.0.0.1-only (GHSA-rp45-5x3v-48mr).
+          # agentgateway calls this cross-pod via the Service, so the bind must be
+          # widened; MCP_AUTH_TOKEN is required whenever the bind isn't loopback.
+          MCP_BIND_ADDRESS: "0.0.0.0"
+          MCP_AUTH_TOKEN:
+            valueFrom:
+              secretKeyRef:
+                name: argocd-mcp-secret
+                key: mcp_auth_token
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false

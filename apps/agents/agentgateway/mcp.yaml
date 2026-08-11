@@ -48,6 +48,10 @@ spec:
           host: argocd-mcp.argocd.svc.cluster.local
           port: 3001
           protocol: StreamableHTTP
+          policies:
+            auth:
+              secretRef:
+                name: argocd-mcp-auth-token
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/httproute_v1.json
 apiVersion: gateway.networking.k8s.io/v1
