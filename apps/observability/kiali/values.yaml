@@ -19,6 +19,7 @@ external_services:
     root_namespace: istio-system
   prometheus:
     url: http://mimir-gateway.observability.svc.cluster.local/prometheus
+    health_check_url: http://mimir-gateway.observability.svc.cluster.local/prometheus/api/v1/status/buildinfo
 
 server:
   web_fqdn: kiali.darkflame.dev
