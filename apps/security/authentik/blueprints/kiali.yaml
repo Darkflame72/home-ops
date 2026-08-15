@@ -21,7 +21,7 @@ entries:
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
-      access_token_validity: minutes=5
+      access_token_validity: hours=8
       refresh_token_validity: days=30
       include_claims_in_id_token: true
       sub_mode: hashed_user_id

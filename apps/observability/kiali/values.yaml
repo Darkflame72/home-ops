@@ -15,6 +15,9 @@ deployment:
   cluster_wide_access: true
 
 external_services:
+  grafana:
+    internal_url: http://grafana-service.observability.svc.cluster.local:3000
+    external_url: https://grafana.darkflame.dev
   istio:
     root_namespace: istio-system
   prometheus:
