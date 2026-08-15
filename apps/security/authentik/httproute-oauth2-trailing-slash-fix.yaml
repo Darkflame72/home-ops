@@ -1,0 +1,45 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/main/hack/schema-1.0.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: authentik-server-oauth2-trailing-slash-fix
+  namespace: security
+  annotations:
+    gatus.home-operations.com/enabled: "false"
+spec:
+  hostnames:
+    - auth.darkflame.dev
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-external
+      namespace: network
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /application/o/token
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /application/o/token/
+      backendRefs:
+        - name: authentik-server
+          port: 80
+    - matches:
+        - path:
+            type: Exact
+            value: /application/o/userinfo
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /application/o/userinfo/
+      backendRefs:
+        - name: authentik-server
+          port: 80

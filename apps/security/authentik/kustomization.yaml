@@ -9,6 +9,7 @@ resources:
   - ./scheduled-backup.yaml
   - ./podmonitor.yaml
   - ./ciliumnetworkpolicy.yaml
+  - ./httproute-oauth2-trailing-slash-fix.yaml
 configMapGenerator:
   - name: authentik-blueprints
     files:
