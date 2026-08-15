@@ -30,14 +30,10 @@ minecraftServer:
 
   modrinth:
     projects:
-      - pl3xmap
+      - squaremap
       - chunky
       - chunkyborder
-    # "required" pulls in Fabric API, which Modrinth lists as a dependency of the
-    # Fabric-loader build only — it has no build for our (Paper) loader/MC version and
-    # breaks resolution. Pl3xMap needs no extra plugins on Paper.
     downloadDependencies: none
-    allowedVersionType: beta # Pl3xMap only ever publishes beta-tagged Modrinth releases
 
   extraPorts:
     - name: map
