@@ -1,0 +1,49 @@
+version: 1
+metadata:
+  name: kiali
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: kiali-provider
+    identifiers:
+      pk: 92
+      name: "Provider for Kiali"
+    attrs:
+      client_type: confidential
+      client_id: 5VQJNXnfnTEnY0kfqtnvdIl2iwkNzZFht16JDdkW
+      client_secret: !Env KIALI_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://kiali.darkflame.dev/"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: kiali-application
+    identifiers:
+      pk: feb1a277-61c3-4b38-998e-f1b3f933287e
+      slug: kiali
+    attrs:
+      name: Kiali
+      provider: !KeyOf kiali-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 51dfc559-5306-431d-9411-1db2f25f4ae3
+    attrs:
+      target: !KeyOf kiali-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 1
+      enabled: true
+      negate: false
+      timeout: 30

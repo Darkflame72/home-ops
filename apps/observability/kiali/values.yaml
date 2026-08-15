@@ -1,0 +1,23 @@
+---
+# No yaml-language-server schema available: kiali/kiali-server
+auth:
+  strategy: openid
+  openid:
+    issuer_uri: "https://auth.darkflame.dev/application/o/kiali/"
+    client_id: 5VQJNXnfnTEnY0kfqtnvdIl2iwkNzZFht16JDdkW
+    scopes:
+      - openid
+      - profile
+      - email
+
+deployment:
+  cluster_wide_access: true
+
+external_services:
+  istio:
+    root_namespace: istio-system
+  prometheus:
+    url: http://mimir-gateway.observability.svc.cluster.local/prometheus
+
+server:
+  web_fqdn: kiali.darkflame.dev
