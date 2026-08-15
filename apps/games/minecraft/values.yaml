@@ -32,7 +32,7 @@ minecraftServer:
     projects:
       - pl3xmap
     downloadDependencies: required
-    allowedVersionType: release
+    allowedVersionType: beta # Pl3xMap only ever publishes beta-tagged Modrinth releases
 
   extraPorts:
     - name: map
