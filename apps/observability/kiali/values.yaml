@@ -5,6 +5,7 @@ auth:
   openid:
     issuer_uri: "https://auth.darkflame.dev/application/o/kiali/"
     client_id: 5VQJNXnfnTEnY0kfqtnvdIl2iwkNzZFht16JDdkW
+    disable_rbac: true
     scopes:
       - openid
       - profile
