@@ -21,3 +21,4 @@ external_services:
 
 server:
   web_fqdn: kiali.darkflame.dev
+  web_schema: https
