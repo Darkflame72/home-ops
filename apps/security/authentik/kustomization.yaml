@@ -27,5 +27,6 @@ configMapGenerator:
       - blueprints/immich.yaml
       - blueprints/mailcow.yaml
       - blueprints/opencloud.yaml
+      - blueprints/kiali.yaml
 generatorOptions:
   disableNameSuffixHash: true
