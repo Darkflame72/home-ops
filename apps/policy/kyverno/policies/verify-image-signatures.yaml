@@ -18,6 +18,17 @@ metadata:
       Verifies cosign keyless signatures on quay.io/cilium/cilium against
       Cilium's published GitHub Actions identity.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -74,6 +85,17 @@ metadata:
       which has no signing step). Matching them against the krel-trust
       identity would just be a permanent, meaningless failure.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore
   matchConstraints:
     resourceRules:
@@ -121,6 +143,17 @@ metadata:
       https://argo-cd.readthedocs.io/en/stable/operator-manual/signed-release-assets/
       on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -166,6 +199,17 @@ metadata:
       GitHub Actions identity, confirmed against
       https://cloudnative-pg.io/docs/1.28/security/ on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -217,6 +261,17 @@ metadata:
       https://cloudnative-pg.io/docs/1.28/security/ and
       https://github.com/cloudnative-pg/postgres-containers on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -269,6 +324,17 @@ metadata:
       https://github.com/external-secrets/external-secrets/blob/main/.github/actions/sign/action.yml
       on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -317,6 +383,17 @@ metadata:
       and https://github.com/kedacore/keda/blob/main/Makefile on 2026-07-20.
       release-build.yml triggers only on `v*` tag pushes.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -369,6 +446,17 @@ metadata:
       on both branch and tag pushes, so the subject is scoped to the
       workflow file rather than a tag-anchored ref.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -418,6 +506,17 @@ metadata:
       pushes to master, release-* branches, and v* tags — this cluster
       tracks release tags (v1.20.2), so the subject is tag-anchored.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -468,6 +567,17 @@ metadata:
       publish-target-allocator.yaml builds and pushes that image but never
       calls cosign at all, confirmed by reading the full workflow file.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -516,6 +626,17 @@ metadata:
       https://github.com/argoproj/argo-rollouts/blob/master/.github/workflows/image-reuse.yaml
       on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -563,6 +684,17 @@ metadata:
       https://github.com/dexidp/dex/blob/master/.github/workflows/artifacts.yaml
       on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -609,6 +741,17 @@ metadata:
       on 2026-07-20. This cluster pins the image by digest rather than tag,
       so both reference forms are matched.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -665,6 +808,17 @@ metadata:
       originally configured (release-image.yaml, confirmed live in the
       bundle's own SAN: .../release-image.yaml@refs/tags/v3.8.10).
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -724,6 +878,17 @@ metadata:
       --type slsaprovenance` and confirmed live in-cluster on 2026-07-20
       (the plain-signature version above produced "no signatures found").
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -779,6 +944,17 @@ metadata:
       https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/.github/workflows/base-release.yaml
       on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -827,6 +1003,17 @@ metadata:
       `cosign sign --yes --recursive` step to
       mogenius/github-actions/.github/workflows/build-multiarch.yml.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -874,6 +1061,17 @@ metadata:
       and also nightly via schedule/workflow_dispatch on main, so both ref
       forms are matched.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -931,6 +1129,17 @@ metadata:
       identity. If Kyverno ever bumps its pinned slsa-github-generator
       version, this identity needs re-confirming.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -989,6 +1198,17 @@ metadata:
       --insecure-ignore-tlog --key <this key>` against this cluster's exact
       deployed tag (v1.21.0) on 2026-07-20.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -1059,6 +1279,17 @@ metadata:
       attestation `actions/attest-build-provenance` also attaches), signed
       by the repo's own ci.yaml at the release tag.
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -1114,6 +1345,17 @@ metadata:
       same schema. Confirmed live in-cluster on 2026-07-20 (a `referrer.type`
       version produced no signature match at all).
 spec:
+  evaluation:
+    background:
+      # Background scan re-verifies every one of these policies against
+      # every matching pod in the cluster on each scan cycle (cosign/Rekor
+      # network round-trip per image per policy). With 22 image-signature
+      # policies that repeatedly OOMKilled reports-controller (128Mi->512Mi->
+      # 1Gi limit bumps all exhausted, 41 restarts/5d as of 2026-08-15).
+      # Admission-time verification (on pod CREATE/UPDATE) still runs and
+      # still gets recorded — this only stops the redundant periodic
+      # rescan of pods that already passed or failed at creation time.
+      enabled: false
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
