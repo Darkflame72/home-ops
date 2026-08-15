@@ -9,14 +9,23 @@ serviceMonitor:
   enabled: true
 
 deschedulerPolicy:
+  # Temporary for initial rollout of LowNodeUtilization; remove once
+  # behavior is verified stable (see plan for the verification steps).
+  maxNoOfPodsToEvictPerNode: 3
+  maxNoOfPodsToEvictTotal: 6
   profiles:
     - name: default
       pluginConfig:
         - name: DefaultEvictor
           args:
-            ignorePvcPods: true
-            evictLocalStoragePods: false
-            evictSystemCriticalPods: false
+            nodeFit: true
+            podProtections:
+              extraEnabled:
+                - PodsWithPVC
+              config:
+                PodsWithPVC:
+                  protectedStorageClasses:
+                    - name: openebs-hostpath
         - name: RemoveDuplicates
         - name: RemovePodsViolatingTopologySpreadConstraint
         - name: RemovePodsViolatingNodeAffinity
@@ -29,11 +38,22 @@ deschedulerPolicy:
           args:
             podRestartThreshold: 100
             includingInitContainers: true
+        - name: LowNodeUtilization
+          args:
+            thresholds:
+              cpu: 60
+              memory: 60
+            targetThresholds:
+              cpu: 75
+              memory: 80
+            evictionLimits:
+              node: 2
       plugins:
         balance:
           enabled:
             - RemoveDuplicates
             - RemovePodsViolatingTopologySpreadConstraint
+            - LowNodeUtilization
         deschedule:
           enabled:
             - RemovePodsViolatingNodeAffinity
