@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: miniflux-rules
+  namespace: default
+spec:
+  groups:
+    - name: miniflux
+      rules:
+        - alert: MinifluxFeedRefreshStalled
+          expr: increase(miniflux_background_feed_refresh_duration_count[12h]) == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "miniflux background feed refresh has stalled"
+            description: "No feeds have been refreshed by the background scheduler in the
+              last 12h (2x the 6h polling cadence). The scheduler may be stuck again —
+              check with a manual \"Refresh all feeds\" from the web UI and compare
+              against `kubectl logs -n default deploy/miniflux`."
+        - alert: MinifluxBrokenFeeds
+          expr: miniflux_broken_feeds > 0
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "miniflux has {{ $value }} broken feed(s)"
+            description: "{{ $value }} feed(s) have exceeded the parsing error limit and
+              are persistently failing to fetch/parse. Check Feed Errors in the miniflux
+              web UI."

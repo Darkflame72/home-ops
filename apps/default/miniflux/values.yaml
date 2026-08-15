@@ -30,9 +30,9 @@ controllers:
           - name: OAUTH2_REDIRECT_URL
             value: https://miniflux.darkflame.dev/oauth2/oidc/callback
           - name: POLLING_SCHEDULER
-            value: entry_frequency
+            value: round_robin
           - name: POLLING_FREQUENCY
-            value: "15"
+            value: "360"
           - name: PORT
             value: &port 80
           - name: RUN_MIGRATIONS
