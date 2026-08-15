@@ -1,0 +1,23 @@
+---
+services:
+  minecraft:
+    type: LoadBalancer
+    port: 25565
+    annotations:
+      lbipam.cilium.io/ips: 10.0.60.16 # pinned so the router port-forward stays valid
+
+minecraftRouter:
+  mappings:
+    - externalHostname: "mc.darkflame.dev"
+      host: minecraft.games.svc.cluster.local
+      port: 25565
+  autoScale:
+    up: { enabled: false }
+    down: { enabled: false }
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 64Mi

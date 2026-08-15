@@ -1,0 +1,38 @@
+---
+resources:
+  requests:
+    cpu: 1000m
+    memory: 4Gi
+  limits:
+    memory: 6Gi # no cpu limit — avoids JVM GC stalls from CPU throttling
+
+persistence:
+  storageClass: ceph-block
+  dataDir:
+    enabled: true
+    existingClaim: minecraft-data # PVC defined in pvc.yaml, so kopiur can back it up
+
+minecraftServer:
+  eula: "TRUE"
+  type: "PAPER"
+  version: "LATEST"
+  memory: "4G"
+  difficulty: normal
+  whitelist: "darkflame72"
+  motd: "Welcome!"
+  servicePort: 25565
+
+  modrinth:
+    projects:
+      - pl3xmap
+    downloadDependencies: required
+    allowedVersionType: release
+
+  extraPorts:
+    - name: map
+      containerPort: 8080
+      protocol: TCP
+      service:
+        enabled: true
+        type: ClusterIP
+        port: 8080
