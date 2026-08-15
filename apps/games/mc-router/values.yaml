@@ -1,4 +1,10 @@
 ---
+image:
+  repository: itzg/mc-router
+  # renovate: datasource=docker depName=itzg/mc-router
+  tag: 1.46.2@sha256:802a6adef1a298fd0557b6c2223b94a7bc06cd16a007315d5ba2f498e72ce5de
+  pullPolicy: IfNotPresent
+
 services:
   minecraft:
     type: LoadBalancer
