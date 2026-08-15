@@ -292,7 +292,7 @@ spec:
               "rules": [
                 {
                   "from": [
-                    {"source": {"namespaces": ["default", "network", "observability", "security"]}}
+                    {"source": {"namespaces": ["comms", "default", "network", "observability", "security"]}}
                   ]
                 }
               ]
