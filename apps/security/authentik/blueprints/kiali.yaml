@@ -11,6 +11,9 @@ entries:
       client_type: confidential
       client_id: 5VQJNXnfnTEnY0kfqtnvdIl2iwkNzZFht16JDdkW
       client_secret: !Env KIALI_CLIENT_SECRET
+      grant_types:
+        - authorization_code
+        - refresh_token
       redirect_uris:
         - matching_mode: strict
           redirect_uri_type: authorization
