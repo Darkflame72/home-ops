@@ -83,6 +83,14 @@ endpoints:
       - "[STATUS] == 200"
     alerts: *alerts
 
+  - name: kiali
+    group: internal
+    url: https://kiali.darkflame.dev/kiali
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+    alerts: *alerts
+
   - name: atuin
     group: internal
     url: https://sh.darkflame.dev

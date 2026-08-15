@@ -31,6 +31,7 @@ spec:
     - agentgateway.darkflame.dev
     - rollouts.darkflame.dev
     - policy-reporter.darkflame.dev
+    - kiali.darkflame.dev
   ports:
     - number: 443
       name: https
