@@ -41,8 +41,8 @@ deschedulerPolicy:
         - name: LowNodeUtilization
           args:
             thresholds:
-              cpu: 60
-              memory: 60
+              cpu: 65
+              memory: 65
             targetThresholds:
               cpu: 75
               memory: 80
