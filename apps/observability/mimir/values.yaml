@@ -43,6 +43,7 @@ mimir:
       ingestion_burst_size: 300000
       max_global_series_per_user: 10000000
       compactor_blocks_retention_period: 90d
+      max_label_names_per_series: 40
     ingest_storage:
       enabled: false
 
