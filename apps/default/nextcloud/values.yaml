@@ -45,10 +45,6 @@ nextcloud:
       value: "cloud.darkflame.dev"
   strategy:
     type: Recreate
-  # The image's entrypoint runs `occ upgrade` synchronously before Apache
-  # starts listening. Without a startupProbe, the default liveness probe
-  # (10s delay, 3x10s failures = ~40s) kills the container mid-migration,
-  # leaving Nextcloud stuck in maintenance mode. Give it room to finish.
   startupProbe:
     enabled: true
     initialDelaySeconds: 30
