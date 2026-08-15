@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - ./external-secret.yaml
   - ./httproute.yaml
+  - ./grafana-service-account.yaml

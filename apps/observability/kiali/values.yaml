@@ -18,6 +18,9 @@ external_services:
   grafana:
     internal_url: http://grafana-service.observability.svc.cluster.local:3000
     external_url: https://grafana.darkflame.dev
+    auth:
+      type: bearer
+      token: "secret:kiali-grafana-token:token"
   istio:
     root_namespace: istio-system
   prometheus:
