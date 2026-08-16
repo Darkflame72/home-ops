@@ -6,3 +6,4 @@ resources:
   - ./pvc.yaml
   - ./kopiur.yaml
   - ./httproute.yaml
+  - ./external-secret.yaml

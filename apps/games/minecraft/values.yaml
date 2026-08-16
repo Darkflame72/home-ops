@@ -25,6 +25,11 @@ minecraftServer:
   memory: "4G"
   difficulty: normal
   whitelist: "darkflame72"
+  ops: "darkflame72"
+  maxPlayers: 20
+  spawnProtection: 0
+  vanillaTweaksShareCodes:
+    - "ZHRhv6"
   motd: "Welcome!"
   servicePort: 25565
 
@@ -36,6 +41,7 @@ minecraftServer:
       # no release yet for 26.2 (what VERSION: LATEST currently resolves to) — would
       # crash-loop the same way the earlier Pl3xMap version-type mismatch did. Add back
       # once a 26.2-compatible build is published.
+      - discordsrv
     downloadDependencies: none
 
   extraPorts:
@@ -46,3 +52,30 @@ minecraftServer:
         enabled: true
         type: ClusterIP
         port: 8080
+
+# Seeds DiscordSRV's config.yml (bot token + channel mapping, from Infisical via
+# external-secret.yaml) onto the writable data PVC before Paper starts. The copy
+# (not a direct mount) keeps /data/plugins/DiscordSRV writable so the plugin can
+# still self-heal/rewrite the file at runtime; GitOps reasserts the seed on every
+# pod restart.
+extraVolumes:
+  - volumeMounts:
+      - name: discordsrv-config-seed
+        mountPath: /config-seed
+        readOnly: true
+    volumes:
+      - name: discordsrv-config-seed
+        secret:
+          secretName: minecraft-discordsrv-config
+
+initContainers:
+  - name: seed-discordsrv-config
+    # renovate: datasource=docker depName=docker.io/library/busybox
+    image: docker.io/library/busybox:stable@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+    command: ["sh", "-c", "mkdir -p /data/plugins/DiscordSRV && cp /config-seed/config.yml /data/plugins/DiscordSRV/config.yml"]
+    volumeMounts:
+      - name: datadir
+        mountPath: /data
+      - name: discordsrv-config-seed
+        mountPath: /config-seed
+        readOnly: true
