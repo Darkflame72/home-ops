@@ -6,6 +6,24 @@
 # AND-vs-OR semantics). Never use a wildcard subject (e.g.
 # "https://github.com/*") — that accepts a signature from any GitHub repo,
 # including an attacker's fork.
+#
+# ALL POLICIES IN THIS FILE ARE DISABLED (admission.enabled: false) as of
+# 2026-08-16. Kyverno v1.18.2's ImageValidatingPolicy engine reports
+# result: fail, message: "policy not evaluated" for every one of these 22
+# policies against every pod whose image doesn't match its
+# matchImageReferences glob, instead of skip — e.g.
+# verify-image-signatures-cilium "failing" on harbor-core, grafana,
+# rook-ceph, none of which run Cilium's image. Confirmed via `kubectl get
+# polr -A`: 1358 of 1369 cluster-wide fail results were this false
+# positive, 0 were real signature failures, which fed a constant
+# stream of KyvernoPolicyViolationPersistent pages for workloads that
+# hadn't changed. No config knob distinguishes bogus-vs-real fails at the
+# report/metric level (policy_report_result carries no message label), and
+# no upstream fix exists yet (v1.19 still RC). Re-enable
+# spec.evaluation.admission.enabled on all policies below once Kyverno
+# ships a fix for this matchImageReferences/report-skip regression —
+# likely referenced against kyverno/kyverno#15882, which is the PR that
+# looks to have introduced this behavior in v1.18.0.
 apiVersion: policies.kyverno.io/v1
 kind: ImageValidatingPolicy
 metadata:
@@ -19,6 +37,11 @@ metadata:
       Cilium's published GitHub Actions identity.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -86,6 +109,11 @@ metadata:
       identity would just be a permanent, meaningless failure.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -144,6 +172,11 @@ metadata:
       on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -200,6 +233,11 @@ metadata:
       https://cloudnative-pg.io/docs/1.28/security/ on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -262,6 +300,11 @@ metadata:
       https://github.com/cloudnative-pg/postgres-containers on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -325,6 +368,11 @@ metadata:
       on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -384,6 +432,11 @@ metadata:
       release-build.yml triggers only on `v*` tag pushes.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -447,6 +500,11 @@ metadata:
       workflow file rather than a tag-anchored ref.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -507,6 +565,11 @@ metadata:
       tracks release tags (v1.20.2), so the subject is tag-anchored.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -568,6 +631,11 @@ metadata:
       calls cosign at all, confirmed by reading the full workflow file.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -627,6 +695,11 @@ metadata:
       on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -685,6 +758,11 @@ metadata:
       on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -742,6 +820,11 @@ metadata:
       so both reference forms are matched.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -809,6 +892,11 @@ metadata:
       bundle's own SAN: .../release-image.yaml@refs/tags/v3.8.10).
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -879,6 +967,11 @@ metadata:
       (the plain-signature version above produced "no signatures found").
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -945,6 +1038,11 @@ metadata:
       on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1004,6 +1102,11 @@ metadata:
       mogenius/github-actions/.github/workflows/build-multiarch.yml.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1062,6 +1165,11 @@ metadata:
       forms are matched.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1130,6 +1238,11 @@ metadata:
       version, this identity needs re-confirming.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1199,6 +1312,11 @@ metadata:
       deployed tag (v1.21.0) on 2026-07-20.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1280,6 +1398,11 @@ metadata:
       by the repo's own ci.yaml at the release tag.
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1346,6 +1469,11 @@ metadata:
       version produced no signature match at all).
 spec:
   evaluation:
+    admission:
+      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
+      # fail: "policy not evaluated" for every non-matching policy on
+      # every pod instead of skip. Temporary, pending an upstream fix.
+      enabled: false
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
