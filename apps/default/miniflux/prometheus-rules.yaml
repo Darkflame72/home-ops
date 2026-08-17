@@ -10,7 +10,7 @@ spec:
     - name: miniflux
       rules:
         - alert: MinifluxFeedRefreshStalled
-          expr: increase(miniflux_background_feed_refresh_duration_count[12h]) == 0
+          expr: sum(increase(miniflux_background_feed_refresh_duration_count[12h])) == 0
           for: 5m
           labels:
             severity: warning
