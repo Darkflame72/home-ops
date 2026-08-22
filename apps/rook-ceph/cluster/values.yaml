@@ -92,18 +92,32 @@ cephClusterSpec:
   # daemon (mon/mgr/osd) keys to the new aes256k key type. Requires Rook
   # v1.19.9+/v1.20.5+ and Ceph v19.2.6+/v20.2.4+/v21.2.0+ — both satisfied
   # (operator v1.20.6, Ceph v20.2.4). Progress: `kubectl get cephcluster -o
-  # jsonpath='{.status.cephx.daemon}'`.
+  # jsonpath='{.status.cephx}'` — per-daemon keyGeneration should reach 2.
   #
   # csi.keyRotationPolicy is deliberately NOT set here — rotating CSI keys
   # to aes256k requires Linux kernel 7.0+ on every node for kernel-mode
   # RBD/CephFS mounts, and all nodes are still on 6.18.44-talos. Rotating
   # CSI keys now would risk breaking every pod's storage mount
   # cluster-wide. Revisit once nodes are upgraded to a 7.0+ kernel.
+  #
+  # skipUpgradeChecks: Rook's operator refuses ANY CephCluster spec change
+  # (including this rotation) while `ceph health` != HEALTH_OK, and this
+  # cluster can't reach HEALTH_OK on its own — Ceph's prometheus mgr module
+  # calls node_proxy_fullreport() (a cephadm-only orchestrator RPC) every
+  # ~15s, which Rook's orchestrator module doesn't implement, permanently
+  # tripping RECENT_MGR_MODULE_CRASH/HEALTH_ERR (open upstream Rook/Ceph
+  # bug, no fix available, no data-availability impact — confirmed via
+  # `ceph mgr fail` that it follows whichever mgr is active, not a stuck
+  # daemon). No Ceph version/image change is happening here, so this
+  # doesn't skip a real upgrade's checks — it's only needed to get past
+  # the health gate. TODO: revert to false once
+  # `status.cephx.{mon,mgr,osd}.keyGeneration` all read 2.
   security:
     cephx:
       daemon:
         keyRotationPolicy: KeyGeneration
         keyGeneration: 2
+  skipUpgradeChecks: true
   storage:
     useAllNodes: true
     useAllDevices: false
