@@ -101,17 +101,24 @@ cephClusterSpec:
   # cluster-wide. Revisit once nodes are upgraded to a 7.0+ kernel.
   #
   # skipUpgradeChecks: Rook's operator refuses ANY CephCluster spec change
-  # (including this rotation) while `ceph health` != HEALTH_OK, and this
-  # cluster can't reach HEALTH_OK on its own — Ceph's prometheus mgr module
-  # calls node_proxy_fullreport() (a cephadm-only orchestrator RPC) every
-  # ~15s, which Rook's orchestrator module doesn't implement, permanently
-  # tripping RECENT_MGR_MODULE_CRASH/HEALTH_ERR (open upstream Rook/Ceph
-  # bug, no fix available, no data-availability impact — confirmed via
-  # `ceph mgr fail` that it follows whichever mgr is active, not a stuck
-  # daemon). No Ceph version/image change is happening here, so this
-  # doesn't skip a real upgrade's checks — it's only needed to get past
-  # the health gate. TODO: revert to false once
-  # `status.cephx.{mon,mgr,osd}.keyGeneration` all read 2.
+  # (including Ceph/Rook version bumps) while `ceph health` != HEALTH_OK.
+  # Left permanently true (not just for the 2026-08-22 key rotation above)
+  # because this cluster's health can never return to HEALTH_OK on its
+  # own: Ceph's prometheus mgr module calls node_proxy_fullreport() (a
+  # cephadm-only orchestrator RPC) every ~15s, which Rook's orchestrator
+  # module doesn't implement, permanently tripping RECENT_MGR_MODULE_CRASH
+  # (WARN-level health check) — open upstream Rook/Ceph bug (rook/rook
+  # issue re: Tentacle v20.2.3 permanent RECENT_MGR_MODULE_CRASH), no fix
+  # available, no data-availability impact (confirmed via `ceph mgr fail`
+  # that it follows whichever mgr is active, not a stuck daemon; PGs
+  # stayed active+clean and client I/O kept flowing throughout the
+  # 2026-08-22 investigation). Without this, every future Renovate-driven
+  # rook-ceph/rook-ceph-cluster version bump would silently stall on this
+  # same gate — as happened during the 2026-08-22 CVE-2025-30156 key
+  # rotation — until someone notices, same failure mode as the ArgoCD
+  # repo-server outage that day. Tradeoff accepted: a future genuinely
+  # unhealthy cluster also won't block an upgrade. Revisit if Ceph/Rook
+  # ships a fix for the node_proxy_fullreport crash.
   security:
     cephx:
       daemon:
