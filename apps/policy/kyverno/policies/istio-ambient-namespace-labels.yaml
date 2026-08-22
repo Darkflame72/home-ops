@@ -5,6 +5,25 @@
 # Kubernetes API — the opposite of what an empty list should mean for an
 # allow-list — so the allow-list is enforced via matchConditions instead
 # (object.metadata.name in [...]), unambiguous whether the list is empty or not.
+#
+# mutateExisting DISABLED as of 2026-08-22 — Kyverno v1.18.2's background
+# controller ignores matchConditions during the mutateExisting reconcile
+# pass and labels every namespace in the cluster, not just the allow-list.
+# Confirmed live: `background-controller` labeled all ~25 namespaces
+# istio.io/dataplane-mode=ambient at 2026-08-20T12:41:30Z in one pass,
+# including rook-ceph, cilium-secrets, istio-system, cert-manager,
+# external-secrets, database (deliberately un-enrolled before — see
+# istio-authz git history, "broke Dragonfly"), network (documented to stay
+# unmeshed indefinitely), and argocd — the last of which broke
+# argocd-repo-server's ambient HBONE listener and caused a 2-day ArgoCD
+# sync outage before this was caught. Same class of bug as
+# verify-image-signatures.yaml's admission.enabled:false (matchConditions/
+# matchConstraints not honored by some Kyverno v1.18.2 background code
+# path). Re-enable once upstream fixes background matchConditions
+# evaluation. With mutateExisting off, this policy still applies the label
+# on namespace CREATE/UPDATE admission (matchConditions works correctly
+# there — only the background/existing-resource path is broken), so
+# newly-created allow-listed namespaces are still onboarded correctly.
 apiVersion: policies.kyverno.io/v1
 kind: MutatingPolicy
 metadata:
@@ -28,7 +47,7 @@ spec:
       expression: "object.metadata.name in [\"media\", \"security\", \"comms\", \"default\", \"agents\", \"observability\", \"renovate\"]"
   evaluation:
     mutateExisting:
-      enabled: true
+      enabled: false
   mutations:
     - patchType: ApplyConfiguration
       applyConfiguration:
