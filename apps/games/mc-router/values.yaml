@@ -27,3 +27,17 @@ resources:
     memory: 32Mi
   limits:
     memory: 64Mi
+
+# itzg/mc-router runs as UID 65532 (distroless) by default; the chart just
+# doesn't set securityContext itself. Satisfies require-run-as-nonroot.
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
