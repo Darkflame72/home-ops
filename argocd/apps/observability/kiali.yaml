@@ -19,7 +19,7 @@ spec:
       ref: repo
     - repoURL: https://kiali.org/helm-charts
       chart: kiali-server
-      targetRevision: 2.30.0
+      targetRevision: 2.31.0
       helm:
         releaseName: kiali
         valueFiles:
