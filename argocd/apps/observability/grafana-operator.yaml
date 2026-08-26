@@ -18,7 +18,7 @@ spec:
       ref: repo
     - repoURL: https://grafana.github.io/helm-charts
       chart: grafana-operator
-      targetRevision: 5.24.0
+      targetRevision: 5.25.0
       helm:
         releaseName: grafana-operator
         valueFiles:
