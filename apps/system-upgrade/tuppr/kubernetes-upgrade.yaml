@@ -5,7 +5,7 @@ metadata:
 spec:
   kubernetes:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-    version: v1.36.4 # Required - target Kubernetes version
+    version: v1.37.0 # Required - target Kubernetes version
 
   # Custom health checks (optional)
   healthChecks:
