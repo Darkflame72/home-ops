@@ -43,5 +43,5 @@ spec:
         - /spec/syncPolicy
         - /status
       jqPathExpressions:
-        - '.metadata.finalizers[] | select(startswith("pre-delete-finalizer.argocd.argoproj.io"))'
-        - '.metadata.finalizers[] | select(startswith("post-delete-finalizer.argocd.argoproj.io"))'
+        - '.metadata.finalizers[]? | select(startswith("pre-delete-finalizer.argocd.argoproj.io"))'
+        - '.metadata.finalizers[]? | select(startswith("post-delete-finalizer.argocd.argoproj.io"))'
