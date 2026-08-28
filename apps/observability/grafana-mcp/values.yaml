@@ -6,7 +6,7 @@ controllers:
       app:
         image:
           repository: grafana/mcp-grafana
-          tag: latest@sha256:cfae68f893dbe40cb6df69579f78beb226f973ded4436d47c844f91d2f00dc53
+          tag: latest@sha256:5114852743e450fe5186b6c1712419843eb4bd295e47e64c452c3aa0fab3c42e
         args:
           - "--allowed-hosts=*"
         env:
