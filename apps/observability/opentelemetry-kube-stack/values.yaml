@@ -1,4 +1,11 @@
 # No yaml-language-server schema available: open-telemetry/opentelemetry-kube-stack
+instrumentation:
+  enabled: true
+  exporter:
+    endpoint: http://opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4317
+  sampler:
+    type: parentbased_always_on
+
 opentelemetry-operator:
   manager:
     collectorImage:
@@ -46,6 +53,20 @@ defaultCRConfig:
           insecure: true
       otlp/tempo:
         endpoint: tempo.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+      # Only the gateway collector (below) uses this - everything else
+      # sends traces here first so tail_sampling can see whole traces
+      # before anything reaches Tempo.
+      otlp/gateway:
+        endpoint: opentelemetry-kube-stack-gateway-collector.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+      syslog/wazuh:
+        endpoint: wazuh-manager.security.svc.cluster.local
+        port: 514
+        network: udp
+        protocol: rfc5424
         tls:
           insecure: true
 
@@ -224,7 +245,9 @@ collectors:
       service:
         pipelines:
           traces:
-            exporters: [otlp/tempo, debug]
+            # Sampling now happens tail-side in the gateway collector, not
+            # here - see collectors.gateway.
+            exporters: [otlp/gateway, debug]
           metrics:
             exporters: [otlp_http/mimir, debug]
           logs:
@@ -233,6 +256,14 @@ collectors:
             receivers: [filelog/audit]
             processors: [resource/audit, resource_detection/env, resource/hostname, batch]
             exporters: [otlp_http/loki, debug]
+          # Fans the same audit receiver out to Wazuh too - a receiver can
+          # feed multiple pipelines, so this is additive, not a reroute.
+          # Land only after apps/security/wazuh's manager+dashboard are
+          # verified up (see the plan's sequencing).
+          logs/audit_wazuh:
+            receivers: [filelog/audit]
+            processors: [resource/audit, resource_detection/env, resource/hostname, batch]
+            exporters: [syslog/wazuh, debug]
     presets:
       logsCollection:
         enabled: true
@@ -246,3 +277,62 @@ collectors:
         enabled: true
       clusterMetrics:
         enabled: true
+
+  # Single-replica tail-sampling gateway: every app/proxy head-samples at
+  # 100% (see the Instrumentation CR above and each app's own tracing
+  # config), and this is the one place that actually decides what reaches
+  # Tempo - keep anything that errored or was slow, plus a random baseline
+  # of the rest. One replica is enough at homelab trace volume and keeps
+  # this simple (every trace's spans naturally land on the same instance,
+  # no need for a loadbalancing/consistent-hashing exporter in front of it -
+  # revisit if this ever needs to scale beyond one replica).
+  gateway:
+    mode: deployment
+    replicas: 1
+    podSecurityContext:
+      runAsNonRoot: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
+    config:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+      processors:
+        memory_limiter:
+          check_interval: 1s
+          limit_percentage: 75
+          spike_limit_percentage: 15
+        tail_sampling:
+          # How long to buffer a trace's spans before deciding - long enough
+          # for most homelab request chains to finish.
+          decision_wait: 10s
+          policies:
+            - name: errors
+              type: status_code
+              status_code:
+                status_codes: [ERROR]
+            - name: slow
+              type: latency
+              latency:
+                threshold_ms: 500
+            - name: baseline
+              type: probabilistic
+              probabilistic:
+                sampling_percentage: 10
+        batch:
+          send_batch_size: 1000
+          timeout: 1s
+      service:
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [memory_limiter, tail_sampling, batch]
+            exporters: [otlp/tempo, debug]

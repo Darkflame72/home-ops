@@ -1,6 +1,13 @@
 ---
 # No yaml-language-server schema available: istio/istiod
 profile: ambient
+meshConfig:
+  enableTracing: true
+  extensionProviders:
+    - name: otel-tracing
+      opentelemetry:
+        service: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local
+        port: 4317
 resources:
   # requests explicitly overridden (2026-08-10) - chart defaults (500m cpu /
   # 2Gi memory) reserved far more than observed usage: 7-day peak across

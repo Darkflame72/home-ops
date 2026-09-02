@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/telemetry.istio.io/telemetry_v1.json
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  tracing:
+    - providers:
+        - name: otel-tracing
+      # Ambient mode has no waypoints deployed yet, so ztunnel is L4-only and
+      # can't itself emit HTTP spans - this is mesh-wide readiness for when
+      # one is added. Head-sample everything, same as Envoy Gateway - the
+      # gateway collector's tail_sampling processor is the actual sampling
+      # decision point.
+      randomSamplingPercentage: 100

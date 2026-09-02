@@ -18,6 +18,8 @@ controllers:
           GTS_PROTOCOL: "https" # not HTTP server listen mode, but used for generating URLs etc
           GTS_PORT: "8080"
           GTS_METRICS_ENABLED: "true"
+          GTS_TRACING_ENABLED: "true"
+          OTEL_TRACES_EXPORTER: "otlp"
           GTS_OIDC_ENABLED: "true"
           GTS_OIDC_IDP_NAME: "Authentik"
           GTS_OIDC_SKIP_VERIFICATION: "false"
@@ -80,6 +82,8 @@ persistence:
       - subPath: tmp
         path: /tmp # ffmpeg WASM stuff
 defaultPodOptions:
+  annotations:
+    instrumentation.opentelemetry.io/inject-sdk: "observability/opentelemetry-kube-stack"
   automountServiceAccountToken: false
   enableServiceLinks: false
   securityContext:

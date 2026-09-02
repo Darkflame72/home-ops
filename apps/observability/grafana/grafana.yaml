@@ -44,6 +44,9 @@ spec:
     server:
       enable_gzip: "true"
       root_url: https://grafana.darkflame.dev
+    tracing.opentelemetry.otlp:
+      address: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4317
+      propagation: w3c
   deployment:
     spec:
       strategy:

@@ -63,6 +63,17 @@ metrics:
   serviceMonitor:
     enabled: true
 
+trace:
+  enabled: true
+  provider: otel
+  sample_rate: 1
+  otel:
+    endpoint: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4318
+    url_path: /v1/traces
+    compression: false
+    insecure: true
+    timeout: 10
+
 # The chart ships these commented out by default; set explicitly to satisfy
 # the require-requests-limits Kyverno policy.
 portal:

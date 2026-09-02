@@ -963,14 +963,12 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — security ingress exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Namespace-wide exception for envoy-external (unmeshed, network
-      namespace — see istio-authz-media-allow-ingress for why this is
-      needed and why it's namespace-wide-by-port rather than
-      workload-scoped). authentik-server listens on 9000 (http) and 9443
-      (https, the Gateway backend port per its HTTPRoute); vaultwarden
-      listens on 80 (http) and 3012 (websocket). Neither app has an
-      envoy-internal route, unlike media's jellyfin, so envoy-internal
-      isn't included here — add it if that changes.
+      Namespace-wide exception for envoy-external/envoy-internal (both
+      unmeshed, network namespace — see istio-authz-media-allow-ingress for
+      why this is needed and why it's namespace-wide-by-port rather than
+      workload-scoped). envoy-external: authentik-server 9000 (http) and
+      9443 (https, the Gateway backend port per its HTTPRoute); vaultwarden
+      80 (http) and 3012 (websocket). envoy-internal: wazuh-dashboard 5601.
 spec:
   matchConstraints:
     resourceRules:
@@ -998,7 +996,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["9000", "9443", "80", "3012"]}}
+                  {"operation": {"ports": ["9000", "9443", "80", "3012", "5601"]}}
                 ]
               })])
             })

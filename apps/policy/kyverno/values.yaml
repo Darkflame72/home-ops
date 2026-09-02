@@ -27,11 +27,20 @@ reportsServer:
   enabled: false
 
 grafana:
-  enabled: true
+  enabled: false
 
 admissionController:
   serviceMonitor:
+    enabled: false
+  tracing:
     enabled: true
+    address: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local
+    port: 4317
+    creds: ''
+  metering:
+    config: grpc
+    collector: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4317
+    creds: ''
   rbac:
     clusterRole:
       extraResources:
@@ -92,7 +101,16 @@ admissionController:
 
 backgroundController:
   serviceMonitor:
+    enabled: false
+  tracing:
     enabled: true
+    address: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local
+    port: 4317
+    creds: ''
+  metering:
+    config: grpc
+    collector: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4317
+    creds: ''
   resources:
     limits:
       memory: 512Mi
@@ -159,11 +177,29 @@ backgroundController:
 
 cleanupController:
   serviceMonitor:
+    enabled: false
+  tracing:
     enabled: true
+    address: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local
+    port: 4317
+    creds: ''
+  metering:
+    config: grpc
+    collector: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4317
+    creds: ''
 
 reportsController:
   serviceMonitor:
+    enabled: false
+  tracing:
     enabled: true
+    address: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local
+    port: 4317
+    creds: ''
+  metering:
+    config: grpc
+    collector: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4317
+    creds: ''
   resources:
     # Chart default (128Mi limit) OOMKilled once after adding 4 more active
     # CEL background-scan policies (2026-07-19); bumped to 512Mi. Now

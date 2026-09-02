@@ -26,6 +26,13 @@ external_services:
   prometheus:
     url: http://mimir-gateway.observability.svc.cluster.local/prometheus
     health_check_url: http://mimir-gateway.observability.svc.cluster.local/prometheus/api/v1/status/buildinfo
+  tracing:
+    enabled: true
+    provider: tempo
+    internal_url: http://tempo.observability.svc.cluster.local:3200
+    use_grpc: false
+    tempo_config:
+      datasource_uid: 68d4e615-65b0-4f74-8adb-acb7e8c9815e
 
 server:
   web_fqdn: kiali.darkflame.dev
