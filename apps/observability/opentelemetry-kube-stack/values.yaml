@@ -288,6 +288,7 @@ collectors:
   # revisit if this ever needs to scale beyond one replica).
   gateway:
     enabled: true
+    suffix: gateway
     mode: deployment
     replicas: 1
     podSecurityContext:
