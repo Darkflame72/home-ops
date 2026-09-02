@@ -287,6 +287,7 @@ collectors:
   # no need for a loadbalancing/consistent-hashing exporter in front of it -
   # revisit if this ever needs to scale beyond one replica).
   gateway:
+    enabled: true
     mode: deployment
     replicas: 1
     podSecurityContext:
