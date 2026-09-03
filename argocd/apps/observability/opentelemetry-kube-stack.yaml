@@ -48,3 +48,13 @@ spec:
       kind: CustomResourceDefinition
       jsonPointers:
         - /spec/conversion
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: opentelemetry-kube-stack-opentelemetry-operator-mutation
+      jqPathExpressions:
+        - '.webhooks[].clientConfig.caBundle'
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: opentelemetry-kube-stack-opentelemetry-operator-validation
+      jqPathExpressions:
+        - '.webhooks[].clientConfig.caBundle'
