@@ -52,23 +52,8 @@ controllers:
           OC_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
           PROXY_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
           PROXY_OIDC_REWRITE_WELLKNOWN: "true"
-          # OpenCloud only supports one OIDC issuer server-wide, and
-          # verifying access tokens as JWTs (the "jwt" method) means checking
-          # their "iss" claim locally against that one issuer - which would
-          # only ever match tokens from a single Authentik provider/client_id.
-          # "none" instead validates each token by calling Authentik's
-          # userinfo endpoint live (which is shared/global across all
-          # providers, unlike the per-slug discovery/JWKS docs), so the
-          # desktop/android/ios clients' separate hardcoded client_ids all
-          # work against this one OC_OIDC_ISSUER. Confirmed safe by an
-          # ownCloud/OCIS maintainer (this proxy is a fork of ocis) - an
-          # invalid token can't retrieve userinfo either, so this doesn't
-          # weaken verification: https://github.com/owncloud/ocis/issues/6479#issuecomment-2309819585
-          PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: none
-          # "web" is OpenCloud's own default web client_id (see
-          # WEBFINGER_WEB_OIDC_CLIENT_ID upstream) - it gets its own
-          # Authentik provider now rather than aliasing onto the desktop
-          # client's hardcoded id, see apps/security/authentik/blueprints/opencloud.yaml.
+          PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: jwt
+          PROXY_OIDC_SKIP_USER_INFO: "true"
           WEB_OIDC_CLIENT_ID: web
           WEB_OIDC_AUTHORITY: "https://auth.darkflame.dev/application/o/opencloud/"
           WEB_OIDC_METADATA_URL: "https://auth.darkflame.dev/application/o/opencloud/.well-known/openid-configuration"
@@ -101,6 +86,15 @@ controllers:
           # Override with our own copy of the upstream default
           # (services/proxy/pkg/config/csp.yaml) plus auth.darkflame.dev.
           PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
+          WEBFINGER_OIDC_ISSUER: "https://auth.darkflame.dev/application/o/opencloud/"
+          WEBFINGER_WEB_OIDC_CLIENT_ID: web
+          WEBFINGER_WEB_OIDC_CLIENT_SCOPES: "openid profile email"
+          WEBFINGER_DESKTOP_OIDC_CLIENT_ID: web
+          WEBFINGER_DESKTOP_OIDC_CLIENT_SCOPES: "openid profile email offline_access"
+          WEBFINGER_ANDROID_OIDC_CLIENT_ID: web
+          WEBFINGER_ANDROID_OIDC_CLIENT_SCOPES: "openid profile email offline_access"
+          WEBFINGER_IOS_OIDC_CLIENT_ID: web
+          WEBFINGER_IOS_OIDC_CLIENT_SCOPES: "openid profile email offline_access"
         securityContext:
           # Confirmed via `docker inspect` - the upstream image's own USER is
           # already 1000, this just makes it explicit/enforced.
