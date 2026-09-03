@@ -226,6 +226,13 @@ collectors:
     mode: daemonset
     config:
       receivers:
+        otlp:
+          protocols:
+            grpc:
+              keepalive:
+                enforcement_policy:
+                  min_time: 10s
+                  permit_without_stream: true
         # Talos enables kube-apiserver audit logging by default (Metadata
         # level, /var/log/audit/kube on each control-plane node) but never
         # ships those logs anywhere. hostMetrics preset already mounts the
