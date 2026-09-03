@@ -6,7 +6,7 @@ metadata:
 spec:
   schedule: "0 3 * * *"
   # renovate: datasource=docker depName=renovate/renovate
-  image: renovate/renovate:44.59.2
+  image: renovate/renovate:44.61.4
   secretRef: renovate-secret
   parallelism: 1
   resources:
