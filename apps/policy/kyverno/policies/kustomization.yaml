@@ -15,6 +15,7 @@ resources:
   # repo's own working grafana-dashboard-generate pattern above. See
   # istio-ambient-namespace-labels.yaml for full rollout history.
   - ./istio-ambient-namespace-labels.yaml
+  - ./istio-ambient-otel-collector-exclude.yaml
   - ./istio-default-authz.yaml
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml

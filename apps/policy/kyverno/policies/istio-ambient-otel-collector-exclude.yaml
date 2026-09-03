@@ -1,0 +1,55 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/mutatingpolicy_v1.json
+#
+# The OpenTelemetryCollector CRD has no podLabels field (only podAnnotations -
+# confirmed against its schema), so the daemon/gateway collectors can't opt
+# themselves out of the observability namespace's ambient enrollment the way
+# the operator's own Deployment can (opentelemetry-operator.manager.podLabels
+# in apps/observability/opentelemetry-kube-stack/values.yaml). Kyverno is the
+# only place left to add the label.
+#
+# Why this is needed at all: ztunnel intercepts inbound traffic to these pods
+# and expects HBONE-wrapped mTLS from mesh peers, but a plain OTLP/HTTP POST
+# (port 4318) gets cut off with a bare "connection reset by peer" - confirmed
+# live by comparing the identical request against an ambient-enrolled pod
+# (reset) vs the same pod relabeled istio.io/dataplane-mode=none (200 OK).
+# OTLP/gRPC (port 4317) was not observed to have this problem, but both
+# receivers are excluded for consistency since both take direct app traffic.
+# Same underlying class of bug as the opentelemetry-operator admission
+# webhook fix in the same values.yaml (kube-apiserver's plain-TLS calls to
+# that webhook got EOF'd the same way).
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: istio-ambient-otel-collector-exclude
+  annotations:
+    policies.kyverno.io/title: Istio Ambient OTel Collector Exclude
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Opts the opentelemetry-kube-stack daemon/gateway collector pods out of
+      ambient mesh capture - ztunnel breaks plain OTLP connections to them.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  matchConditions:
+    - name: is-otel-collector-in-observability
+      expression: >-
+        object.metadata.namespace == "observability" &&
+        object.metadata.?labels["app.kubernetes.io/name"].orValue("") in
+        ["opentelemetry-kube-stack-daemon-collector", "opentelemetry-kube-stack-gateway-collector"]
+  evaluation:
+    mutateExisting:
+      enabled: false
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            metadata: Object.metadata{
+              labels: {"istio.io/dataplane-mode": "none"}
+            }
+          }
