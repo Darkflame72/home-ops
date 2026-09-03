@@ -93,8 +93,17 @@ Extract and install CRDs for components like Envoy Gateway and monitoring:
 
 ```bash
 cd bootstrap
-helmfile -f bootstrap/crds.yaml template -q | kubectl apply --server-side --field-manager bootstrap --force-conflicts -f -
+helmfile -f bootstrap/crds.yaml template -q \
+  | yq ea 'select(.kind == "CustomResourceDefinition" and (.spec.group != "monitoring.coreos.com" or .spec.names.kind == "ServiceMonitor"))' \
+  | kubectl apply --server-side --field-manager bootstrap --force-conflicts -f -
 ```
+
+The `yq` filter keeps every CRD from `envoy-gateway`, but only `ServiceMonitor` from
+`prometheus-operator-crds` (its CRDs are all group `monitoring.coreos.com`) - that's the only kind
+anything needs this early (see the comments in `bootstrap/crds.yaml`). This step used to filter via
+each release's own `postRenderer: bash`, but Helm v4 turned `--post-renderer` into a plugin-only
+mechanism (a bare command name like `bash` is no longer resolved from `PATH`), so the filtering now
+happens here instead, once, across the combined output of every release.
 
 #### 3. Bootstrap Core Applications
 

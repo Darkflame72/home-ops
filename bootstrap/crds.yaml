@@ -2,16 +2,18 @@
 # yaml-language-server: $schema=https://json.schemastore.org/helmfile
 
 # This helmfile is for extracting and installing Custom Resource Definitions (CRDs) from Helm charts.
-# It is not intended to be used with helmfile apply or helmfile sync.
+# It is not intended to be used with helmfile apply or helmfile sync. Filter
+# the combined `template` output down to the CustomResourceDefinition
+# documents you actually want yourself (see docs/setup.md) - Helm v4 removed
+# the ability to point --post-renderer at an arbitrary executable (it's
+# plugin-only now: `invalid argument "bash" for "--post-renderer" flag:
+# plugin: {Name:bash Type:postrenderer/v1} not found`), so that filtering
+# step can no longer live inside this helmfile as it used to.
 
 helmDefaults:
   args:
     - --include-crds
     - --no-hooks
-  postRenderer: bash
-  postRendererArgs:
-    - -c
-    - yq ea -e 'select(.kind == "CustomResourceDefinition")'
 
 releases:
   # Needed by Cilium
@@ -20,8 +22,16 @@ releases:
     chart: oci://mirror.gcr.io/envoyproxy/gateway-helm
     version: 1.9.1
 
-  # Needed by Cilium
-  - name: kube-prometheus-stack
+  # Needed by Cilium (agent/hubble/operator serviceMonitor: true), plus spegel
+  # and external-secrets (also serviceMonitor: true) at this same bootstrap
+  # stage, before ArgoCD/opentelemetry-kube-stack exist to provide the CRD
+  # otherwise. ServiceMonitor is the only Prometheus-Operator CRD kind any of
+  # them consume this early, so pull from the dedicated CRDs-only chart
+  # (rather than templating the whole kube-prometheus-stack chart just to
+  # extract its bundled CRDs) - the docs/setup.md filter keeps only that one
+  # kind from this release (its CRDs are all group monitoring.coreos.com),
+  # while keeping everything from envoy-gateway (a different API group).
+  - name: prometheus-operator-crds
     namespace: observability
-    chart: oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
-    version: 88.6.3
+    chart: oci://ghcr.io/prometheus-community/charts/prometheus-operator-crds
+    version: 31.0.1
