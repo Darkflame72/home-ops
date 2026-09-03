@@ -8,6 +8,8 @@ instrumentation:
 
 opentelemetry-operator:
   manager:
+    podAnnotations:
+      ambient.istio.io/redirection: disabled
     collectorImage:
       repository: otel/opentelemetry-collector-contrib
     resources:
