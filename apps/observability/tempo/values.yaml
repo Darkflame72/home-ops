@@ -28,6 +28,10 @@ tempo:
       protocols:
         grpc:
           endpoint: "0.0.0.0:4317"
+          keepalive:
+            enforcement_policy:
+              min_time: 10s
+              permit_without_stream: true
         http:
           endpoint: "0.0.0.0:4318"
 
