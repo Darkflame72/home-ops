@@ -20,6 +20,7 @@ controllers:
           GTS_METRICS_ENABLED: "true"
           GTS_TRACING_ENABLED: "true"
           OTEL_TRACES_EXPORTER: "otlp"
+          OTEL_EXPORTER_OTLP_ENDPOINT: "http://opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4318"
           GTS_OIDC_ENABLED: "true"
           GTS_OIDC_IDP_NAME: "Authentik"
           GTS_OIDC_SKIP_VERIFICATION: "false"
