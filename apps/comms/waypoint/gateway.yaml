@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gateway_v1.json
+# Namespace-wide waypoint for `comms` - first waypoint in the cluster,
+# deliberately trialed here rather than on a critical namespace (see
+# apps/istio-system/istiod for the mesh-wide Telemetry CR this
+# automatically inherits: no separate tracing config needed here).
+# `istio.io/waypoint-for: service` (rather than all/workload) means it
+# only intercepts traffic addressed to a ClusterIP Service, which is what
+# gives L7 (HTTP) visibility - and with it, trace spans - for
+# service-to-service calls within the namespace, e.g. gotosocial's own
+# CNPG postgres access. Istio auto-creates a ServiceAccount named
+# "waypoint" for this Gateway; no manual RBAC needed.
+#
+# Proxy resource sizing is NOT set here - Gateway-API-provisioned proxies
+# don't honor per-Gateway overrides (confirmed live; see
+# apps/istio-system/istiod/values.yaml's global.proxy.resources for the
+# cluster-wide default this and every other waypoint gets instead).
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: waypoint
+  namespace: comms
+  labels:
+    istio.io/waypoint-for: service
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+    - name: mesh
+      port: 15008
+      protocol: HBONE

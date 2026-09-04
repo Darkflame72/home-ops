@@ -1,6 +1,18 @@
 # No yaml-language-server schema available: grafana-community/tempo
 fullnameOverride: tempo
 
+# observability is an ambient-mesh namespace. The gateway collector was
+# already excluded from ambient (see opentelemetry-kube-stack's Kyverno
+# policy) to fix a plain-OTLP/HTTP reset bug - but that made it a
+# non-member calling INTO Tempo (still a member), and that mismatch alone
+# (independent of, and on top of, the grpc keepalive fix below) still broke
+# the connection with "connection reset by peer". Keeping every hop of this
+# self-contained telemetry pipeline off the mesh avoids this whole class of
+# ztunnel/HBONE mismatch - none of this traffic needs mTLS from Istio, it's
+# all plaintext OTLP already.
+podLabels:
+  istio.io/dataplane-mode: none
+
 tempo:
   reportingEnabled: false
   multitenancyEnabled: false

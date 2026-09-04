@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/v1/namespace_v1.json
+# Enrolls `comms` to route its Service-addressed traffic through the
+# waypoint above. This label lives on its own resource (rather than
+# folded into some other app's namespace-creation path) so it's the one
+# obvious place to look for - and to remove - if this first waypoint
+# trial needs to be rolled back.
+#
+# Coexists fine with Kyverno's istio-ambient-namespace-labels.yaml, which
+# separately owns istio.io/dataplane-mode=ambient on this same namespace -
+# different field, different manager, no conflict under server-side apply.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: comms
+  labels:
+    istio.io/use-waypoint: waypoint

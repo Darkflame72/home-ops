@@ -16,6 +16,7 @@ resources:
   # istio-ambient-namespace-labels.yaml for full rollout history.
   - ./istio-ambient-namespace-labels.yaml
   - ./istio-ambient-otel-collector-exclude.yaml
+  - ./istio-waypoint-resources.yaml
   - ./istio-default-authz.yaml
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml

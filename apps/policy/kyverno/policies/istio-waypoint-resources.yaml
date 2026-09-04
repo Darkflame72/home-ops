@@ -1,0 +1,64 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/mutatingpolicy_v1.json
+#
+# Gateway-API-provisioned Envoy proxies (waypoints included) have no
+# supported way to override their default resource sizing - confirmed
+# live against apps/comms/waypoint that none of the following are
+# honored: Gateway spec.infrastructure.annotations, classic
+# sidecar.istio.io/proxyCPU-style Gateway metadata annotations, the
+# ProxyConfig CRD (no resources field at all), or istiod's own
+# global.proxy.resources chart value (that only reaches the sidecar
+# injection webhook path, which the waypoint deployment controller
+# doesn't use). This is a known, long-standing upstream gap
+# (istio/istio#52692, closed stale, unresolved). Kyverno is the only
+# remaining lever, same as istio-ambient-otel-collector-exclude.yaml's
+# use for the CRD-schema gap on OpenTelemetryCollector.
+#
+# Real usage observed at idle on the first (comms) waypoint was ~3m
+# cpu / 31Mi memory against the chart default of 100m/128Mi request,
+# 2000m/1Gi limit - trimmed down close to that, same reasoning as every
+# other resource trim in this repo. Matches on the gateway-class label
+# so it automatically covers every future waypoint, in any namespace,
+# with no further changes needed here.
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: istio-waypoint-resources
+  annotations:
+    policies.kyverno.io/title: Istio Waypoint Resource Sizing
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Trims istio-waypoint proxy pods down from their fixed chart defaults
+      (100m/128Mi request, 2/1Gi limit), which Istio provides no supported
+      override for on Gateway-API-provisioned proxies.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  matchConditions:
+    - name: is-istio-waypoint
+      expression: >-
+        object.metadata.?labels["gateway.networking.k8s.io/gateway-class-name"].orValue("") == "istio-waypoint"
+  evaluation:
+    mutateExisting:
+      enabled: false
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            spec: Object.spec{
+              containers: [
+                Object.spec.containers{
+                  name: "istio-proxy",
+                  resources: Object.spec.containers.resources{
+                    requests: {"cpu": "15m", "memory": "64Mi"},
+                    limits: {"cpu": "500m", "memory": "256Mi"}
+                  }
+                }
+              ]
+            }
+          }
