@@ -1,0 +1,19 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gateway_v1.json
+# Namespace-wide waypoint for `security` - sixth waypoint in the cluster
+# (see apps/comms/waypoint for the first trial and full rationale).
+# Automatically inherits the mesh-wide Telemetry CR in
+# apps/istio-system/istiod - no separate tracing config needed here.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: waypoint
+  namespace: security
+  labels:
+    istio.io/waypoint-for: service
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+    - name: mesh
+      port: 15008
+      protocol: HBONE
