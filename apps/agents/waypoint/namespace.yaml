@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/v1/namespace_v1.json
+# See apps/comms/waypoint/namespace.yaml for why this lives as its own
+# resource. Coexists fine with Kyverno's istio-ambient-namespace-labels.yaml,
+# which separately owns istio.io/dataplane-mode=ambient on this namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agents
+  labels:
+    istio.io/use-waypoint: waypoint
