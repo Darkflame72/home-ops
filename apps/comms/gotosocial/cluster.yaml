@@ -10,6 +10,13 @@ spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:18.1
   primaryUpdateStrategy: unsupervised
 
+  # comms is enrolled in the Istio ambient mesh, which breaks CNPG's own TLS
+  # + streaming-replication protocol on 5432 (see apps/default/nextcloud/
+  # cluster.yaml for the incident). Opt out of ambient capture.
+  inheritedMetadata:
+    labels:
+      istio.io/dataplane-mode: none
+
   affinity:
     podAntiAffinityType: required
     topologyKey: kubernetes.io/hostname

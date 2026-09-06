@@ -9,6 +9,14 @@ spec:
   instances: 3
   primaryUpdateStrategy: unsupervised
 
+  # media is enrolled in the Istio ambient mesh, which breaks CNPG's own TLS
+  # + streaming-replication protocol on 5432 (see apps/default/nextcloud/
+  # cluster.yaml for the incident). Opt out of ambient capture, same as
+  # redis.yaml in this app.
+  inheritedMetadata:
+    labels:
+      istio.io/dataplane-mode: none
+
   affinity:
     podAntiAffinityType: required
     topologyKey: kubernetes.io/hostname
