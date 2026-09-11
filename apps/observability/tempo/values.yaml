@@ -33,8 +33,10 @@ tempo:
       wal:
         path: /var/tempo/wal
 
-  # OTLP receivers are enabled by default in this chart (grpc: 4317, http: 4318)
-  # Jaeger protocols disabled — only use OTLP
+  liveStore:
+    max_block_duration: 30m
+    max_block_bytes: 104857600
+
   receivers:
     otlp:
       protocols:
