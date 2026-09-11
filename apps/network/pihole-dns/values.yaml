@@ -4,14 +4,12 @@ fullnameOverride: pihole-dns
 provider:
   name: pihole
 env:
-  - name: PIHOLE_API_TOKEN
+  - name: PIHOLE_PASSWORD
     valueFrom:
       secretKeyRef:
         name: &secret pihole-dns-secret
         key: api-token
 extraArgs:
-  # Switch to pihole V6 API
-  - --pihole-api-version=6
   # Change this to the actual address of your Pi-hole web server
   - --pihole-server=https://192.168.1.2
   - --pihole-tls-skip-verify
