@@ -4,7 +4,7 @@ fullnameOverride: pihole-dns
 provider:
   name: pihole
 env:
-  - name: PIHOLE_API_TOKEN
+  - name: PIHOLE_PASSWORD
     valueFrom:
       secretKeyRef:
         name: &secret pihole-dns-secret
