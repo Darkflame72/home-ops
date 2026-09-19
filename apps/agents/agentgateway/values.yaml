@@ -5,6 +5,15 @@ resources:
   limits:
     memory: 448Mi
 
+# agents namespace uses istio.io/use-waypoint, so ambient routes all inbound
+# traffic through the Envoy waypoint for L7 processing. That breaks
+# agentgateway-proxy's xDS connection to this pod on :9978 - it's a raw
+# gRPC+TLS stream with its own cert chain, and the waypoint's L7 protocol
+# detection corrupts it ("received corrupt message of type InvalidContentType").
+# Opt this pod out of ambient so the connection passes through untouched.
+podLabels:
+  istio.io/dataplane-mode: none
+
 monitoring:
   enabled: true
   serviceMonitor:
