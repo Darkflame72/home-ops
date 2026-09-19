@@ -40,7 +40,8 @@ spec:
       expression: >-
         object.metadata.namespace == "observability" &&
         object.metadata.?labels["app.kubernetes.io/name"].orValue("") in
-        ["opentelemetry-kube-stack-daemon-collector", "opentelemetry-kube-stack-gateway-collector"]
+        ["opentelemetry-kube-stack-daemon-collector", "opentelemetry-kube-stack-gateway-collector",
+         "opentelemetry-kube-stack-collector-collector", "opentelemetry-kube-stack-collector-targetallocator"]
   evaluation:
     mutateExisting:
       enabled: false
