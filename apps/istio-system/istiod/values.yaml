@@ -1,6 +1,13 @@
 ---
 # No yaml-language-server schema available: istio/istiod
 profile: ambient
+pilot:
+  env:
+    # Required for agentgateway (agents/agentgateway-proxy) to receive xDS
+    # config from istiod - without it istiod can't serve the agentgateway
+    # protocol correctly, and the proxy loops forever on xDS gRPC errors
+    # ("received corrupt message of type InvalidContentType").
+    PILOT_ENABLE_AGENTGATEWAY: "true"
 meshConfig:
   enableTracing: true
   extensionProviders:
