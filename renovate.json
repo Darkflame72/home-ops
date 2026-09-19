@@ -166,12 +166,14 @@
         // # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/v1.19.5/...
         "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n# yaml-language-server: \\$schema=https://raw\\.githubusercontent\\.com/[^/\\s]+/[^/\\s]+/(?<currentValue>[^/\\s]+)/",
         // Combined `repo:tag` image fields (version-only pattern above can't capture these,
-        // since it would swallow the whole repo:tag string as currentValue). Excludes
-        // "@" so it doesn't collide with digest-pinned `tag: 1.2.3@sha256:...` fields,
-        // which the built-in kubernetes/helm-values managers already handle natively.
+        // since it would swallow the whole repo:tag string as currentValue). An optional
+        // trailing `@sha256:...` is captured as currentDigest so already digest-pinned
+        // images (e.g. CRD `spec.image` fields the built-in kubernetes manager doesn't
+        // recognize) get their digest refreshed on every bump instead of silently
+        // keeping the old digest under a new tag.
         // # renovate: datasource=docker depName=renovate/renovate
         // image: renovate/renovate:43.255.0
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s*[\\w.-]+:\\s*[^\\s@]+:(?<currentValue>[^\\s@]+)"
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s*[\\w.-]+:\\s*[^\\s@]+:(?<currentValue>[^\\s@]+)(@(?<currentDigest>sha256:[a-f0-9]+))?"
       ],
       "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}"
     }
