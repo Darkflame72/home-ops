@@ -21,7 +21,8 @@ persistence:
 minecraftServer:
   eula: "TRUE"
   type: "PAPER"
-  version: "LATEST"
+  # renovate: datasource=github-tags depName=misode/mcmeta extractVersion=^(?<version>\d[\w.]*)-summary$ versioning=loose
+  version: "26.2"
   memory: "4G"
   difficulty: normal
   whitelist: "darkflame72"
@@ -38,9 +39,9 @@ minecraftServer:
       - squaremap
       - chunky
       # chunkyborder omitted: its newest Paper build only supports up to MC 1.21.11,
-      # no release yet for 26.2 (what VERSION: LATEST currently resolves to) — would
-      # crash-loop the same way the earlier Pl3xMap version-type mismatch did. Add back
-      # once a 26.2-compatible build is published.
+      # no release yet for 26.2 — would crash-loop the same way the earlier
+      # Pl3xMap version-type mismatch did. Add back once a 26.2-compatible build
+      # is published.
       - discordsrv
     downloadDependencies: none
 
