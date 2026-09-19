@@ -3,7 +3,7 @@ image:
   repository: library/nextcloud
   flavor: apache
   # renovate: datasource=docker depName=nextcloud
-  tag: 34.0.4-apache@sha256:de4ad938938636f2f616b07cfac5f355a82f44edb88acd297d6931fa5d39bac7
+  tag: 35.0.0-apache@sha256:23c101539e295aaf83888c9c1cae7df3fb6ce80b9ea9310248dad46af8c89936
 
 replicaCount: 1
 
