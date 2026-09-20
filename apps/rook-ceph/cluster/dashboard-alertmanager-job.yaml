@@ -24,7 +24,7 @@ spec:
       containers:
         - name: set-alertmanager-api-host
           # renovate: datasource=docker depName=quay.io/ceph/ceph
-          image: quay.io/ceph/ceph:v20.2.4
+          image: quay.io/ceph/ceph:v21.1.0
           command:
             - /bin/bash
             - -c
