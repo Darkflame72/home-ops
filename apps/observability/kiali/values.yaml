@@ -14,6 +14,9 @@ auth:
 deployment:
   cluster_wide_access: true
 
+login_token:
+  signing_key: "secret:kiali:signing-key"
+
 external_services:
   grafana:
     internal_url: http://grafana-service.observability.svc.cluster.local:3000
