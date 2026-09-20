@@ -23,7 +23,8 @@ spec:
       serviceAccountName: rook-ceph-default
       containers:
         - name: set-alertmanager-api-host
-          image: quay.io/ceph/ceph:v20.2.2
+          # renovate: datasource=docker depName=quay.io/ceph/ceph
+          image: quay.io/ceph/ceph:v20.2.4
           command:
             - /bin/bash
             - -c
