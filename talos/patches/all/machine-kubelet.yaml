@@ -1,0 +1,10 @@
+apiVersion: v1alpha1
+kind: KubeletConfig
+config:
+  serializeImagePulls: false
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+nodeIP:
+  validSubnets:
+    - 10.0.60.0/24

@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/postfinance/topf/main/docs/schema.json
+clusterName: kubernetes
+clusterEndpoint: https://10.0.60.10:6443
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: "1.37.1"
+# renovate: datasource=github-releases depName=siderolabs/talos
+talosVersion: "1.14.1"
+
+schematicId: "@schematic.yaml"
+secretsPath: talsecret.sops.yaml
+patchesDir: patches
+
+nodes:
+  - host: k8s-1
+    ip: 10.0.60.21
+    role: control-plane
+    data:
+      mac: "c0:18:03:63:ad:14"
+      installDisk: /dev/nvme1n1
+      vip: 10.0.60.10
+
+  - host: k8s-2
+    ip: 10.0.60.22
+    role: worker
+    data:
+      mac: "c0:18:03:63:af:63"
+      installDisk: /dev/nvme1n1
+
+  - host: k8s-3
+    ip: 10.0.60.23
+    role: control-plane
+    data:
+      mac: "c0:18:03:63:9d:d7"
+      installDisk: /dev/nvme1n1
+      vip: 10.0.60.10
+
+  - host: k8s-5
+    ip: 10.0.60.25
+    role: control-plane
+    data:
+      mac: "c0:18:03:63:9d:e7"
+      installDisk: /dev/nvme1n1
+      vip: 10.0.60.10
+
+  - host: k8s-6
+    ip: 10.0.60.26
+    role: worker
+    data:
+      mac: "6c:4b:90:70:f5:c2"
+      installDisk: /dev/nvme0n1
+
+  - host: k8s-7
+    ip: 10.0.60.27
+    role: worker
+    data:
+      mac: "6c:4b:90:70:f5:9a"
+      installDisk: /dev/nvme1n1
+
+  - host: k8s-8
+    ip: 10.0.60.28
+    role: worker
+    data:
+      mac: "6c:4b:90:7a:85:04"
+      installDisk: /dev/nvme0n1
+
+  - host: k8s-9
+    ip: 10.0.60.29
+    role: worker
+    data:
+      mac: "6c:4b:90:70:f5:e7"
+      installDisk: /dev/nvme0n1
