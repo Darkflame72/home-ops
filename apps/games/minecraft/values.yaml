@@ -22,7 +22,7 @@ minecraftServer:
   eula: "TRUE"
   type: "PAPER"
   # renovate: datasource=github-tags depName=misode/mcmeta extractVersion=^(?<version>\d[\w.]*)-summary$ versioning=loose
-  version: "26.3"
+  version: "26.2"
   memory: "4G"
   difficulty: normal
   whitelist: "darkflame72"
