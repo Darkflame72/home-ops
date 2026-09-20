@@ -122,6 +122,8 @@ cephClusterSpec:
   # ships a fix for the node_proxy_fullreport crash.
   security:
     cephx:
+      allowedCiphers:
+        - aes256k
       daemon:
         keyRotationPolicy: KeyGeneration
         keyGeneration: 2
