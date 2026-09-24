@@ -9,7 +9,7 @@ controllers:
         image:
           repository: docker.io/library/mysql
           # renovate: datasource=docker depName=mysql
-          tag: 26.7.0@sha256:45abdd9b4144660b5c93a5b7d0ebb21e024f0ba9851ecb4ab43bf83c6bf83592
+          tag: 26.7.0@sha256:ade067ae2fb15eeb6143e81185afe22573e3b3addc58aaf90c41999fa6883991
         securityContext:
           runAsUser: 999
           runAsGroup: 999
