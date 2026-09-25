@@ -123,3 +123,13 @@ exporter:
       memory: 32Mi
     limits:
       memory: 128Mi
+
+# Chart default (200m cpu / 512Mi memory) is far above actual usage (~9Mi) -
+# trivy's vulnerability DB cache sits mostly idle between scheduled scans.
+trivy:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
