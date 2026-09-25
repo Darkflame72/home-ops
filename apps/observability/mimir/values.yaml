@@ -140,6 +140,8 @@ ingester:
   persistentVolume:
     size: 30Gi
   resources:
+    requests:
+      memory: 2560Mi
     limits:
       memory: 13120Mi
   podAnnotations:
