@@ -32,8 +32,8 @@ spec:
       pg_stat_statements.track: all
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "250m"
+      memory: "256Mi"
+      cpu: "75m"
     limits:
       memory: "4Gi"
 
