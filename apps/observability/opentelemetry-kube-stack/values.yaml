@@ -83,9 +83,10 @@ collectors:
       runAsNonRoot: true
     resources:
       limits:
+        cpu: 500m
         memory: 1Gi
       requests:
-        cpu: 100m
+        cpu: 150m
         memory: 512Mi
     targetAllocator:
       enabled: true
