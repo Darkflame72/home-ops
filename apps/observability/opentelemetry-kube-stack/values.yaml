@@ -83,7 +83,7 @@ collectors:
       runAsNonRoot: true
     resources:
       limits:
-        cpu: 500m
+        cpu: 1000m
         memory: 1Gi
       requests:
         cpu: 150m
