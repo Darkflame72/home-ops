@@ -117,7 +117,7 @@ controllers:
         image:
           repository: ghcr.io/tryghost/activitypub
           # renovate: datasource=docker depName=ghcr.io/tryghost/activitypub
-          tag: 1.2.10@sha256:3205bbf7c0f26d5145f2714458183c1e5a725438dd4c7e4de63c480064e82289
+          tag: 1.2.13@sha256:2d140179ec19de509f99f9c85804867ac7537527af7cf045f93f1dae2549d3d9
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
