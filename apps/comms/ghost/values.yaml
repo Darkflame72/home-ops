@@ -48,7 +48,7 @@ controllers:
         image:
           repository: ghcr.io/tryghost/activitypub-migrations
           # renovate: datasource=docker depName=ghcr.io/tryghost/activitypub-migrations
-          tag: 1.2.13@sha256:d903941fb55f6892f67e21a03fa31a4a3a32d0b9fdfd61fe66645852e0a61f51
+          tag: 1.2.14@sha256:c116a15f9c8a94542440fadc17bc06c15eeee6e3a61ff2731e3b6e2ea91f7356
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
