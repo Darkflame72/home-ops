@@ -22,4 +22,4 @@ jobs:
         uses: sholdee/drydock/pr-action@218b33b38762c90d38ba7d1e37255a3152c0dafa # v0.3.1
         with:
           # renovate: datasource=github-releases depName=sholdee/drydock
-          version: v0.3.2
+          version: v0.3.3
