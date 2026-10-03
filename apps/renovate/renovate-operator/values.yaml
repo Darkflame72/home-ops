@@ -22,9 +22,21 @@ route:
       sectionName: https
 webhook:
   enabled: true
-  # Serve the webhook receiver on the UI host (renovate.darkflame.dev/webhook/...)
-  # instead of a dedicated hostname; /webhook paths are exempt from OIDC auth.
-  unifiedWebhookHost: true
+  # Dedicated public host (envoy-external) serving ONLY the webhook server, so the
+  # UI at renovate.darkflame.dev stays internal. A shared host can't work: external-dns
+  # would repoint it at the external gateway for internal clients too.
+  route:
+    enabled: true
+    annotations:
+      gatus.home-operations.com/enabled: "false"
+    hostnames:
+      - renovate-webhook.darkflame.dev
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: envoy-external
+        namespace: network
+        sectionName: https
 metrics:
   enabled: true
   serviceMonitor:
