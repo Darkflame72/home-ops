@@ -28,6 +28,12 @@ kind: HTTPRoute
 metadata:
   name: claude
   namespace: agents
+  labels:
+    # pihole-dns builds records from every HTTPRoute hostname; this one is
+    # attached to the proxy (LB 10.0.60.1, plain HTTP only), so without this
+    # llm.darkflame.dev resolved there instead of to envoy-internal (TLS).
+    # llm-internal below is the one that should own the DNS record.
+    home-operations.com/pihole: ignore
 spec:
   hostnames:
     - llm.darkflame.dev
