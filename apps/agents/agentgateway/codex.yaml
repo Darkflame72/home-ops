@@ -20,6 +20,10 @@ spec:
       port: 443
       pathPrefix: /backend-api/codex
   policies:
+    # A host override doesn't imply upstream TLS (plain HTTP hit chatgpt.com:443
+    # and Cloudflare returned 400), so originate TLS explicitly.
+    tls:
+      sni: chatgpt.com
     ai:
       routes:
         "/responses": Responses
