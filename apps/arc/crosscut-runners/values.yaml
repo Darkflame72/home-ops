@@ -1,7 +1,7 @@
 githubConfigUrl: https://github.com/crosscut-ai
 githubConfigSecret: arc-github-app
 minRunners: 0
-maxRunners: 3
+maxRunners: 6
 containerMode:
   type: dind
 template:
