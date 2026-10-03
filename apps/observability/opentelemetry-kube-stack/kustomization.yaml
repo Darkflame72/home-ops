@@ -5,3 +5,5 @@ kind: Kustomization
 resources:
   - ./grafanadashboard.yaml
   - ./referencegrant.yaml
+  - ./external-secret.yaml
+  - ./httproute.yaml

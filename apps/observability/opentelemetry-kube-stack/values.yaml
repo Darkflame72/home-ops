@@ -352,3 +352,74 @@ collectors:
             receivers: [otlp]
             processors: [memory_limiter, tail_sampling, batch]
             exporters: [otlp/tempo, debug]
+
+  # Only collector reachable from outside the cluster: terminates OTLP/HTTP
+  # from remote clusters/services behind otlp.darkflame.dev (httproute.yaml,
+  # Cloudflare tunnel -> envoy-external). Requires a bearer token, then
+  # fans out to the same backends as in-cluster telemetry; traces go via the
+  # gateway collector so tail sampling still applies. Nothing else in the
+  # stack is exposed. HTTP only - CF tunnel gRPC needs extra setup.
+  ingress:
+    enabled: true
+    suffix: ingress
+    mode: deployment
+    replicas: 2
+    podSecurityContext:
+      runAsNonRoot: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
+    env:
+      - name: OTLP_INGEST_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: otlp-ingest-tokens
+            key: token
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
+    config:
+      extensions:
+        bearertokenauth:
+          token: ${env:OTLP_INGEST_TOKEN}
+      receivers:
+        otlp:
+          protocols:
+            http:
+              endpoint: 0.0.0.0:4318
+              max_request_body_size: 10485760
+              auth:
+                authenticator: bearertokenauth
+      processors:
+        memory_limiter:
+          check_interval: 1s
+          limit_percentage: 75
+          spike_limit_percentage: 15
+        # Remote senders should set k8s.cluster.name themselves; this only
+        # guarantees the attribute exists so remote data is never mistaken
+        # for the home cluster.
+        resource/remote:
+          attributes:
+            - action: insert
+              key: k8s.cluster.name
+              value: remote-unknown
+        batch:
+          send_batch_size: 1000
+          timeout: 1s
+      service:
+        extensions: [bearertokenauth]
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [memory_limiter, resource/remote, batch]
+            exporters: [otlp/gateway]
+          metrics:
+            receivers: [otlp]
+            processors: [memory_limiter, resource/remote, batch]
+            exporters: [otlp_http/mimir]
+          logs:
+            receivers: [otlp]
+            processors: [memory_limiter, resource/remote, batch]
+            exporters: [otlp_http/loki]
