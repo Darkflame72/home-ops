@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/actions/actions-runner-controller/master/charts/gha-runner-scale-set-controller/values.schema.json
 resources:
   requests:
     cpu: 10m
