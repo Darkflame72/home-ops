@@ -1,0 +1,24 @@
+githubConfigUrl: https://github.com/crosscut-ai
+githubConfigSecret: arc-github-app
+minRunners: 0
+maxRunners: 3
+containerMode:
+  type: dind
+template:
+  spec:
+    containers:
+      - name: runner
+        # renovate: datasource=docker depName=ghcr.io/actions/actions-runner
+        image: ghcr.io/actions/actions-runner:2.337.0
+        command: ["/home/runner/run.sh"]
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+# ArgoCD renders without cluster access, so the chart's controller auto-discovery
+# (a `lookup`) can't work; point at the controller's service account explicitly.
+controllerServiceAccount:
+  namespace: arc-systems
+  name: gha-runner-scale-set-controller-gha-rs-controller

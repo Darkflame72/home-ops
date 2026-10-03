@@ -492,3 +492,26 @@ spec:
         object.metadata.namespace == 'default' &&
         object.metadata.?labels['app.kubernetes.io/name'].orValue('') == 'nextcloud' &&
         object.metadata.?labels['app.kubernetes.io/component'].orValue('') == 'app'
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: arc-runner-dind-privileged
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The dind sidecar in ARC runner pods (arc-runners namespace, containerMode
+      dind) needs privileged mode and root to run nested containers so workflow
+      docker commands work — an unavoidable requirement of Docker-in-Docker.
+      The runner container must also reach dind's docker.sock.
+spec:
+  policyRefs:
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: arc-runner-workloads
+      expression: >-
+        object.metadata.namespace == 'arc-runners'
