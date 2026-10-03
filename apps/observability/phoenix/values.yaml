@@ -35,7 +35,9 @@ auth:
   # SSO only. PHOENIX_ADMIN_SECRET (bearer token) remains as break-glass API access.
   disableBasicAuth: true
   useSecureCookies: true
-  admins: "leon=leon@darkflame.dev"
+  # Don't set auth.admins: it pre-creates OAUTH2 users with a NULL oauth2_user_id,
+  # which Phoenix never links by email -> "An account with this email already exists".
+  # First SSO login creates a MEMBER; promote once via SQL (users.user_role_id -> ADMIN).
   createSecret: false
   name: phoenix-secret
   secret:
