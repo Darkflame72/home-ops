@@ -64,6 +64,14 @@ defaultCRConfig:
         endpoint: opentelemetry-kube-stack-gateway-collector.observability.svc.cluster.local:4317
         tls:
           insecure: true
+      # AI/LLM traces only (see traces/phoenix in the daemon). Phoenix runs with
+      # auth on; PHOENIX_ADMIN_SECRET from phoenix-secret works as a bearer token.
+      otlp_http/phoenix:
+        endpoint: http://phoenix-svc.observability.svc.cluster.local:6006
+        headers:
+          authorization: Bearer ${env:PHOENIX_ADMIN_SECRET}
+        tls:
+          insecure: true
       syslog/wazuh:
         endpoint: wazuh-manager.security.svc.cluster.local
         port: 514
@@ -227,6 +235,14 @@ collectors:
   daemon:
     enabled: true
     mode: daemonset
+    env:
+      - name: PHOENIX_ADMIN_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: phoenix-secret
+            key: PHOENIX_ADMIN_SECRET
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
     config:
       receivers:
         otlp:
@@ -247,6 +263,13 @@ collectors:
           retry_on_failure:
             enabled: true
       processors:
+        # Drop everything that isn't an LLM span (OpenInference or OTel GenAI
+        # semconv attributes) before it goes to Phoenix.
+        filter/ai:
+          error_mode: ignore
+          traces:
+            span:
+              - 'attributes["openinference.span.kind"] == nil and attributes["gen_ai.operation.name"] == nil and attributes["gen_ai.system"] == nil and attributes["gen_ai.provider.name"] == nil and attributes["gen_ai.request.model"] == nil'
         resource/audit:
           attributes:
             - action: insert
@@ -258,6 +281,12 @@ collectors:
             # Sampling now happens tail-side in the gateway collector, not
             # here - see collectors.gateway.
             exporters: [otlp/gateway, debug]
+          # Fan-out of the same OTLP receiver, taken before tail sampling so
+          # every AI span reaches Phoenix (not just the sampled ones).
+          traces/phoenix:
+            receivers: [otlp]
+            processors: [memory_limiter, filter/ai, batch]
+            exporters: [otlp_http/phoenix]
           metrics:
             exporters: [otlp_http/mimir, debug]
           logs:
