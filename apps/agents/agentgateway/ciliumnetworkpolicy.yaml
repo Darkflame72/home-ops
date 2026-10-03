@@ -52,6 +52,10 @@ spec:
         # with "Connect: Connection reset by peer" (503). Same issue and fix
         # as discord.com in apps/observability/gatus/ciliumnetworkpolicy.yaml.
         - matchName: "api.openai.com.agents.svc.cluster.local"
+        # Claude Code via llm.darkflame.dev (claude.yaml). Both the bare and
+        # search-suffixed names are needed -- see the openai note above.
+        - matchName: "api.anthropic.com"
+        - matchName: "api.anthropic.com.agents.svc.cluster.local"
       toPorts:
         - ports:
             - port: "443"

@@ -9,3 +9,4 @@ resources:
   - ./external-secret.yaml
   - ./ciliumnetworkpolicy.yaml
   - ./tracing.yaml
+  - ./claude.yaml

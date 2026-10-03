@@ -22,3 +22,13 @@ spec:
         port: 4317
       protocol: GRPC
       randomSampling: "true"
+      # Full prompt/completion content for Phoenix (OpenInference input/output
+      # keys, which Phoenix renders as the span's I/O). Bounded by Phoenix's
+      # retention (defaultRetentionPolicyDays). NOTE: Claude Code/Codex prompts
+      # carry file contents, so treat Phoenix as sensitive.
+      attributes:
+        add:
+          - name: input.value
+            expression: toJson(llm.prompt)
+          - name: output.value
+            expression: toJson(llm.completion)
