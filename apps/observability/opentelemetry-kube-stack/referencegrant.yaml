@@ -9,6 +9,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: EnvoyProxy
       namespace: network
+    - group: agentgateway.dev
+      kind: AgentgatewayPolicy
+      namespace: agents
   to:
     - group: ""
       kind: Service

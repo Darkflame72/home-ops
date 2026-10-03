@@ -8,3 +8,4 @@ resources:
   - ./llm.yaml
   - ./external-secret.yaml
   - ./ciliumnetworkpolicy.yaml
+  - ./tracing.yaml

@@ -1,0 +1,24 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/agentgateway.dev/agentgatewaypolicy_v1alpha1.json
+# Export every request span (including LLM spans: gen_ai.* model, token usage,
+# prompts) to the cluster's OTel daemon collector. The collector's
+# traces/phoenix pipeline filters the AI spans and forwards them to Phoenix;
+# everything else follows the normal tail-sampled path to Tempo.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: tracing
+  namespace: agents
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+  frontend:
+    tracing:
+      backendRef:
+        name: opentelemetry-kube-stack-daemon-collector
+        namespace: observability
+        port: 4317
+      protocol: GRPC
+      randomSampling: "true"
