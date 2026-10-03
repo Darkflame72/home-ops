@@ -285,7 +285,7 @@ collectors:
           # every AI span reaches Phoenix (not just the sampled ones).
           traces/phoenix:
             receivers: [otlp]
-            processors: [memory_limiter, filter/ai, batch]
+            processors: [filter/ai, batch]
             exporters: [otlp_http/phoenix]
           metrics:
             exporters: [otlp_http/mimir, debug]
