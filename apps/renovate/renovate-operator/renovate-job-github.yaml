@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../.github/schemas/renovate-operator.mogenius.com/renovatejob_v1alpha1.json
+apiVersion: renovate-operator.mogenius.com/v1alpha1
+kind: RenovateJob
+metadata:
+  name: github-crosscut-ai
+spec:
+  schedule: "0 4 * * *"
+  # renovate: datasource=docker depName=renovate/renovate
+  image: renovate/renovate:44.125.1
+  parallelism: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  provider:
+    name: github
+  # Operator mints an installation token from the App and mounts it as RENOVATE_TOKEN.
+  githubAppReference:
+    secretName: renovate-github-app
+    appIdSecretKey: app-id
+    installationIdSecretKey: installation-id
+    pemSecretKey: private-key
+  discoveryFilters:
+    - "crosscut-ai/*"
+  webhook:
+    enabled: true
+    authentication:
+      enabled: true
+      secretRef:
+        name: renovate-webhook-secret
+        key: token
+    # Needs the App's "Webhooks: read & write" repository permission.
+    sync:
+      enabled: true

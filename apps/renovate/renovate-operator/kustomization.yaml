@@ -5,3 +5,5 @@ kind: Kustomization
 resources:
   - ./external-secret.yaml
   - ./renovate-job.yaml
+  - ./renovate-job-github.yaml
+  - ./httproute-webhook-external.yaml
