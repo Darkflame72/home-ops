@@ -24,6 +24,9 @@ server:
   telemetryEnabled: false
 
 database:
+  # Spans carry full prompts/completions (Claude Code/Codex send file contents),
+  # so bound size and secret exposure.
+  defaultRetentionPolicyDays: 14
   postgres:
     host: phoenix-postgres-rw
     port: 5432
