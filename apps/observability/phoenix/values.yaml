@@ -6,6 +6,8 @@ replicaCount: 1
 deployment:
   strategy:
     type: Recreate
+    # chart default sets rollingUpdate params, which Recreate forbids
+    rollingUpdate: null
   podLabels: {}
 
 postgresql:
