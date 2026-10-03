@@ -11,3 +11,4 @@ resources:
   - ./tracing.yaml
   - ./claude.yaml
   - ./codex.yaml
+  - ./openai.yaml
