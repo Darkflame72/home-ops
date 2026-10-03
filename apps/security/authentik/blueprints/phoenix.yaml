@@ -11,6 +11,9 @@ entries:
       client_type: confidential
       client_id: sFZTXim5Li25zTnc6EzZnJhAIFvu4wVbOo6zE5WS
       client_secret: !Env PHOENIX_CLIENT_SECRET
+      grant_types:
+        - authorization_code
+        - refresh_token
       redirect_uris:
         - matching_mode: strict
           redirect_uri_type: authorization
