@@ -58,6 +58,13 @@ auth:
 image:
   tag: version-20.19.0-nonroot@sha256:f2109e09662e2bd9570af155e707fab8cf92eab79911727d183d8e667d9411c9
 
+# Default startup probe gives 30s; first start runs DB migrations and takes longer,
+# so the kubelet kills it mid-migration and it crash-loops.
+healthChecks:
+  startupProbe:
+    periodSeconds: 5
+    failureThreshold: 60
+
 resources:
   requests:
     cpu: 50m
