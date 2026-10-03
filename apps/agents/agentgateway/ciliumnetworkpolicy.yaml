@@ -44,6 +44,14 @@ spec:
         - kube-apiserver
     - toFQDNs:
         - matchName: "api.openai.com"
+        # agentgateway-proxy's resolver tries the namespace search suffix
+        # first (ndots:5), and Cilium tracks the FQDN exactly as queried --
+        # confirmed live 2026-10-03 via `cilium-dbg fqdn cache list` showing
+        # OpenAI's IPs only under "api.openai.com.agents.svc.cluster.local.",
+        # which the bare name above doesn't match, so every LLM call failed
+        # with "Connect: Connection reset by peer" (503). Same issue and fix
+        # as discord.com in apps/observability/gatus/ciliumnetworkpolicy.yaml.
+        - matchName: "api.openai.com.agents.svc.cluster.local"
       toPorts:
         - ports:
             - port: "443"
