@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/arize-ai/phoenix/main/helm/values.schema.json
+# Official Phoenix chart. Built-in postgres subchart disabled in favour of CNPG
+# (cluster.yaml); secrets come from ExternalSecret phoenix-secret.
+replicaCount: 1
+
+deployment:
+  strategy:
+    type: Recreate
+  podLabels: {}
+
+postgresql:
+  enabled: false
+
+ingress:
+  enabled: false
+
+service:
+  type: ClusterIP
+
+server:
+  rootUrl: https://phoenix.darkflame.dev
+  telemetryEnabled: false
+
+database:
+  postgres:
+    host: phoenix-postgres-rw
+    port: 5432
+    user: app
+    db: app
+
+auth:
+  enableAuth: true
+  # SSO only. PHOENIX_ADMIN_SECRET (bearer token) remains as break-glass API access.
+  disableBasicAuth: true
+  useSecureCookies: true
+  admins: "leon=leon@darkflame.dev"
+  createSecret: false
+  name: phoenix-secret
+  secret:
+    - key: PHOENIX_SECRET
+    - key: PHOENIX_ADMIN_SECRET
+    - key: PHOENIX_OAUTH2_AUTHENTIK_CLIENT_SECRET
+    - key: PHOENIX_POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: phoenix-postgres-app
+          key: password
+  oauth2:
+    enabled: true
+    providers:
+      authentik:
+        client_id: sFZTXim5Li25zTnc6EzZnJhAIFvu4wVbOo6zE5WS
+        oidc_config_url: https://auth.darkflame.dev/application/o/phoenix/.well-known/openid-configuration
+        display_name: Authentik
+
+image:
+  tag: version-20.19.0-nonroot@sha256:f2109e09662e2bd9570af155e707fab8cf92eab79911727d183d8e667d9411c9
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 512Mi
+  limits:
+    memory: 2Gi
+
+securityContext:
+  pod:
+    enabled: true
+  container:
+    enabled: true

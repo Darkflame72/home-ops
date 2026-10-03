@@ -21,6 +21,7 @@ configMapGenerator:
       - blueprints/grafana.yaml
       - blueprints/harbor.yaml
       - blueprints/miniflux.yaml
+      - blueprints/phoenix.yaml
       - blueprints/renovate.yaml
       - blueprints/nextcloud.yaml
       - blueprints/jellyfin.yaml

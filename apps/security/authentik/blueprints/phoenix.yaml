@@ -1,0 +1,49 @@
+version: 1
+metadata:
+  name: phoenix
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: phoenix-provider
+    identifiers:
+      pk: 93
+      name: "Provider for Phoenix"
+    attrs:
+      client_type: confidential
+      client_id: sFZTXim5Li25zTnc6EzZnJhAIFvu4wVbOo6zE5WS
+      client_secret: !Env PHOENIX_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://phoenix.darkflame.dev/oauth2/authentik/tokens"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: phoenix-application
+    identifiers:
+      pk: 95532257-f385-4847-a8f7-08e071fc5888
+      slug: phoenix
+    attrs:
+      name: Phoenix
+      provider: !KeyOf phoenix-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 6b7e954d-12d0-4178-b078-0ae605f39616
+    attrs:
+      target: !KeyOf phoenix-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
