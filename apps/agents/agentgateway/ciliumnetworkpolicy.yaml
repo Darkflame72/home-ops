@@ -56,6 +56,9 @@ spec:
         # search-suffixed names are needed -- see the openai note above.
         - matchName: "api.anthropic.com"
         - matchName: "api.anthropic.com.agents.svc.cluster.local"
+        # Codex ChatGPT-login spike (codex.yaml); same bare + search-suffixed pair.
+        - matchName: "chatgpt.com"
+        - matchName: "chatgpt.com.agents.svc.cluster.local"
       toPorts:
         - ports:
             - port: "443"

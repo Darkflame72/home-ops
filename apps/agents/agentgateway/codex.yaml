@@ -1,0 +1,50 @@
+---
+# SPIKE: Codex CLI with a ChatGPT-subscription login through agentgateway.
+# agentgateway only documents/tests Codex with a gateway client key; this
+# points a pass-through OpenAI-format backend at the ChatGPT Codex backend
+# instead (no auth secret, so the client's own ChatGPT bearer goes upstream
+# unchanged). Client side: chatgpt_base_url = "https://llm.darkflame.dev/backend-api/"
+# in ~/.codex/config.toml. Codex prefers a WebSocket transport and falls back
+# to HTTP/SSE; this proxies HTTP only, so expect a one-off stall before the
+# fallback (see openai/codex issues on responses_websocket).
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: chatgpt-codex
+  namespace: agents
+spec:
+  ai:
+    provider:
+      openai: {}
+      host: chatgpt.com
+      port: 443
+      pathPrefix: /backend-api/codex
+  policies:
+    ai:
+      routes:
+        "/responses": Responses
+        "*": Passthrough
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: codex
+  namespace: agents
+  labels:
+    # Same reason as the claude route: llm-internal owns the DNS record.
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /backend-api
+      backendRefs:
+        - name: chatgpt-codex
+          group: agentgateway.dev
+          kind: AgentgatewayBackend

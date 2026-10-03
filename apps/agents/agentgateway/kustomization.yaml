@@ -10,3 +10,4 @@ resources:
   - ./ciliumnetworkpolicy.yaml
   - ./tracing.yaml
   - ./claude.yaml
+  - ./codex.yaml
