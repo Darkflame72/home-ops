@@ -47,7 +47,16 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /backend-api
+            value: /backend-api/codex
+      # The backend re-adds /backend-api/codex (provider pathPrefix); without
+      # stripping it here, pass-through paths like /models were forwarded as
+      # /backend-api/codex/backend-api/codex/models (404).
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
       backendRefs:
         - name: chatgpt-codex
           group: agentgateway.dev
