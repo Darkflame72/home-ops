@@ -64,3 +64,52 @@ spec:
         - name: chatgpt-codex
           group: agentgateway.dev
           kind: AgentgatewayBackend
+---
+# Codex also calls non-inference ChatGPT endpoints under the same base URL
+# (/backend-api/wham/accounts/check, /ps/plugins/*, /ps/mcp, ...). Without a
+# route these fell through to the claude "/" catch-all (Anthropic -> 404) and
+# Codex aborted with "workspace routing discovery failed". Plain pass-through,
+# no provider pathPrefix, so paths are forwarded unchanged. New object names
+# for the same reason as codex-chatgpt above.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: chatgpt-backend
+  namespace: agents
+spec:
+  ai:
+    provider:
+      openai: {}
+      host: chatgpt.com
+      port: 443
+  policies:
+    tls:
+      sni: chatgpt.com
+    ai:
+      routes:
+        "*": Passthrough
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: chatgpt-backend
+  namespace: agents
+  labels:
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    # Shorter than codex-chatgpt's /backend-api/codex, which still wins for
+    # inference traffic.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /backend-api
+      backendRefs:
+        - name: chatgpt-backend
+          group: agentgateway.dev
+          kind: AgentgatewayBackend

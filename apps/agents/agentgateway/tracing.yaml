@@ -39,8 +39,12 @@ spec:
             expression: toJson(llm.toolCalls)
           - name: http.request.body
             expression: request.body
-          # Phoenix groups spans into Sessions by session.id. Claude Code
-          # sends its session ID in this header; without it every request is
-          # an unrelated trace.
+          # Phoenix groups spans into Sessions by session.id; without it every
+          # request is an unrelated trace. Each client sends its own header:
+          # Claude Code x-claude-code-session-id, goose agent-session-id,
+          # Codex session_id. default() falls through when a header is absent.
           - name: session.id
-            expression: request.headers["x-claude-code-session-id"]
+            expression: >-
+              default(request.headers["x-claude-code-session-id"],
+              default(request.headers["agent-session-id"],
+              request.headers["session_id"]))
