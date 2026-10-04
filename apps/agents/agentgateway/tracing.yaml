@@ -32,3 +32,15 @@ spec:
             expression: toJson(llm.prompt)
           - name: output.value
             expression: toJson(llm.completion)
+          # llm.prompt/completion are text-only: tool_use and tool_result
+          # blocks come out as empty content. Tool calls are exposed
+          # separately; tool results only exist in the raw request body.
+          - name: llm.tool_calls
+            expression: toJson(llm.toolCalls)
+          - name: http.request.body
+            expression: request.body
+          # Phoenix groups spans into Sessions by session.id. Claude Code
+          # sends its session ID in this header; without it every request is
+          # an unrelated trace.
+          - name: session.id
+            expression: request.headers["x-claude-code-session-id"]
