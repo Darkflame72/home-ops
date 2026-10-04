@@ -113,3 +113,46 @@ spec:
         - name: chatgpt-backend
           group: agentgateway.dev
           kind: AgentgatewayBackend
+---
+# Codex tries a WebSocket upgrade (GET /responses) before HTTP/SSE. That GET
+# has no body, so the Responses AI route 400s on it, and Codex treats a 400 as
+# fatal instead of falling back. 426 Upgrade Required is the signal it falls
+# back on, and keeps all inference on the HTTP path where it is parsed and
+# traced to Phoenix (a proxied WebSocket would bypass LLM telemetry).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: codex-ws-fallback
+  namespace: agents
+  labels:
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /backend-api/codex/responses
+          method: GET
+      backendRefs:
+        - name: chatgpt-backend
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: codex-ws-fallback
+  namespace: agents
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: codex-ws-fallback
+  traffic:
+    directResponse:
+      status: 426
