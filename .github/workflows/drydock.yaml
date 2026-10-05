@@ -19,7 +19,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Run drydock
-        uses: sholdee/drydock/pr-action@1c45bc5118c89edd5dadcf2f54642a6e32508415 # v0.3.2
+        uses: sholdee/drydock/pr-action@405174fb24f36c38a95a02630b58654a14b57932 # v0.3.3
         with:
           # renovate: datasource=github-releases depName=sholdee/drydock
           version: v0.3.3
