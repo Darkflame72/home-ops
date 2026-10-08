@@ -124,6 +124,12 @@
       "addLabels": ["renovate/github-release"]
     },
     {
+      "description": "Ceph majors must follow the cluster's Ceph version (Rook only supports released Squid/Tentacle); upgrade Ceph deliberately, not via the dashboard-alertmanager job image",
+      "matchDepNames": ["quay.io/ceph/ceph"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "description": "Group the ArgoCD chart bump with its matching yaml-language-server schema comment bump so they land in one PR",
       "matchDepNames": ["cilium", "cilium/cilium"],
       "groupName": "cilium"
