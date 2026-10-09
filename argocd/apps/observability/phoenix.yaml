@@ -18,7 +18,7 @@ spec:
       ref: repo
     - repoURL: registry-1.docker.io/arizephoenix
       chart: phoenix-helm
-      targetRevision: 12.0.17
+      targetRevision: 12.0.18
       helm:
         releaseName: phoenix
         valueFiles:
