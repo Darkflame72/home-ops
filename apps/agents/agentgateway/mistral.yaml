@@ -1,0 +1,62 @@
+---
+# Mistral (OpenAI-compatible API) through agentgateway, traced to Phoenix like
+# the other LLM routes. The gateway holds the key (agentgateway-mistral-key),
+# so clients only need a placeholder key.
+#
+# Mistral speaks the same /v1/chat/completions format as OpenAI, so it can't be
+# told apart by path alone on llm.darkflame.dev. It lives under /mistral
+# instead: client base URL is https://llm.darkflame.dev/mistral/v1.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: mistral
+  namespace: agents
+spec:
+  ai:
+    provider:
+      openai: {}
+      host: api.mistral.ai
+      port: 443
+  policies:
+    # A host override doesn't imply upstream TLS (see chatgpt-codex), so
+    # originate it explicitly.
+    tls:
+      sni: api.mistral.ai
+    ai:
+      routes:
+        "/v1/chat/completions": Completions
+        "*": Passthrough
+    auth:
+      secretRef:
+        name: agentgateway-mistral-key
+---
+# More specific than the claude route's "/" catch-all, so it wins on this host.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: llm-mistral
+  namespace: agents
+  labels:
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /mistral
+      # /mistral/v1/chat/completions -> /v1/chat/completions upstream.
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: mistral
+          group: agentgateway.dev
+          kind: AgentgatewayBackend

@@ -12,3 +12,4 @@ resources:
   - ./claude.yaml
   - ./codex.yaml
   - ./openai.yaml
+  - ./mistral.yaml

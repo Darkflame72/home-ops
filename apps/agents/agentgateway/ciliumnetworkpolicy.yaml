@@ -59,6 +59,10 @@ spec:
         # Codex ChatGPT-login spike (codex.yaml); same bare + search-suffixed pair.
         - matchName: "chatgpt.com"
         - matchName: "chatgpt.com.agents.svc.cluster.local"
+        # Mistral via llm.darkflame.dev/mistral (mistral.yaml); same bare +
+        # search-suffixed pair.
+        - matchName: "api.mistral.ai"
+        - matchName: "api.mistral.ai.agents.svc.cluster.local"
       toPorts:
         - ports:
             - port: "443"
