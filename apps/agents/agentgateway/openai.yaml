@@ -57,3 +57,30 @@ spec:
         - name: openai-gateway
           group: agentgateway.dev
           kind: AgentgatewayBackend
+---
+# Embeddings for OpenAI-format clients (Crosscut's skill miner). Without a route
+# /v1/embeddings fell through to the claude route's "/" catch-all (Anthropic ->
+# 404). openai-gateway's "*": Passthrough already forwards it unparsed. New route
+# name, not an extra match on llm-openai, for the same reason as above.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: llm-openai-embeddings
+  namespace: agents
+  labels:
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/embeddings
+      backendRefs:
+        - name: openai-gateway
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
