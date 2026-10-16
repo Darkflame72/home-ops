@@ -36,6 +36,10 @@ kind: HTTPRoute
 metadata:
   name: llm-mistral
   namespace: agents
+  annotations:
+    # Gatus probes the route's bare path; /mistral rewrites to api.mistral.ai/,
+    # which has no page (404), so the check could never pass.
+    gatus.home-operations.com/enabled: "false"
   labels:
     home-operations.com/pihole: ignore
 spec:
