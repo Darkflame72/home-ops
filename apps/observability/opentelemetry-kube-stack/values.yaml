@@ -235,6 +235,13 @@ collectors:
   daemon:
     enabled: true
     mode: daemonset
+    # Observed per-node usage is ~50-110m CPU and ~115-160Mi memory.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 320Mi
     env:
       - name: PHOENIX_ADMIN_SECRET
         valueFrom:
