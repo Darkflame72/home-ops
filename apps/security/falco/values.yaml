@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/falcosecurity/charts/master/charts/falco/values.schema.json
+# Runtime threat detection on every node. Events go to Loki (queryable) and to
+# Mimir's Alertmanager (existing Discord routes in apps/observability/mimir/values.yaml).
+driver:
+  # Talos is immutable with no kernel headers, so no kernel module build or driver loader.
+  kind: modern_ebpf
+  loader:
+    enabled: false
+
+controller:
+  kind: daemonset
+
+falco:
+  # JSON output so Loki and Falcosidekick can parse fields.
+  json_output: true
+  json_include_output_property: true
+
+customRules:
+  customized-local-rules.yaml: |-
+    # Carried over from the previous Falco deployment (removed 2026-06-23).
+    # Appended to the default list so the stock executables stay allowed.
+    - list: known_drop_and_execute_executables
+      append: true
+      items: [/opt/cni/bin/cilium-cni]
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+metrics:
+  enabled: true
+
+serviceMonitor:
+  create: true
+
+falcosidekick:
+  enabled: true
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+  config:
+    loki:
+      hostport: http://loki-gateway.observability.svc.cluster.local
+      endpoint: /loki/api/v1/push
+      format: json
+      minimumpriority: debug
+    alertmanager:
+      hostport: http://mimir-alertmanager.observability.svc.cluster.local:8080
+      endpoint: /alertmanager/api/v2/alerts
+      minimumpriority: warning
+      # Keep the existing Discord routing: critical/alert/emergency hit discord-critical
+      # (pings), everything else lands on the plain discord route.
+      customseveritymap: "emergency:critical,alert:critical,critical:critical,error:warning,warning:warning"
+      expireafter: "300"

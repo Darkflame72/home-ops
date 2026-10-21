@@ -1,0 +1,31 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/monitoring.coreos.com/prometheusrule_v1.json
+# Synced into Mimir's ruler by Alloy's mimir.rules.kubernetes component.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: falco-health
+  namespace: falco
+spec:
+  groups:
+    - name: falco
+      rules:
+        - alert: FalcoPodsNotReady
+          expr: |
+            kube_daemonset_status_number_ready{namespace="falco"}
+              < kube_daemonset_status_desired_number_scheduled{namespace="falco"}
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Falco is not running on every node"
+            description: "The Falco DaemonSet has fewer ready pods than scheduled nodes for 15 minutes. Syscall coverage is incomplete."
+        - alert: FalcoEventDrops
+          expr: |
+            sum by (pod) (rate(falco_event_drops_total{namespace="falco"}[5m])) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Falco is dropping kernel events on {{ $labels.pod }}"
+            description: "Falco is losing syscall events, so detection gaps exist on this node. Check CPU limits on the falco pod."
