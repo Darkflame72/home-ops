@@ -55,8 +55,6 @@ customRules:
           and proc.exepath = "/gatus-sidecar" and user.uid = 1000 and proc.cmdline startswith "gatus-sidecar") or
         (k8s.ns.name = "system-upgrade" and k8s.pod.name startswith "tuppr-" and container.name = "manager"
           and proc.exepath = "/manager" and user.uid = 65532 and proc.cmdline startswith "manager --log-level=info") or
-        # Backup movers are CronJob pods, so the pod name changes every run. Pin the namespace list,
-        # container, binary and command line instead. Namespaces not listed here still alert.
         ((k8s.ns.name = "comms" or k8s.ns.name = "default" or k8s.ns.name = "games" or k8s.ns.name = "media" or
           k8s.ns.name = "observability" or k8s.ns.name = "opencloud" or k8s.ns.name = "security") and container.name = "mover"
           and proc.exepath = "/usr/local/bin/kopiur-mover" and proc.cmdline startswith "kopiur-mover")
