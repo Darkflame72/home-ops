@@ -18,9 +18,8 @@ falco:
 customRules:
   customized-local-rules.yaml: |-
     # Carried over from the previous Falco deployment (removed 2026-06-23).
-    # Appended to the default list so the stock executables stay allowed.
+    # Defined directly: this Falco version has no existing list to append to.
     - list: known_drop_and_execute_executables
-      append: true
       items: [/opt/cni/bin/cilium-cni]
 
 resources:
