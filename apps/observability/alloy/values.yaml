@@ -3,6 +3,16 @@ controller:
   replicas: 1
 
 alloy:
+  # Grafana's documented non-root setup. The only thing Alloy does here is sync
+  # PrometheusRules to Mimir over the API, which needs no host or root access.
+  securityContext:
+    runAsUser: 473
+    runAsGroup: 473
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
   resources:
     requests:
       cpu: 10m
