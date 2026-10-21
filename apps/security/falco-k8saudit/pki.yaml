@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/certificate_v1.json
+# Internal CA for the k8saudit webhook listener. Fluent Bit pins this CA to verify the server.
+# Never leaves the falco namespace and is not a browser-facing certificate.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: falco-k8saudit-selfsigned
+  namespace: falco
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: falco-k8saudit-ca
+  namespace: falco
+spec:
+  secretName: falco-k8saudit-ca
+  isCA: true
+  commonName: "Falco k8saudit CA"
+  duration: 87600h  # 10y, internal root
+  renewBefore: 2160h  # 90d
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: falco-k8saudit-selfsigned
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: falco-k8saudit-ca
+  namespace: falco
+spec:
+  ca:
+    secretName: falco-k8saudit-ca
+---
+# Server certificate for the webhook listener. The CombinedPEM output gives the
+# single PEM (key + cert) that the k8saudit plugin reads as sslCertificate.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: falco-k8saudit-tls
+  namespace: falco
+spec:
+  secretName: falco-k8saudit-tls
+  duration: 2160h  # 90d
+  renewBefore: 720h  # 30d
+  dnsNames:
+    - falco-k8saudit-webhook
+    - falco-k8saudit-webhook.falco
+    - falco-k8saudit-webhook.falco.svc
+    - falco-k8saudit-webhook.falco.svc.cluster.local
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  additionalOutputFormats:
+    - type: CombinedPEM
+  issuerRef:
+    name: falco-k8saudit-ca
+    kind: Issuer

@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/falcosecurity/charts/master/charts/falco/values.schema.json
+# Kubernetes audit-log detection. A separate, unprivileged Falco release: no driver, no
+# collectors, one replica. Audit events arrive from Fluent Bit over TLS (see apps/security/fluent-bit).
+# Base layout follows the chart's values-k8saudit.yaml.
+fullnameOverride: falco-k8saudit
+
+driver:
+  enabled: false
+
+collectors:
+  enabled: false
+
+controller:
+  kind: deployment
+  deployment:
+    replicas: 1
+
+# Pods run as non-root with no host access. The audit listener needs nothing from the node.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# Server certificate from cert-manager (apps/security/falco-k8saudit/pki.yaml).
+# The secret mounts at /etc/falco/certs; the combined key+cert file is used below.
+certs:
+  existingSecret: falco-k8saudit-tls
+
+falcoctl:
+  artifact:
+    install:
+      # Plugin and rules are installed by the init container at pinned versions.
+      enabled: true
+    follow:
+      # Disabled: executable plugins are not updated at runtime. Bumps go through a PR.
+      enabled: false
+  config:
+    artifact:
+      install:
+        resolveDeps: true
+        # Pinned to the chart's tested versions. Bump in a PR after reading release notes.
+        refs: [k8saudit-rules:0.16, k8saudit:0.16]
+
+services:
+  - name: webhook
+    type: ClusterIP
+    ports:
+      - port: 9765
+        protocol: TCP
+
+falco:
+  json_output: true
+  json_include_output_property: true
+  # Off: the k8saudit plugin reads audit events only, so no host /proc mount is needed.
+  plugins_hostinfo: false
+  rules_files:
+    - /etc/falco/k8s_audit_rules.yaml
+    - /etc/falco/rules.d
+  plugins:
+    - name: k8saudit
+      library_path: libk8saudit.so
+      init_config:
+        # maxEventBytes bounds the size of a single audit event.
+        maxEventBytes: 1048576
+        # Combined key+cert PEM from cert-manager's CombinedPEM output.
+        sslCertificate: /etc/falco/certs/combined.pem
+      open_params: "https://:9765/k8s-audit"
+    - name: json
+      library_path: libjson.so
+      init_config: ""
+  load_plugins: [k8saudit, json]
+
+  # Alerts go to the shared Falcosidekick, which already routes to Loki and Alertmanager.
+  http_output:
+    enabled: true
+    url: "http://falco-falcosidekick.falco.svc.cluster.local:2801/"
+
+falcosidekick:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+metrics:
+  enabled: true
+
+serviceMonitor:
+  create: true

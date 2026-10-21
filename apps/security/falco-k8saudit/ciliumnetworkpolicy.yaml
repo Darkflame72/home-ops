@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumnetworkpolicy_v2.json
+# The k8saudit listener has no authentication (no mTLS), so network identity is the control.
+# Only Fluent Bit may post audit events; only the observability collector may scrape metrics.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: falco-k8saudit-listener
+  namespace: falco
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: falco-k8saudit
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: falco
+            app.kubernetes.io/name: fluent-bit
+      toPorts:
+        - ports:
+            - port: "9765"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+      toPorts:
+        - ports:
+            - port: "8765"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: "*"
+    # Alert delivery through the shared Falcosidekick.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: falco
+            app.kubernetes.io/name: falcosidekick
+      toPorts:
+        - ports:
+            - port: "2801"
+              protocol: TCP
+    # Plugin and rules artifacts, pulled by the falcoctl init container.
+    - toFQDNs:
+        - matchName: "ghcr.io"
+        - matchPattern: "*.githubusercontent.com"
+        - matchPattern: "pkg-containers.githubusercontent.com"
+        - matchName: "falcosecurity.github.io"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+---
+# Falcosidekick accepts alerts only from the Falco releases and the observability collector.
+# Its outbound path to Loki and Alertmanager is unchanged.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: falcosidekick-ingress
+  namespace: falco
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: falcosidekick
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: falco
+            app.kubernetes.io/instance: falco
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: falco
+            app.kubernetes.io/instance: falco-k8saudit
+      toPorts:
+        - ports:
+            - port: "2801"
+              protocol: TCP
+    # Metrics scrape from the observability collector (Falcosidekick serves metrics on its main port).
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+      toPorts:
+        - ports:
+            - port: "2801"
+              protocol: TCP
