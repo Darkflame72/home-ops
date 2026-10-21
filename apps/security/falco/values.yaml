@@ -36,7 +36,7 @@ customRules:
         (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopiur-webhook-" and container.name = "webhook"
           and proc.exepath = "/usr/local/bin/app" and user.uid = 65534) or
         (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopiur-controller-" and container.name = "controller"
-          and proc.exepath = "/usr/local/bin/app" and user.uid = 65534 and proc.cmdline startswith "tokio-rt-worker --leader-elect=true") or
+          and proc.exepath = "/usr/local/bin/app" and user.uid = 65534 and proc.cmdline startswith "app --leader-elect=true") or
         (k8s.ns.name = "security" and k8s.pod.name startswith "authentik-worker-" and container.name = "worker"
           and proc.exepath = "/usr/local/bin/python3.14" and user.uid = 1000 and proc.cmdline startswith "Thread-3 -m lifecycle.worker_process")
 
@@ -46,6 +46,23 @@ resources:
     memory: 256Mi
   limits:
     memory: 512Mi
+
+falcoctl:
+  artifact:
+    install:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 128Mi
+    follow:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 128Mi
 
 metrics:
   enabled: true
