@@ -71,8 +71,8 @@ falco:
       init_config:
         # maxEventBytes bounds the size of a single audit event.
         maxEventBytes: 1048576
-        # Combined key+cert PEM from cert-manager's CombinedPEM output.
-        sslCertificate: /etc/falco/certs/combined.pem
+        # Combined key+cert PEM from cert-manager's CombinedPEM output (key is tls-combined.pem).
+        sslCertificate: /etc/falco/certs/tls-combined.pem
       open_params: "https://:9765/k8s-audit"
     - name: json
       library_path: libjson.so
