@@ -1,6 +1,7 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/monitoring.coreos.com/prometheusrule_v1.json
 # Synced into Mimir's ruler by Alloy's mimir.rules.kubernetes component.
+# Covers the syscall DaemonSet, the audit-log pipeline (falco-k8saudit + fluent-bit) and the listener certificate.
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -12,8 +13,8 @@ spec:
       rules:
         - alert: FalcoPodsNotReady
           expr: |
-            kube_daemonset_status_number_ready{namespace="falco"}
-              < kube_daemonset_status_desired_number_scheduled{namespace="falco"}
+            kube_daemonset_status_number_ready{namespace="falco", daemonset="falco"}
+              < kube_daemonset_status_desired_number_scheduled{namespace="falco", daemonset="falco"}
           for: 15m
           labels:
             severity: warning
@@ -22,10 +23,62 @@ spec:
             description: "The Falco DaemonSet has fewer ready pods than scheduled nodes for 15 minutes. Syscall coverage is incomplete."
         - alert: FalcoEventDrops
           expr: |
-            sum by (pod) (rate(falco_event_drops_total{namespace="falco"}[5m])) > 0
+            sum by (pod) (rate(falcosecurity_scap_n_drops_total{namespace="falco"}[5m])) > 0
           for: 15m
           labels:
             severity: warning
           annotations:
             summary: "Falco is dropping kernel events on {{ $labels.pod }}"
             description: "Falco is losing syscall events, so detection gaps exist on this node. Check CPU limits on the falco pod."
+
+    - name: falco-k8saudit
+      rules:
+        - alert: FalcoK8sAuditDown
+          expr: |
+            kube_deployment_status_replicas_available{namespace="falco", deployment="falco-k8saudit"} < 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Kubernetes audit detection is down"
+            description: "The falco-k8saudit listener has no available replicas. API-server activity is not being analysed."
+        - alert: FalcoK8sAuditNoEvents
+          # Fluent Bit has delivered no audit records in 30 minutes. The apiserver writes continuously,
+          # so silence here means the pipeline is broken, not that the cluster is quiet.
+          expr: |
+            sum(increase(fluentbit_output_proc_records_total{namespace="falco"}[30m])) == 0
+              and on() sum(kube_pod_status_phase{namespace="falco", pod=~"fluent-bit-.*", phase="Running"}) > 0
+          for: 30m
+          labels:
+            severity: critical
+          annotations:
+            summary: "No Kubernetes audit events are reaching Falco"
+            description: "Fluent Bit has sent no audit records for 30 minutes while its pods are running. Check the audit log path, rotation and the TLS connection to falco-k8saudit."
+        - alert: FluentBitAuditOutputErrors
+          expr: |
+            sum(increase(fluentbit_output_errors_total{namespace="falco"}[10m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Fluent Bit cannot deliver audit events"
+            description: "The audit shipper is failing to send to falco-k8saudit. Events are retried, then dropped after the retry limit."
+        - alert: FluentBitNotOnAllControlPlanes
+          expr: |
+            kube_daemonset_status_number_ready{namespace="falco", daemonset="fluent-bit"}
+              < kube_daemonset_status_desired_number_scheduled{namespace="falco", daemonset="fluent-bit"}
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Audit shipping is missing on a control-plane node"
+            description: "Fluent Bit is not ready on every control-plane node, so that node's API activity is not analysed."
+        - alert: FalcoK8sAuditCertExpiringSoon
+          expr: |
+            certmanager_certificate_expiration_timestamp_seconds{namespace="falco", name="falco-k8saudit-tls"} - time() < 7 * 24 * 3600
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "The k8saudit listener certificate expires within 7 days"
+            description: "cert-manager has not renewed falco-k8saudit-tls. Check the Certificate status and the renewal."

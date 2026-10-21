@@ -45,7 +45,20 @@ customRules:
           and proc.exepath = "/ko-app/kyverno" and user.uid = 65534 and proc.cmdline startswith "kyverno --caSecretName") or
         (k8s.ns.name = "security" and k8s.pod.name startswith "authentik-worker-" and container.name = "worker"
           and proc.exepath = "/usr/local/bin/python3.14" and user.uid = 1000
-          and proc.cmdline startswith "Thread-" and proc.cmdline contains "-m lifecycle.worker_process")
+          and proc.cmdline startswith "Thread-" and proc.cmdline contains "-m lifecycle.worker_process") or
+        (k8s.ns.name = "rook-ceph" and k8s.pod.name startswith "rook-ceph.rbd.csi.ceph.com-ctrlplugin-" and container.name = "csi-rbdplugin"
+          and proc.exepath = "/usr/local/bin/cephcsi" and user.uid = 0
+          and proc.cmdline startswith "cephcsi --type=rbd" and proc.cmdline contains "--controllerserver=true") or
+        (k8s.ns.name = "observability" and k8s.pod.name startswith "alloy-" and container.name = "alloy"
+          and proc.exepath = "/usr/bin/alloy" and user.uid = 473 and proc.cmdline startswith "alloy run") or
+        (k8s.ns.name = "observability" and k8s.pod.name = "gatus-0" and container.name = "gatus-sidecar"
+          and proc.exepath = "/gatus-sidecar" and user.uid = 1000 and proc.cmdline startswith "gatus-sidecar") or
+        (k8s.ns.name = "system-upgrade" and k8s.pod.name startswith "tuppr-" and container.name = "manager"
+          and proc.exepath = "/manager" and user.uid = 65532 and proc.cmdline startswith "manager --log-level=info") or
+        # Backup movers are CronJob pods, so the pod name changes every run. Pin the namespace list,
+        # container, binary and command line instead. Namespaces not listed here still alert.
+        (k8s.ns.name in ("comms", "default", "games", "media", "observability", "opencloud", "security") and container.name = "mover"
+          and proc.exepath = "/usr/local/bin/kopiur-mover" and proc.cmdline startswith "kopiur-mover")
 
 resources:
   requests:
@@ -55,6 +68,13 @@ resources:
     memory: 512Mi
 
 falcoctl:
+  config:
+    artifact:
+      install:
+        # Pinned to a reviewed release. Bump through a PR, not at runtime.
+        refs: [falco-rules:5.2.0]
+      follow:
+        refs: [falco-rules:5.2.0]
   artifact:
     install:
       resources:
@@ -64,6 +84,8 @@ falcoctl:
         limits:
           memory: 128Mi
     follow:
+      # Disabled: rules change only through a PR, never at runtime.
+      enabled: false
       resources:
         requests:
           cpu: 10m

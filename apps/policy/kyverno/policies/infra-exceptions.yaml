@@ -325,28 +325,6 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
-  name: alloy-run-as-root
-  namespace: policy
-  annotations:
-    policies.kyverno.io/description: >-
-      grafana/alloy runs as root by default; Grafana documents non-root
-      support as experimental/undocumented
-      (grafana.com/docs/alloy/latest/configure/nonroot/). Confirmed running
-      as UID 0 live.
-spec:
-  policyRefs:
-    - name: require-run-as-nonroot
-      kind: ValidatingPolicy
-  matchConditions:
-    - name: alloy-workloads
-      expression: >-
-        object.metadata.namespace == 'observability' &&
-        object.metadata.name.startsWith('alloy')
-
----
-apiVersion: policies.kyverno.io/v1
-kind: PolicyException
-metadata:
   name: spegel-run-as-root
   namespace: policy
   annotations:
@@ -538,5 +516,5 @@ spec:
     - name: falco-workloads
       expression: >-
         object.metadata.namespace == 'falco' &&
-        object.metadata.name.startsWith('falco-') &&
-        !object.metadata.name.startsWith('falco-falcosidekick')
+        object.metadata.?labels['app.kubernetes.io/instance'].orValue('') == 'falco' &&
+        object.metadata.?labels['app.kubernetes.io/name'].orValue('') == 'falco'
