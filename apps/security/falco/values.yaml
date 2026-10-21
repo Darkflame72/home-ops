@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/falcosecurity/charts/master/charts/falco/values.schema.json
 # Runtime threat detection on every node. Events go to Loki (queryable) and to
 # Mimir's Alertmanager (existing Discord routes in apps/observability/mimir/values.yaml).
 driver:
