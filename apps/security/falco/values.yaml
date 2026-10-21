@@ -20,10 +20,25 @@ customRules:
     # Expected node-level behaviour, not alerted on (reviewed 2026-10-21).
     # Containerd runs these CNI plugins when pods start.
     - macro: known_drop_and_execute_activities
-      condition: (proc.exepath in (/opt/cni/bin/cilium-cni, /opt/cni/bin/istio-cni))
-    # Controllers that call the API server by design.
+      condition: >
+        (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/cilium-cni" and proc.cmdline = "cilium-cni") or
+        (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/istio-cni" and proc.cmdline = "istio-cni")
+    # Each entry pins namespace, pod, container, binary, uid and command line,
+    # so only that exact process in that exact workload is allowed to call the API server.
     - macro: user_known_contact_k8s_api_server_activities
-      condition: (container.image.repository in (quay.io/kiali/kiali, quay.io/argoproj/argocd, docker.io/otel/opentelemetry-collector-contrib, ghcr.io/home-operations/kopiur-webhook, ghcr.io/goauthentik/server))
+      condition: >
+        (k8s.ns.name = "observability" and k8s.pod.name startswith "kiali-" and container.name = "kiali"
+          and proc.exepath = "/opt/kiali/kiali" and user.uid = 1000 and proc.cmdline startswith "kiali -config") or
+        (k8s.ns.name = "argocd" and k8s.pod.name startswith "argocd-application-controller-" and container.name = "application-controller"
+          and proc.exepath = "/usr/local/bin/argocd" and user.uid = 999 and proc.cmdline startswith "argocd-applicat") or
+        (k8s.ns.name = "observability" and k8s.pod.name startswith "opentelemetry-kube-stack-daemon-collector-" and container.name = "otc-container"
+          and proc.exepath = "/otelcol-contrib" and user.uid = 10001 and proc.cmdline startswith "otelcol-contrib --config=/conf/collector.yaml") or
+        (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopiur-webhook-" and container.name = "webhook"
+          and proc.exepath = "/usr/local/bin/app" and user.uid = 65534) or
+        (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopiur-controller-" and container.name = "controller"
+          and proc.exepath = "/usr/local/bin/app" and user.uid = 65534 and proc.cmdline startswith "tokio-rt-worker --leader-elect=true") or
+        (k8s.ns.name = "security" and k8s.pod.name startswith "authentik-worker-" and container.name = "worker"
+          and proc.exepath = "/usr/local/bin/python3.14" and user.uid = 1000 and proc.cmdline startswith "Thread-3 -m lifecycle.worker_process")
 
 resources:
   requests:
