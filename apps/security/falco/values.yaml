@@ -38,6 +38,8 @@ customRules:
         (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopiur-controller-" and container.name = "controller"
           and proc.exepath = "/usr/local/bin/app" and user.uid = 65534
           and (proc.cmdline startswith "app --leader-elect=true" or proc.cmdline startswith "tokio-rt-worker --leader-elect=true")) or
+        (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-admission-controller-" and container.name = "kyverno"
+          and proc.exepath = "/ko-app/kyverno" and user.uid = 65534 and proc.cmdline startswith "kyverno --caSecretName") or
         (k8s.ns.name = "security" and k8s.pod.name startswith "authentik-worker-" and container.name = "worker"
           and proc.exepath = "/usr/local/bin/python3.14" and user.uid = 1000 and proc.cmdline startswith "Thread-3 -m lifecycle.worker_process")
 
