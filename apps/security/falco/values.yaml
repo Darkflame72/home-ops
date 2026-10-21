@@ -23,7 +23,7 @@ customRules:
       condition: (proc.exepath in (/opt/cni/bin/cilium-cni, /opt/cni/bin/istio-cni))
     # Controllers that call the API server by design.
     - macro: user_known_contact_k8s_api_server_activities
-      condition: (container.image.repository in (quay.io/kiali/kiali, quay.io/argoproj/argocd, docker.io/otel/opentelemetry-collector-contrib))
+      condition: (container.image.repository in (quay.io/kiali/kiali, quay.io/argoproj/argocd, docker.io/otel/opentelemetry-collector-contrib, ghcr.io/home-operations/kopiur-webhook, ghcr.io/goauthentik/server))
 
 resources:
   requests:
