@@ -17,10 +17,13 @@ falco:
 
 customRules:
   customized-local-rules.yaml: |-
-    # Carried over from the previous Falco deployment (removed 2026-06-23).
-    # Defined directly: this Falco version has no existing list to append to.
-    - list: known_drop_and_execute_executables
-      items: [/opt/cni/bin/cilium-cni]
+    # Expected node-level behaviour, not alerted on (reviewed 2026-10-21).
+    # Containerd runs these CNI plugins when pods start.
+    - macro: known_drop_and_execute_activities
+      condition: (proc.exepath in (/opt/cni/bin/cilium-cni, /opt/cni/bin/istio-cni))
+    # Controllers that call the API server by design.
+    - macro: user_known_contact_k8s_api_server_activities
+      condition: (container.image.repository in (quay.io/kiali/kiali, quay.io/argoproj/argocd, docker.io/otel/opentelemetry-collector-contrib))
 
 resources:
   requests:
