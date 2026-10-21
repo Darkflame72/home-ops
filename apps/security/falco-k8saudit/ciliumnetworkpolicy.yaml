@@ -48,11 +48,13 @@ spec:
             - port: "2801"
               protocol: TCP
     # Plugin and rules artifacts, pulled by the falcoctl init container.
+    # The pod resolver tries cluster search suffixes first (ndots:5), and Cilium only learns
+    # IPs for the names it sees, so the *.falco.svc.cluster.local variants are listed too (same as gatus).
     - toFQDNs:
         - matchName: "ghcr.io"
-        - matchPattern: "*.githubusercontent.com"
-        - matchPattern: "pkg-containers.githubusercontent.com"
         - matchName: "falcosecurity.github.io"
+        - matchPattern: "*.githubusercontent.com"
+        - matchPattern: "*.falco.svc.cluster.local"
       toPorts:
         - ports:
             - port: "443"
