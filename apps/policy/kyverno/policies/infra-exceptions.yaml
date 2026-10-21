@@ -515,3 +515,28 @@ spec:
     - name: arc-runner-workloads
       expression: >-
         object.metadata.namespace == 'arc-runners'
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: falco-privileged
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The Falco DaemonSet (falco namespace) runs privileged to load its eBPF
+      probe and read host syscall state. It runs as root for the same reason.
+      The modern_ebpf driver needs CAP_BPF/CAP_PERFMON so least-privilege
+      mode is not used. Falcosidekick is not excepted: it runs non-root.
+spec:
+  policyRefs:
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: falco-workloads
+      expression: >-
+        object.metadata.namespace == 'falco' &&
+        object.metadata.name.startsWith('falco-') &&
+        !object.metadata.name.startsWith('falco-falcosidekick')
