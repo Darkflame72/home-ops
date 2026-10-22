@@ -537,7 +537,7 @@ spec:
     - name: otel-daemon-collector
       expression: >-
         object.metadata.namespace == 'observability' &&
-        object.metadata.name.startsWith('opentelemetry-kube-stack-daemon-collector-')
+        object.metadata.name.startsWith('opentelemetry-kube-stack-daemon-collector')
 ---
 apiVersion: policies.kyverno.io/v1
 kind: PolicyException
