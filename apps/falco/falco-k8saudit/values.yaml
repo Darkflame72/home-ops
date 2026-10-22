@@ -119,14 +119,14 @@ customRules:
       condition: and not user_known_node_serviceaccount_creation
     # The kube-apiserver static pod is restarted by the node identity when its config changes.
     - macro: user_known_apiserver_hostnetwork_pods
-      condition: (ka.user.name startswith "system:node:" and ka.req.pod.containers.image startswith "registry.k8s.io/kube-apiserver:")
+      condition: (ka.user.name startswith "system:node:" and ka.req.pod.containers.image.repository in ("registry.k8s.io/kube-apiserver"))
     - rule: Create HostNetwork Pod
       override:
         condition: append
       condition: and not user_known_apiserver_hostnetwork_pods
     # The descheduler CronJob runs in kube-system.
     - macro: user_known_descheduler_pods
-      condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.req.pod.containers.image startswith "registry.k8s.io/descheduler/descheduler:")
+      condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.req.pod.containers.image.repository in ("registry.k8s.io/descheduler/descheduler"))
     - rule: Pod Created in Kube Namespace
       override:
         condition: append
