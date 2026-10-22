@@ -74,9 +74,17 @@ customRules:
         (ka.user.name = "system:serviceaccount:external-secrets:external-secrets-cert-controller" and ka.target.namespace = "external-secrets") or
         (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.target.namespace = "default") or
         (ka.user.name = "system:serviceaccount:rook-ceph:rook-ceph-rbd-csi-ceph-com-nodeplugin-sa" and ka.target.namespace = "rook-ceph") or
-        (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and ka.target.namespace = "kopiur-system") or
-        (ka.user.name = "system:serviceaccount:renovate:renovate-operator-renovate-operator" and ka.target.namespace = "renovate")
+        (ka.user.name = "system:serviceaccount:renovate:renovate-operator-renovate-operator" and ka.target.namespace = "renovate") or
+        (ka.user.name = "system:serviceaccount:rook-ceph:rook-ceph-rbd-csi-ceph-com-ctrlplugin-sa" and ka.target.namespace = "rook-ceph") or
+        (ka.user.name = "system:serviceaccount:default:nextcloud-postgres" and ka.target.namespace = "default") or
+        # Kopia backups read application secrets in the namespaces they back up.
+        (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and
+          ka.target.namespace in ("comms", "default", "opencloud", "media", "games", "observability", "security", "renovate"))
     - rule: K8s Secret Get Successfully
+      override:
+        condition: append
+      condition: and not user_known_secret_get_activities
+    - rule: K8s Secret Get Unsuccessfully Tried
       override:
         condition: append
       condition: and not user_known_secret_get_activities
