@@ -1,5 +1,5 @@
 # Kubernetes audit-log detection. A separate, unprivileged Falco release: no driver, no
-# collectors, one replica. Audit events arrive from Fluent Bit over TLS (see apps/security/fluent-bit).
+# collectors, one replica. Audit events arrive from Fluent Bit over TLS (see apps/falco/fluent-bit).
 # Base layout follows the chart's values-k8saudit.yaml.
 fullnameOverride: falco-k8saudit
 
@@ -29,7 +29,7 @@ containerSecurityContext:
   capabilities:
     drop: ["ALL"]
 
-# Server certificate from cert-manager (apps/security/falco-k8saudit/pki.yaml).
+# Server certificate from cert-manager (apps/falco/falco-k8saudit/pki.yaml).
 # The secret mounts at /etc/falco/certs; the combined key+cert file is used below.
 certs:
   existingSecret: falco-k8saudit-tls
@@ -60,6 +60,26 @@ services:
     ports:
       - port: 9765
         protocol: TCP
+
+# Routine, known API-server activity. Each entry pins the principal and the namespace, so anything
+# else (other principals, other namespaces, interactive users) still alerts.
+customRules:
+  customized-k8s-audit-rules.yaml: |-
+    - macro: user_known_portforward_activities
+      condition: (ka.user.name = "system:serviceaccount:observability:kiali" and ka.target.namespace = "istio-system")
+    - macro: user_known_secret_get_activities
+      condition: >
+        (ka.user.name = "system:serviceaccount:observability:grafana-operator" and ka.target.namespace = "observability") or
+        (ka.user.name = "system:serviceaccount:policy:kyverno-admission-controller" and ka.target.namespace = "policy") or
+        (ka.user.name = "system:serviceaccount:external-secrets:external-secrets-cert-controller" and ka.target.namespace = "external-secrets") or
+        (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.target.namespace = "default") or
+        (ka.user.name = "system:serviceaccount:rook-ceph:rook-ceph-rbd-csi-ceph-com-nodeplugin-sa" and ka.target.namespace = "rook-ceph") or
+        (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and ka.target.namespace = "kopiur-system") or
+        (ka.user.name = "system:serviceaccount:renovate:renovate-operator-renovate-operator" and ka.target.namespace = "renovate")
+    - rule: K8s Secret Get Successfully
+      override:
+        condition: append
+      condition: and not user_known_secret_get_activities
 
 falco:
   json_output: true

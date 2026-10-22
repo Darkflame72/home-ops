@@ -113,3 +113,7 @@ resources:
     memory: 64Mi
   limits:
     memory: 128Mi
+
+# The chart's helm-test pod uses busybox:latest. It is not deployed, so disable it.
+testFramework:
+  enabled: false
