@@ -17,7 +17,7 @@ metadata:
       this cluster's actual live image inventory: ghcr.io, quay.io,
       docker.io, registry.k8s.io, reg.kyverno.io,
       registry.istio.io, mirror.gcr.io, ecr-public.aws.com,
-      cr.agentgateway.dev, code.forgejo.org. Bare-name Docker Hub shorthand
+      cr.agentgateway.dev, cr.fluentbit.io, code.forgejo.org. Bare-name Docker Hub shorthand
       (e.g. "renovate/renovate:43", no explicit registry host) is allowed —
       it's already implicitly docker.io, which is already trusted; this
       cluster has 5 such images live (docker, grafana/mcp-grafana,
@@ -36,7 +36,7 @@ spec:
   variables:
     - name: allowedRegistry
       expression: >-
-        '^(ghcr\\.io|quay\\.io|docker\\.io|registry\\.k8s\\.io|reg\\.kyverno\\.io|registry\\.istio\\.io|mirror\\.gcr\\.io|ecr-public\\.aws\\.com|cr\\.agentgateway\\.dev|code\\.forgejo\\.org)/'
+        '^(ghcr\\.io|quay\\.io|docker\\.io|registry\\.k8s\\.io|reg\\.kyverno\\.io|registry\\.istio\\.io|mirror\\.gcr\\.io|ecr-public\\.aws\\.com|cr\\.agentgateway\\.dev|cr\\.fluentbit\\.io|code\\.forgejo\\.org)/'
     - name: hasExplicitRegistry
       expression: "'^[^/]+[.:][^/]*/'"
     - name: allContainers
@@ -51,5 +51,5 @@ spec:
         Container image must come from an allowlisted registry (ghcr.io,
         quay.io, docker.io, registry.k8s.io, reg.kyverno.io,
         registry.istio.io, mirror.gcr.io, ecr-public.aws.com,
-        cr.agentgateway.dev, code.forgejo.org) or be an unprefixed Docker Hub
+        cr.agentgateway.dev, cr.fluentbit.io, code.forgejo.org) or be an unprefixed Docker Hub
         shorthand image. Adding a new registry requires a PR.

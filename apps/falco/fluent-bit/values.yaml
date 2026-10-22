@@ -5,8 +5,8 @@
 kind: DaemonSet
 
 image:
-  # Docker Hub copy of the official image, so it passes the registry allowlist.
-  repository: docker.io/fluent/fluent-bit
+  # Official image. cr.fluentbit.io is on the registry allowlist.
+  repository: cr.fluentbit.io/fluent/fluent-bit
 
 # Only control-plane nodes produce the audit log. The taint is already removed in this cluster.
 nodeSelector:
