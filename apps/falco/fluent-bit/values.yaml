@@ -1,0 +1,111 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluent/helm-charts/main/charts/fluent-bit/values.schema.json
+# Ships the apiserver audit log from control-plane nodes to the k8saudit listener (falco-k8saudit).
+# Runs only on control-plane nodes, reads one file read-only, and sends over verified TLS.
+# Reference: https://falco.org/blog/deploy-falco-talos-cluster/ (updated for TLS, non-root and filtering).
+kind: DaemonSet
+
+# Only control-plane nodes produce the audit log. The taint is already removed in this cluster.
+nodeSelector:
+  node-role.kubernetes.io/control-plane: ""
+
+# Non-root, matching the audit file owner (uid/gid 65534).
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+daemonSetVolumes:
+  # Narrowed to the audit directory, not /var/log.
+  - name: audit-log
+    hostPath:
+      path: /var/log/audit/kube
+      type: Directory
+  # Only the CA certificate is mounted. The server's private key is not visible here.
+  - name: falco-k8saudit-ca
+    secret:
+      secretName: falco-k8saudit-tls
+      items:
+        - key: ca.crt
+          path: ca.crt
+  # Writable state for the tail position database. Recreated on pod restart.
+  - name: state
+    emptyDir: {}
+
+daemonSetVolumeMounts:
+  - name: audit-log
+    mountPath: /var/log/audit/kube
+    readOnly: true
+  - name: falco-k8saudit-ca
+    mountPath: /fluent-bit/tls
+    readOnly: true
+  - name: state
+    mountPath: /fluent-bit/state
+
+config:
+  customParsers: |
+    [PARSER]
+        Name        k8s-audit
+        Format      json
+        Time_Key    requestReceivedTimestamp
+        Time_Format %Y-%m-%dT%H:%M:%S.%LZ
+        Time_Keep   On
+
+  inputs: |
+    [INPUT]
+        Name             tail
+        Tag              kube.audit
+        # Only the active file. Fluent Bit follows the rename on rotation.
+        Path             /var/log/audit/kube/kube-apiserver.log
+        Parser           k8s-audit
+        DB               /fluent-bit/state/audit.db
+        # Start at the end on a fresh DB, so a restart does not replay the whole log.
+        Read_from_Head   Off
+        Refresh_Interval 10
+        Rotate_Wait      15
+        Skip_Long_Lines  On
+        Mem_Buf_Limit    64MB
+
+  filters: |
+    # Drop lease heartbeats and events (the policy already drops them; this is a second guard).
+    [FILTER]
+        Name    grep
+        Match   kube.audit
+        Exclude $objectRef['resource'] ^(leases|events)$
+    # Drop health probes.
+    [FILTER]
+        Name    grep
+        Match   kube.audit
+        Exclude $requestURI ^/(livez|readyz|healthz)
+
+  outputs: |
+    [OUTPUT]
+        Name            http
+        Match           kube.audit
+        Host            falco-k8saudit-webhook.falco.svc.cluster.local
+        Port            9765
+        URI             /k8s-audit
+        Format          json
+        # TLS with verification against the falco-k8saudit CA.
+        tls             On
+        tls.verify      On
+        tls.ca_file     /fluent-bit/tls/ca.crt
+        Retry_Limit     5
+
+serviceMonitor:
+  enabled: true
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
