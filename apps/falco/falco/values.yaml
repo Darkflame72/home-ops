@@ -18,10 +18,20 @@ customRules:
   customized-local-rules.yaml: |-
     # Expected node-level behaviour, not alerted on (reviewed 2026-10-21).
     # Containerd runs these CNI plugins when pods start.
+    # Forgejo runner jobs run in containers started by the dind daemon, which Falco cannot attribute to a
+    # Kubernetes namespace or container name. Scoped by job workspace and toolcache binaries instead (reviewed 2026-10-22).
     - macro: known_drop_and_execute_activities
       condition: >
         (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/cilium-cni" and proc.cmdline = "cilium-cni") or
-        (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/istio-cni" and proc.cmdline = "istio-cni")
+        (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/istio-cni" and proc.cmdline = "istio-cni") or
+        (k8s.ns.name = "renovate" and container.name = "renovate" and proc.exepath startswith "/opt/containerbase/tools/") or
+        (k8s.ns.name = "" and container.id != host and user.uid = 0 and proc.cwd startswith "/workspace/" and
+          (proc.exepath startswith "/opt/hostedtoolcache/" or proc.exepath startswith "/root/setup-pnpm/"))
+    # Expected dind runner socket, reviewed 2026-10-22. Only the forgejo-runners dind dockerd is exempt.
+    - rule: Packet socket created in container
+      override:
+        condition: append
+      condition: and not (k8s.ns.name = "forgejo-runners" and container.name = "dind" and proc.exepath = "/usr/local/bin/dockerd" and user.uid = 0)
     # Each entry pins namespace, pod, container, binary, uid and command line,
     # so only that exact process in that exact workload is allowed to call the API server.
     - macro: user_known_contact_k8s_api_server_activities
@@ -47,6 +57,18 @@ customRules:
           and proc.exepath = "/ko-app/kyverno" and user.uid = 65534 and proc.cmdline startswith "kyverno --caSecretName") or
         (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-background-controller-" and container.name = "controller"
           and proc.exepath = "/ko-app/background-controller" and user.uid = 65534 and proc.cmdline startswith "background-cont --enableTracing") or
+        (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopia-primary-f-" and container.name = "mover"
+          and proc.exepath = "/usr/local/bin/kopiur-mover" and user.uid = 65532 and proc.cmdline startswith "kopiur-mover") or
+        (k8s.ns.name = "argocd" and k8s.pod.name startswith "argocd-server-" and container.name = "server"
+          and proc.exepath = "/usr/local/bin/argocd" and user.uid = 999 and proc.cmdline startswith "argocd-server") or
+        (k8s.ns.name = "argocd" and k8s.pod.name startswith "argocd-redis-secret-init-" and container.name = "secret-init"
+          and proc.exepath = "/usr/local/bin/argocd" and user.uid = 999 and proc.cmdline startswith "argocd admin redis-initial-password") or
+        (k8s.ns.name = "database" and k8s.pod.name startswith "cloudnative-pg-" and container.name = "manager"
+          and proc.exepath = "/operator/manager_amd64" and user.uid = 10001 and proc.cmdline startswith "manager controller") or
+        (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-migrate-resources-" and container.name = "kyverno-cli"
+          and proc.exepath = "/ko-app/kubectl-kyverno" and user.uid = 65534 and proc.cmdline startswith "kubectl-kyverno migrate") or
+        (k8s.ns.name = "observability" and k8s.pod.name startswith "alloy-" and container.name = "alloy"
+          and proc.exepath = "/usr/bin/alloy" and user.uid = 0 and proc.cmdline startswith "alloy run") or
         (k8s.ns.name = "security" and k8s.pod.name startswith "authentik-worker-" and container.name = "worker"
           and proc.exepath = "/usr/local/bin/python3.14" and user.uid = 1000
           and proc.cmdline startswith "Thread-" and proc.cmdline contains "-m lifecycle.worker_process") or
