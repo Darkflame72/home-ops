@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/falcosecurity/charts/master/charts/falco/values.schema.json
 # Kubernetes audit-log detection. A separate, unprivileged Falco release: no driver, no
 # collectors, one replica. Audit events arrive from Fluent Bit over TLS (see apps/security/fluent-bit).
 # Base layout follows the chart's values-k8saudit.yaml.
