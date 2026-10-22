@@ -66,10 +66,10 @@ services:
 customRules:
   customized-k8s-audit-rules.yaml: |-
     # Talos manages the cluster as talos:admin. This is system activity, not an interactive user.
-    - macro: allowed_k8s_users
+    - list: allowed_k8s_users
       override:
-        condition: append
-      condition: or ka.user.name = "talos:admin"
+        items: append
+      items: ["talos:admin"]
     - macro: user_known_portforward_activities
       condition: (ka.user.name = "system:serviceaccount:observability:kiali" and ka.target.namespace = "istio-system")
     # Kopia backups read application secrets in the namespaces they back up.
