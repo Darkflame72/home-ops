@@ -518,3 +518,66 @@ spec:
         object.metadata.namespace == 'falco' &&
         object.metadata.?labels['app.kubernetes.io/instance'].orValue('') == 'falco' &&
         object.metadata.?labels['app.kubernetes.io/name'].orValue('') == 'falco'
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: otel-daemon-collector-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The OpenTelemetry daemon collector reads host log files through a hostPath mount. It runs
+      as root, which the host file permissions require. Pinned to the daemon collector pods only.
+spec:
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: otel-daemon-collector
+      expression: >-
+        object.metadata.namespace == 'observability' &&
+        object.metadata.name.startsWith('opentelemetry-kube-stack-daemon-collector-')
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: minecraft-server-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The itzg minecraft-server image starts as root and drops privileges itself, using its UID
+      setting. Changing the pod user would break the world data permissions. Pinned to the
+      minecraft server pod in games.
+spec:
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: minecraft-server
+      expression: >-
+        object.metadata.namespace == 'games' &&
+        object.metadata.name.startsWith('minecraft-')
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: arc-crosscut-listener
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The ARC scale-set listener pod is created by the gha runner scale-set controller and
+      carries no resource requests or non-root user in its generated spec. It is managed by ARC,
+      not by this repo. Pinned to the crosscut-runners listener pod.
+spec:
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+    - name: require-requests-limits
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: crosscut-listener
+      expression: >-
+        object.metadata.namespace == 'arc-systems' &&
+        object.metadata.name.startsWith('crosscut-runners-') &&
+        object.metadata.name.contains('listener')

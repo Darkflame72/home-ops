@@ -39,6 +39,12 @@ falcoctl:
     install:
       # Plugin and rules are installed by the init container at pinned versions.
       enabled: true
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 128Mi
       # Signature verification writes a Sigstore cache under $HOME. The root filesystem is not
       # writable for this non-root user, so point HOME at the emptyDir that is already mounted.
       env:
