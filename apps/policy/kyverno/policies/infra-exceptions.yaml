@@ -567,13 +567,11 @@ metadata:
   annotations:
     policies.kyverno.io/description: >-
       The ARC scale-set listener pod is created by the gha runner scale-set controller and
-      carries no resource requests or non-root user in its generated spec. It is managed by ARC,
-      not by this repo. Pinned to the crosscut-runners listener pod.
+      runs as root in its generated spec. Its resources are set through listenerTemplate in
+      apps/arc/crosscut-runners. Pinned to the crosscut-runners listener pod.
 spec:
   policyRefs:
     - name: require-run-as-nonroot
-      kind: ValidatingPolicy
-    - name: require-requests-limits
       kind: ValidatingPolicy
   matchConditions:
     - name: crosscut-listener
