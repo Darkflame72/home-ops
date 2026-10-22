@@ -86,7 +86,7 @@ customRules:
         (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and
           ka.target.namespace in ("kopiur-system", "comms", "default", "opencloud", "media", "games", "observability", "security", "renovate")) or
         (ka.user.name = "system:serviceaccount:external-secrets:external-secrets" and
-          ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd")) or
+          ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd", "comms", "renovate", "network", "games", "opencloud", "cert-manager")) or
         ka.user.name = "talos:admin"
     - rule: K8s Secret Get Successfully
       override:
