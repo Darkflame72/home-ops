@@ -87,6 +87,10 @@ customRules:
           ka.target.namespace in ("kopiur-system", "comms", "default", "opencloud", "media", "games", "observability", "security", "renovate")) or
         (ka.user.name = "system:serviceaccount:external-secrets:external-secrets" and
           ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd", "comms", "renovate", "network", "games", "opencloud", "cert-manager")) or
+        (ka.user.name = "system:serviceaccount:observability:gatus-postgres" and ka.target.namespace = "observability") or
+        (ka.user.name = "system:serviceaccount:istio-system:istiod" and ka.target.namespace = "istio-system") or
+        (ka.user.name = "system:serviceaccount:database:cloudnative-pg" and ka.target.namespace = "database") or
+        (ka.user.name = "system:serviceaccount:arc-systems:gha-runner-scale-set-controller-gha-rs-controller" and ka.target.namespace = "arc-system") or
         ka.user.name = "talos:admin"
     - rule: K8s Secret Get Successfully
       override:
