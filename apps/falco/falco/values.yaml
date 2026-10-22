@@ -150,6 +150,11 @@ serviceMonitor:
 
 falcosidekick:
   enabled: true
+  # Explicit non-root, so the policy does not depend on the default user.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1234
+    fsGroup: 1234
   resources:
     requests:
       cpu: 20m
