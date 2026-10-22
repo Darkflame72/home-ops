@@ -65,8 +65,14 @@ services:
 # else (other principals, other namespaces, interactive users) still alerts.
 customRules:
   customized-k8s-audit-rules.yaml: |-
+    # Talos manages the cluster as talos:admin. This is system activity, not an interactive user.
+    - macro: allowed_k8s_users
+      override:
+        condition: append
+      condition: or ka.user.name = "talos:admin"
     - macro: user_known_portforward_activities
       condition: (ka.user.name = "system:serviceaccount:observability:kiali" and ka.target.namespace = "istio-system")
+    # Kopia backups read application secrets in the namespaces they back up.
     - macro: user_known_secret_get_activities
       condition: >
         (ka.user.name = "system:serviceaccount:observability:grafana-operator" and ka.target.namespace = "observability") or
@@ -77,7 +83,6 @@ customRules:
         (ka.user.name = "system:serviceaccount:renovate:renovate-operator-renovate-operator" and ka.target.namespace = "renovate") or
         (ka.user.name = "system:serviceaccount:rook-ceph:rook-ceph-rbd-csi-ceph-com-ctrlplugin-sa" and ka.target.namespace = "rook-ceph") or
         (ka.user.name = "system:serviceaccount:default:nextcloud-postgres" and ka.target.namespace = "default") or
-        # Kopia backups read application secrets in the namespaces they back up.
         (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and
           ka.target.namespace in ("comms", "default", "opencloud", "media", "games", "observability", "security", "renovate"))
     - rule: K8s Secret Get Successfully
