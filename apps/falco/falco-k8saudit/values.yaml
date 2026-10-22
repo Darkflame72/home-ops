@@ -84,7 +84,10 @@ customRules:
         (ka.user.name = "system:serviceaccount:rook-ceph:rook-ceph-rbd-csi-ceph-com-ctrlplugin-sa" and ka.target.namespace = "rook-ceph") or
         (ka.user.name = "system:serviceaccount:default:nextcloud-postgres" and ka.target.namespace = "default") or
         (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and
-          ka.target.namespace in ("comms", "default", "opencloud", "media", "games", "observability", "security", "renovate"))
+          ka.target.namespace in ("kopiur-system", "comms", "default", "opencloud", "media", "games", "observability", "security", "renovate")) or
+        (ka.user.name = "system:serviceaccount:external-secrets:external-secrets" and
+          ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd")) or
+        ka.user.name = "talos:admin"
     - rule: K8s Secret Get Successfully
       override:
         condition: append
