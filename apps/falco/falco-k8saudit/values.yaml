@@ -92,6 +92,17 @@ customRules:
         (ka.user.name = "system:serviceaccount:database:cloudnative-pg" and ka.target.namespace = "database") or
         (ka.user.name = "system:serviceaccount:arc-systems:gha-runner-scale-set-controller-gha-rs-controller" and ka.target.namespace = "arc-system") or
         ka.user.name = "talos:admin"
+    # Helm charts create their own ServiceAccounts, and the kubelet identity performs those creations.
+    - macro: user_known_node_serviceaccount_creation
+      condition: (ka.user.name startswith "system:node:")
+    - rule: Service Account Created in Kube Namespace
+      override:
+        condition: append
+      condition: and not user_known_node_serviceaccount_creation
+    - rule: K8s Serviceaccount Created
+      override:
+        condition: append
+      condition: and not user_known_node_serviceaccount_creation
     - rule: K8s Secret Get Successfully
       override:
         condition: append
