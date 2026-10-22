@@ -47,14 +47,13 @@ spec:
         - ports:
             - port: "2801"
               protocol: TCP
-    # Plugin and rules artifacts, pulled by the falcoctl init container.
-    # The pod resolver tries cluster search suffixes first (ndots:5), and Cilium only learns
-    # IPs for the names it sees, so the *.falco.svc.cluster.local variants are listed too (same as gatus).
-    - toFQDNs:
-        - matchName: "ghcr.io"
-        - matchName: "falcosecurity.github.io"
-        - matchPattern: "*.githubusercontent.com"
-        - matchPattern: "*.falco.svc.cluster.local"
+    # Plugin and rules artifacts, pulled by the falcoctl init container from ghcr.io and
+    # falcosecurity.github.io. FQDN learning did not reliably allow these addresses (Cilium
+    # learned them under search-suffixed names and the connections were still dropped), so this
+    # allows outbound HTTPS to any destination. Accepted trade-off: the listener pod is
+    # unprivileged, holds no credentials and only receives audit events from Fluent Bit.
+    - toEntities:
+        - world
       toPorts:
         - ports:
             - port: "443"
