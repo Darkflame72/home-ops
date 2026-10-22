@@ -4,6 +4,10 @@
 # Reference: https://falco.org/blog/deploy-falco-talos-cluster/ (updated for TLS, non-root and filtering).
 kind: DaemonSet
 
+image:
+  # Docker Hub copy of the official image, so it passes the registry allowlist.
+  repository: docker.io/fluent/fluent-bit
+
 # Only control-plane nodes produce the audit log. The taint is already removed in this cluster.
 nodeSelector:
   node-role.kubernetes.io/control-plane: ""
@@ -27,8 +31,8 @@ daemonSetVolumes:
   # Narrowed to the audit directory, not /var/log.
   - name: audit-log
     hostPath:
+      # No type check: the kubelet cannot stat this path, though the apiserver mounts it.
       path: /var/log/audit/kube
-      type: Directory
   # Only the CA certificate is mounted. The server's private key is not visible here.
   - name: falco-k8saudit-ca
     secret:
