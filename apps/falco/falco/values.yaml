@@ -39,6 +39,8 @@ customRules:
           and (proc.cmdline startswith "app --leader-elect=true" or proc.cmdline startswith "tokio-rt-worker --leader-elect=true")) or
         (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopia-primary-discovery-" and container.name = "mover"
           and proc.exepath = "/usr/local/bin/kopiur-mover" and user.uid = 65532 and proc.cmdline startswith "kopiur-mover") or
+        (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopia-primary-q-" and container.name = "mover"
+          and proc.exepath = "/usr/local/bin/kopiur-mover" and user.uid = 65532 and proc.cmdline startswith "kopiur-mover") or
         (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-reports-controller-" and container.name = "controller"
           and proc.exepath = "/ko-app/reports-controller" and user.uid = 65534 and proc.cmdline startswith "reports-control") or
         (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-admission-controller-" and container.name = "kyverno"
