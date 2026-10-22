@@ -131,6 +131,20 @@ customRules:
       override:
         condition: append
       condition: and not user_known_descheduler_pods
+    # The OpenEBS local-PV provisioner starts privileged linux-utils helper pods for volume operations.
+    - macro: user_known_openebs_privileged_helpers
+      condition: (ka.user.name = "system:serviceaccount:openebs-system:openebs-localpv-provisioner" and ka.req.pod.containers.image.repository in ("quay.io/openebs/linux-utils"))
+    - rule: Create Privileged Pod
+      override:
+        condition: append
+      condition: and not user_known_openebs_privileged_helpers
+    # kube-controller-manager creates ServiceAccounts for its own controllers.
+    - macro: user_known_controller_manager_serviceaccounts
+      condition: (ka.user.name = "system:kube-controller-manager")
+    - rule: Service Account Created in Kube Namespace
+      override:
+        condition: append
+      condition: and not user_known_controller_manager_serviceaccounts
     - rule: K8s Secret Get Successfully
       override:
         condition: append
