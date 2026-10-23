@@ -102,7 +102,9 @@ customRules:
         (ka.user.name = "system:serviceaccount:observability:gatus-postgres" and ka.target.namespace = "observability") or
         (ka.user.name = "system:serviceaccount:istio-system:istiod" and ka.target.namespace = "istio-system") or
         (ka.user.name = "system:serviceaccount:database:cloudnative-pg" and ka.target.namespace = "database") or
-        (ka.user.name = "system:serviceaccount:arc-systems:gha-runner-scale-set-controller-gha-rs-controller" and ka.target.namespace = "arc-system") or
+        (ka.user.name = "system:serviceaccount:arc-systems:gha-runner-scale-set-controller-gha-rs-controller" and ka.target.namespace in ("arc-systems", "arc-runners")) or
+        (ka.user.name = "system:serviceaccount:rook-ceph:rook-ceph-system" and ka.target.namespace = "rook-ceph") or
+        (ka.user.name = "system:serviceaccount:cert-manager:cert-manager" and ka.target.namespace = "cert-manager") or
         (ka.user.name startswith "system:node:" and ka.target.namespace = "rook-ceph" and ka.target.name = "rook-csi-rbd-node") or
         (ka.user.name = "system:serviceaccount:media:immich-v2" and ka.target.namespace = "media") or
         (ka.user.name = "system:serviceaccount:default:miniflux-postgres" and ka.target.namespace = "default") or
@@ -137,6 +139,27 @@ customRules:
       override:
         condition: append
       condition: and not user_known_descheduler_pods
+    # The Cilium DaemonSet and its operator create hostNetwork pods and mount host paths on every rollout.
+    - macro: user_known_cilium_pods
+      condition: >
+        ((ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" or
+          ka.user.name = "system:serviceaccount:kube-system:replicaset-controller") and ka.target.namespace = "kube-system" and
+          ka.req.pod.containers.image.repository in ("quay.io/cilium/cilium", "quay.io/cilium/cilium-envoy", "quay.io/cilium/operator-generic"))
+    - rule: Create HostNetwork Pod
+      override:
+        condition: append
+      condition: and not user_known_cilium_pods
+    - rule: Create Sensitive Mount Pod
+      override:
+        condition: append
+      condition: and not user_known_cilium_pods
+    # Rook runs the OSD prepare jobs with the Ceph image, which needs privileged access to the disks.
+    - macro: user_known_rook_ceph_jobs
+      condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph"))
+    - rule: Create Privileged Pod
+      override:
+        condition: append
+      condition: and not user_known_rook_ceph_jobs
     # The OpenEBS local-PV provisioner starts privileged linux-utils helper pods for volume operations.
     - macro: user_known_openebs_privileged_helpers
       condition: (ka.user.name = "system:serviceaccount:openebs-system:openebs-localpv-provisioner" and ka.req.pod.containers.image.repository in ("quay.io/openebs/linux-utils"))
