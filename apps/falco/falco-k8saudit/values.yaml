@@ -92,7 +92,13 @@ customRules:
         (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and
           ka.target.namespace in ("kopiur-system", "comms", "default", "opencloud", "media", "games", "observability", "security", "renovate")) or
         (ka.user.name = "system:serviceaccount:external-secrets:external-secrets" and
-          ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd", "comms", "renovate", "network", "games", "opencloud", "cert-manager")) or
+          ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd", "comms", "renovate", "network", "games", "opencloud", "cert-manager", "rook-ceph", "kube-system", "kopiur-system", "forgejo-runners", "database", "arc-runners")) or
+        (ka.user.name = "system:serviceaccount:security:authentik-postgres" and ka.target.namespace = "security") or
+        (ka.user.name = "system:serviceaccount:default:harbor-postgres" and ka.target.namespace = "default") or
+        (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.target.namespace = "argocd") or
+        (ka.user.name = "system:serviceaccount:argocd:argocd-redis-secret-init" and ka.target.namespace = "argocd") or
+        (ka.user.name = "system:serviceaccount:policy:kyverno-cleanup-controller" and ka.target.namespace = "policy") or
+        (ka.user.name = "system:serviceaccount:cert-manager:cert-manager-cainjector" and ka.target.namespace in ("cert-manager", "observability")) or
         (ka.user.name = "system:serviceaccount:observability:gatus-postgres" and ka.target.namespace = "observability") or
         (ka.user.name = "system:serviceaccount:istio-system:istiod" and ka.target.namespace = "istio-system") or
         (ka.user.name = "system:serviceaccount:database:cloudnative-pg" and ka.target.namespace = "database") or
@@ -138,6 +144,13 @@ customRules:
       override:
         condition: append
       condition: and not user_known_openebs_privileged_helpers
+    # The etcd backup CronJob runs the talos-backup image in kube-system (reviewed 2026-10-23).
+    - macro: user_known_talos_backup_pods
+      condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.req.pod.containers.image.repository in ("ghcr.io/siderolabs/talos-backup"))
+    - rule: Pod Created in Kube Namespace
+      override:
+        condition: append
+      condition: and not user_known_talos_backup_pods
     # kube-controller-manager creates ServiceAccounts for its own controllers.
     - macro: user_known_controller_manager_serviceaccounts
       condition: (ka.user.name = "system:kube-controller-manager")

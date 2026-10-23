@@ -36,6 +36,14 @@ customRules:
     # so only that exact process in that exact workload is allowed to call the API server.
     - macro: user_known_contact_k8s_api_server_activities
       condition: >
+        (k8s.ns.name = "agents" and k8s.pod.name startswith "agentgateway-" and container.name = "controller"
+          and proc.exepath = "/usr/local/bin/agentgateway" and user.uid = 10101 and proc.cmdline = "agentgateway") or
+        (k8s.ns.name = "argocd" and k8s.pod.name startswith "argocd-applicationset-controller-" and container.name = "applicationset-controller"
+          and proc.exepath = "/usr/local/bin/argocd" and user.uid = 999 and proc.cmdline startswith "argocd-applicat") or
+        (k8s.ns.name = "renovate" and k8s.pod.name startswith "renovate-operator-renovate-operator-" and container.name = "renovate-operator"
+          and proc.exepath = "/app/renovate-operator" and user.uid = 1000 and proc.cmdline startswith "renovate-operat") or
+        (k8s.ns.name = "external-secrets" and k8s.pod.name startswith "external-secrets-cert-controller-" and container.name = "cert-controller"
+          and proc.exepath = "/usr/bin/external-secrets" and user.uid = 1000 and proc.cmdline startswith "external-secret certcontroller") or
         (k8s.ns.name = "observability" and k8s.pod.name startswith "kiali-" and container.name = "kiali"
           and proc.exepath = "/opt/kiali/kiali" and user.uid = 1000 and proc.cmdline startswith "kiali -config") or
         (k8s.ns.name = "argocd" and k8s.pod.name startswith "argocd-application-controller-" and container.name = "application-controller"
