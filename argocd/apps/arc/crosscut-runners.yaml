@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/actions/actions-runner-controller-charts
       chart: gha-runner-scale-set
-      targetRevision: 0.15.0
+      targetRevision: 0.15.1
       helm:
         releaseName: crosscut-runners
         valueFiles:
