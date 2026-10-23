@@ -8,7 +8,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/darkflame72/alert-relay
-          tag: latest@sha256:70500ec058c4a31a230e3788453a133bd797fa7f40723c760976d82752829284
+          tag: latest@sha256:3ce5b8a0926f3e66fbcacd8b31ee29e5dfb26d75d06eb4792b12535d96be6cbe
         env:
           KAGENT_BASE_URL: "http://kagent-controller.kagent.svc.cluster.local:8083"
           KAGENT_NAMESPACE: kagent
