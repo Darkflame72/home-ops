@@ -11,9 +11,9 @@ spec:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 512Mi
     limits:
-      memory: 1Gi
+      memory: 2Gi
   provider:
     name: github
   # Operator mints an installation token from the App and mounts it as RENOVATE_TOKEN.
