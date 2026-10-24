@@ -72,6 +72,9 @@ metadata:
       istio-authz-agents-default-allow's source.namespaces instead — real
       mesh-identity matching, not a blanket port exception — so only the
       genuinely-unmeshed network caller needs to stay here.
+      Port 15020 is back because the daemon OTel collector's scrapes of
+      agentgateway-proxy reach ztunnel without a source identity and so match
+      this exception (reviewed 2026-10-24).
 spec:
   matchConstraints:
     resourceRules:
@@ -99,7 +102,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80"]}}
+                  {"operation": {"ports": ["80", "15020"]}}
                 ]
               })])
             })
