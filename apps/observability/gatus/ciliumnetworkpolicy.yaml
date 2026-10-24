@@ -46,6 +46,8 @@ spec:
         - matchName: "discord.com.observability.svc.cluster.local"
         # grafana-operator fetches dashboard JSON from grafana.com (GrafanaDashboard grafanaCom). Without this
         # the fetch timed out and new dashboards stayed in InvalidModelResolution (reviewed 2026-10-24).
+        # The resolver tries the search suffix first, so Cilium caches the suffixed name (same as discord.com above).
+        - matchName: "grafana.com.observability.svc.cluster.local"
         - matchName: "grafana.com"
       toPorts:
         - ports:
