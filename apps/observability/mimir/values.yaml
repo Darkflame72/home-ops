@@ -219,8 +219,8 @@ gateway:
     limits:
       memory: 128Mi
   podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
+    # The gateway is nginx and serves no /metrics (404). Component metrics come from the Mimir components themselves.
+    prometheus.io/scrape: "false"
 
 rollout_operator:
   enabled: false

@@ -30,10 +30,6 @@ service:
     ports:
       http:
         port: &port 8080
-serviceMonitor:
-  app:
-    endpoints:
-      - port: http
 route:
   app:
     hostnames: ["pdf.darkflame.dev"]

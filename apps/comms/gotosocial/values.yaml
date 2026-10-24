@@ -18,6 +18,11 @@ controllers:
           GTS_PROTOCOL: "https" # not HTTP server listen mode, but used for generating URLs etc
           GTS_PORT: "8080"
           GTS_METRICS_ENABLED: "true"
+          # Metrics are served on their own listener (default 9464), not the main port, so expose it for the ServiceMonitor.
+          OTEL_METRICS_PRODUCERS: prometheus
+          OTEL_METRICS_EXPORTER: prometheus
+          OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
+          OTEL_EXPORTER_PROMETHEUS_PORT: "9464"
           GTS_TRACING_ENABLED: "true"
           OTEL_TRACES_EXPORTER: "otlp"
           OTEL_EXPORTER_OTLP_ENDPOINT: "http://opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4318"
@@ -51,10 +56,12 @@ service:
     ports:
       http:
         port: &port 8080
+      metrics:
+        port: 9464
 serviceMonitor:
   app:
     endpoints:
-      - port: http
+      - port: metrics
 route:
   app:
     hostnames:
