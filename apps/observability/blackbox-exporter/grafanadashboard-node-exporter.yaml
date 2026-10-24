@@ -11,6 +11,9 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folderRef: truenas
+  # grafana.com 1860 carries uid rYdddlPWk, the same as the in-cluster node-exporter-full dashboard.
+  # Giving this copy its own uid stops the two imports overwriting each other.
+  uid: truenas-node-exporter
   grafanaCom:
     id: 1860
     revision: 45
