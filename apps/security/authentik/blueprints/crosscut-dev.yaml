@@ -1,0 +1,70 @@
+version: 1
+metadata:
+  name: crosscut-dev
+entries:
+  # Members of this group may sign in to the crosscut dev instance. crosscut also checks the
+  # group in the token (auth.oidc.requiredGroup), so the two must agree.
+  - model: authentik_core.group
+    identifiers:
+      name: crosscut-users
+    attrs:
+      is_superuser: false
+      attributes: {}
+
+  # The `groups` claim the crosscut scope carries: every group the user is in, by name.
+  - model: authentik_providers_oauth2.scopemapping
+    id: crosscut-dev-scope-mapping
+    identifiers:
+      name: "authentik crosscut-dev OAuth Mapping: groups"
+    attrs:
+      scope_name: crosscut
+      expression: |
+        return {
+            "groups": [group.name for group in user.ak_groups.all()],
+        }
+
+  # A public client: the UI signs in with PKCE, so there is no client secret to keep.
+  - model: authentik_providers_oauth2.oauth2provider
+    id: crosscut-dev-provider
+    identifiers:
+      name: "Provider for crosscut-dev"
+    attrs:
+      client_type: public
+      client_id: crosscut-dev
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://crosscut-dev.darkflame.dev/ui/"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'offline_access'"]]
+        - !KeyOf crosscut-dev-scope-mapping
+
+  - model: authentik_core.application
+    id: crosscut-dev-application
+    identifiers:
+      slug: crosscut-dev
+    attrs:
+      name: crosscut (dev)
+      provider: !KeyOf crosscut-dev-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 9f4a387a-535b-4701-a5a6-573e6aa89d71
+    attrs:
+      target: !KeyOf crosscut-dev-application
+      group: !Find [authentik_core.group, [name, "crosscut-users"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
