@@ -3,7 +3,7 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: truenas-node-exporter
+  name: truenas-node-exporter-1860
   namespace: observability
 spec:
   allowCrossNamespaceImport: true
@@ -12,7 +12,8 @@ spec:
       grafana.internal/instance: grafana
   folderRef: truenas
   # grafana.com 1860 carries uid rYdddlPWk, the same as the in-cluster node-exporter-full dashboard.
-  # Giving this copy its own uid stops the two imports overwriting each other.
+  # Giving this copy its own uid stops the two imports overwriting each other. spec.uid is immutable,
+  # so the object is a new name rather than an edit of the old one.
   uid: truenas-node-exporter
   grafanaCom:
     id: 1860
