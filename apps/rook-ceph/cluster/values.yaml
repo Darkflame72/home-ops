@@ -31,6 +31,14 @@ route:
             type: PathPrefix
             value: /
 cephClusterSpec:
+  # Mgr and exporter pods are scraped through their ServiceMonitors, which the OTel cluster collector
+  # labels with cluster="home". The prometheus.io/scrape annotation also lets the daemon collector scrape
+  # them without that label, which duplicated every mon/mgr series. Turn the annotation off at the source.
+  annotations:
+    mgr:
+      prometheus.io/scrape: "false"
+    exporter:
+      prometheus.io/scrape: "false"
   cephConfig:
     global:
       bdev_enable_discard: "true" # quote

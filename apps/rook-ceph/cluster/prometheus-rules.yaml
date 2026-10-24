@@ -50,8 +50,10 @@ spec:
           query }} - {{ .Labels.ceph_daemon }} on {{ .Labels.hostname }} {{- end }}'
         documentation: https://docs.ceph.com/en/latest/rados/operations/health-checks#mon-down
         summary: Monitor quorum is at risk on cluster {{ $labels.cluster }}
-      expr: "(\n  (ceph_health_detail{name=\"MON_DOWN\"} == 1) * on() group_right(cluster) (\n    count(ceph_mon_quorum_status\
-        \ == 1) by(cluster)== bool (floor(count(ceph_mon_metadata) by(cluster) / 2) + 1)\n  )\n) == 1\n"
+      # Mon series exist both with and without a cluster label (two scrape paths), so the on() join saw
+      # duplicates and failed. Keep only labelled series and collapse MON_DOWN to one series.
+      expr: "(\n  (max(ceph_health_detail{name=\"MON_DOWN\"}) == 1) * on() group_right(cluster) (\n    count(ceph_mon_quorum_status{cluster!=\"\"}\
+        \ == 1) by(cluster)== bool (floor(count(ceph_mon_metadata{cluster!=\"\"}) by(cluster) / 2) + 1)\n  )\n) == 1\n"
       for: 30s
       labels:
         oid: 1.3.6.1.4.1.50495.1.2.1.3.1
