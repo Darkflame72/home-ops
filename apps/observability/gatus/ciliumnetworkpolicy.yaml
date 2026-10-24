@@ -70,3 +70,16 @@ spec:
         - ports:
             - port: "30188"
               protocol: TCP
+    # TrueNAS scrapes from the OTel collector (node exporter 9100, smartctl 9633) and the
+    # blackbox NFS probe (2049). Without these the egress default-deny dropped them, so the
+    # truenas-node, truenas-smartctl and blackbox-nfs targets stayed down (reviewed 2026-10-24).
+    - toCIDR:
+        - "10.0.60.15/32"
+      toPorts:
+        - ports:
+            - port: "9100"
+              protocol: TCP
+            - port: "9633"
+              protocol: TCP
+            - port: "2049"
+              protocol: TCP
