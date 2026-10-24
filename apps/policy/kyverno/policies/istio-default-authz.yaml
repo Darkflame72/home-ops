@@ -823,6 +823,10 @@ metadata:
       source.namespaces=["observability", ...] via normal mesh-identity
       matching — no unmeshed-caller gap, unlike every other namespace in
       this rollout where the scraper lived elsewhere and wasn't meshed yet.
+      In practice the daemon OTel collector's scrapes reach ztunnel without a
+      source identity, so they match this exception instead: 3100 (loki),
+      9090 (kiali metrics), 8888 (collector self-metrics) are allowed for that
+      reason (reviewed 2026-10-24).
 spec:
   matchConstraints:
     resourceRules:
@@ -850,7 +854,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80", "3000", "6006", "8080", "20001"]}}
+                  {"operation": {"ports": ["80", "3000", "3100", "6006", "8080", "8888", "9090", "20001"]}}
                 ]
               })])
             })
