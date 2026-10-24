@@ -44,6 +44,9 @@ spec:
         # "discord.com."), which silently broke every Alertmanager Discord
         # notification (TLS handshake timeout / connection reset).
         - matchName: "discord.com.observability.svc.cluster.local"
+        # grafana-operator fetches dashboard JSON from grafana.com (GrafanaDashboard grafanaCom). Without this
+        # the fetch timed out and new dashboards stayed in InvalidModelResolution (reviewed 2026-10-24).
+        - matchName: "grafana.com"
       toPorts:
         - ports:
             - port: "443"
