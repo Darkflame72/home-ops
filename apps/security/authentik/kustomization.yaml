@@ -16,6 +16,7 @@ configMapGenerator:
       - blueprints/00-groups.yaml
       - blueprints/01-access-control.yaml
       - blueprints/bar-assistant.yaml
+      - blueprints/crosscut-dev.yaml
       - blueprints/forgejo.yaml
       - blueprints/gotosocial.yaml
       - blueprints/grafana.yaml

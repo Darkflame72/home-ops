@@ -17,6 +17,7 @@ falco:
 customRules:
   customized-local-rules.yaml: |-
     # Expected node-level behaviour, not alerted on (reviewed 2026-10-21).
+    # ARC runner jobs execute test binaries they just compiled in their workspace (crosscut cargo-nextest), reviewed 2026-10-24.
     # Containerd runs these CNI plugins when pods start.
     # Forgejo runner jobs run in containers started by the dind daemon, which Falco cannot attribute to a
     # Kubernetes namespace or container name. Scoped by job workspace and toolcache binaries instead (reviewed 2026-10-22).
@@ -29,7 +30,6 @@ customRules:
         (k8s.ns.name = "renovate" and container.name = "renovate" and proc.exepath startswith "/opt/containerbase/tools/") or
         (k8s.ns.name = "" and container.id != host and user.uid = 0 and proc.cwd startswith "/workspace/" and
           (proc.exepath startswith "/opt/hostedtoolcache/" or proc.exepath startswith "/root/setup-pnpm/")) or
-        # ARC runner jobs execute test binaries they just compiled in their workspace (crosscut cargo-nextest), reviewed 2026-10-24.
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
           proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/home/runner/")
     # Cilium runs its packet socket from the cilium-agent container in kube-system (reviewed 2026-10-23).

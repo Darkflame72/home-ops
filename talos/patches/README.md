@@ -36,6 +36,7 @@ anything that might depend on them.
 
 | File | Purpose |
 |---|---|
+| `audit-policy.yaml` | `KubeAuditPolicyConfig`: the apiserver audit policy read by Falco's k8saudit detection (Request for workload/RBAC, Metadata for secrets/tokens/configmaps, None for noise). |
 | `cluster.yaml` | `KubeAPIServerConfig`, `KubeControllerManagerConfig`, `KubeSchedulerConfig` (extra args), `KubeAdmissionControlConfig` delete (removes the default `PodSecurity` plugin), `KubeProxyConfig` (`enabled: false` — Cilium replaces kube-proxy), `KubeCoreDNSConfig` (`enabled: false` — CoreDNS is deployed separately via Helm), `KubeNodeConfig` taint delete (allows scheduling on control planes), and legacy `cluster.etcd` (metrics port, advertised subnet — `cluster.etcd.*` has no 1.14 replacement, stays legacy). |
 | `machine-upgrade.yaml` | `machine.features.kubernetesTalosAPIAccess` (legacy field, still valid) — grants `tuppr` Talos API access from the `system-upgrade` namespace to drive OS/Kubernetes upgrades. |
 
