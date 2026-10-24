@@ -149,10 +149,14 @@ customRules:
       override:
         condition: append
       condition: and not user_known_cilium_pods
+    # The OTel daemon collector mounts host log and kubelet paths by design. Scoped to the DaemonSet
+    # controller, observability and the collector image (reviewed 2026-10-24).
+    - macro: user_known_otel_daemon_collector
+      condition: (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "observability" and ka.req.pod.containers.image.repository in ("otel/opentelemetry-collector-contrib"))
     - rule: Create Sensitive Mount Pod
       override:
         condition: append
-      condition: and not user_known_cilium_pods
+      condition: and not user_known_cilium_pods and not user_known_otel_daemon_collector
     # Rook runs the OSD prepare jobs with the Ceph image, which needs privileged access to the disks.
     - macro: user_known_rook_ceph_jobs
       condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph"))
