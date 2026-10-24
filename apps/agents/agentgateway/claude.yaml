@@ -28,6 +28,9 @@ kind: HTTPRoute
 metadata:
   name: claude
   namespace: agents
+  annotations:
+    # LLM API routes never return a health-check status (auth-only, streaming, or 426 for websockets).
+    gatus.home-operations.com/enabled: "false"
   labels:
     # pihole-dns builds records from every HTTPRoute hostname; this one is
     # attached to the proxy (LB 10.0.60.1, plain HTTP only), so without this
