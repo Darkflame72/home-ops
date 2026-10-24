@@ -72,13 +72,6 @@ defaultCRConfig:
           authorization: Bearer ${env:PHOENIX_ADMIN_SECRET}
         tls:
           insecure: true
-      syslog/wazuh:
-        endpoint: wazuh-manager.security.svc.cluster.local
-        port: 514
-        network: udp
-        protocol: rfc5424
-        tls:
-          insecure: true
 
 # Single daemonset collector handles all signals.
 # clusterMetrics and kubernetesEvents use the leader election extension to run only on one node.
@@ -302,14 +295,6 @@ collectors:
             receivers: [filelog/audit]
             processors: [resource/audit, resource_detection/env, resource/hostname, batch]
             exporters: [otlp_http/loki, debug]
-          # Fans the same audit receiver out to Wazuh too - a receiver can
-          # feed multiple pipelines, so this is additive, not a reroute.
-          # Land only after apps/security/wazuh's manager+dashboard are
-          # verified up (see the plan's sequencing).
-          logs/audit_wazuh:
-            receivers: [filelog/audit]
-            processors: [resource/audit, resource_detection/env, resource/hostname, batch]
-            exporters: [syslog/wazuh, debug]
     presets:
       logsCollection:
         enabled: true
