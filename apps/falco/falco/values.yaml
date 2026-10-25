@@ -23,7 +23,8 @@ customRules:
     # Kubernetes namespace or container name. Scoped by job workspace and toolcache binaries instead (reviewed 2026-10-22).
     # Forgejo runner dind jobs often have no namespace metadata, so the namespace is not tested. Scoped by root,
     # the job workspace and the toolcache/pnpm binaries (reviewed 2026-10-25). Kept outside the condition block.
-    # ARC runners link Rust test binaries with the system GCC driver (cc from rustup-init) in their workspace, reviewed 2026-10-25.
+    # ARC runners build Rust crates with the toolchain in /home/runner/.rustup, link with the system GCC driver, and
+    # run rustup-init from /tmp. Scoped to the runner container and uid 1001 (reviewed 2026-10-25).
     - macro: known_drop_and_execute_activities
       condition: >
         (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/cilium-cni" and proc.cmdline = "cilium-cni") or
@@ -36,7 +37,11 @@ customRules:
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
           proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/home/runner/") or
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
-          proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/usr/bin/x86_64-linux-gnu-gcc")
+          proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/usr/bin/x86_64-linux-gnu-gcc") or
+        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
+          proc.cwd startswith "/home/runner/" and proc.exepath startswith "/home/runner/.rustup/toolchains/") or
+        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
+          proc.name = "rustup-init" and proc.exepath startswith "/tmp/")
     # Cilium runs its packet socket from the cilium-agent container in kube-system (reviewed 2026-10-23).
     - rule: Packet socket created in container
       override:
