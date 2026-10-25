@@ -21,6 +21,8 @@ customRules:
     # Containerd runs these CNI plugins when pods start.
     # Forgejo runner jobs run in containers started by the dind daemon, which Falco cannot attribute to a
     # Kubernetes namespace or container name. Scoped by job workspace and toolcache binaries instead (reviewed 2026-10-22).
+    # Forgejo runner dind jobs often have no namespace metadata, so the namespace is not tested. Scoped by root,
+    # the job workspace and the toolcache/pnpm binaries (reviewed 2026-10-25). Kept outside the condition block.
     - macro: known_drop_and_execute_activities
       condition: >
         (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/cilium-cni" and proc.cmdline = "cilium-cni") or
@@ -28,8 +30,6 @@ customRules:
         (k8s.ns.name = "kube-system" and container.name in ("mount-cgroup", "apply-sysctl-overwrites") and user.uid = 0 and
           proc.pname = bash and proc.exepath in ("/opt/cni/bin/cilium-mount", "/opt/cni/bin/cilium-sysctlfix")) or
         (k8s.ns.name = "renovate" and container.name = "renovate" and proc.exepath startswith "/opt/containerbase/tools/") or
-        # Forgejo runner dind jobs often have no namespace metadata, so the namespace is not tested here. Scoped by
-        # root, the job workspace and the toolcache/pnpm binaries instead (reviewed 2026-10-25).
         (container.id != host and user.uid = 0 and proc.cwd startswith "/workspace/" and
           (proc.exepath startswith "/opt/hostedtoolcache/" or proc.exepath startswith "/root/setup-pnpm/")) or
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
