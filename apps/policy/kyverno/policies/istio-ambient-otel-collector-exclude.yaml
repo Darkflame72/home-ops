@@ -29,6 +29,11 @@ metadata:
       Opts the opentelemetry-kube-stack daemon/gateway collector pods out of
       ambient mesh capture - ztunnel breaks plain OTLP connections to them.
 spec:
+  # Pods only. An empty controllers list stops Kyverno generating the same rule for Deployments, ReplicaSets
+  # and DaemonSets, where these pod paths do not exist (reviewed 2026-10-25).
+  autogen:
+    podControllers:
+      controllers: []
   matchConstraints:
     resourceRules:
       - apiGroups: [""]

@@ -32,6 +32,11 @@ metadata:
       (100m/128Mi request, 2/1Gi limit), which Istio provides no supported
       override for on Gateway-API-provisioned proxies.
 spec:
+  # Pods only. An empty controllers list stops Kyverno generating the same rule for Deployments, ReplicaSets
+  # and DaemonSets, where these pod paths do not exist (reviewed 2026-10-25).
+  autogen:
+    podControllers:
+      controllers: []
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
