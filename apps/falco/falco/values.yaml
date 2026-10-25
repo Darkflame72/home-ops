@@ -37,7 +37,7 @@ customRules:
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
           proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/home/runner/") or
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
-          proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/usr/bin/x86_64-linux-gnu-gcc") or
+          proc.cwd startswith "/home/runner/_work/" and (proc.exepath startswith "/usr/bin/x86_64-linux-gnu-gcc" or proc.exepath startswith "/usr/libexec/gcc/x86_64-linux-gnu/")) or
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
           proc.cwd startswith "/home/runner/" and proc.exepath startswith "/home/runner/.rustup/toolchains/") or
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and

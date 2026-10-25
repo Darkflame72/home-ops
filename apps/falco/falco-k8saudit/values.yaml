@@ -92,7 +92,7 @@ customRules:
         (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and
           ka.target.namespace in ("kopiur-system", "comms", "default", "opencloud", "media", "games", "observability", "security", "renovate")) or
         (ka.user.name = "system:serviceaccount:external-secrets:external-secrets" and
-          ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd", "comms", "renovate", "network", "games", "opencloud", "cert-manager", "rook-ceph", "kube-system", "kopiur-system", "forgejo-runners", "database", "arc-runners")) or
+          ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd", "comms", "renovate", "network", "games", "opencloud", "cert-manager", "rook-ceph", "kube-system", "kopiur-system", "forgejo-runners", "database", "arc-runners", "crosscut-dev")) or
         (ka.user.name = "system:serviceaccount:security:authentik-postgres" and ka.target.namespace = "security") or
         (ka.user.name = "system:serviceaccount:default:harbor-postgres" and ka.target.namespace = "default") or
         (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.target.namespace = "argocd") or
