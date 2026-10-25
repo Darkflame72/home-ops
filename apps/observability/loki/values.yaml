@@ -108,6 +108,3 @@ resultsCache:
 monitoring:
   dashboards:
     enabled: true
-
-minio:
-  enabled: false
