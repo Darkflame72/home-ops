@@ -25,6 +25,8 @@ customRules:
     # the job workspace and the toolcache/pnpm binaries (reviewed 2026-10-25). Kept outside the condition block.
     # ARC runners build Rust crates with the toolchain in /home/runner/.rustup, link with the system GCC driver, and
     # run rustup-init from /tmp. Scoped to the runner container and uid 1001 (reviewed 2026-10-25).
+    # GitHub (ARC) and Forgejo runner containers run CI-built binaries by design. Their binary execution is not alerted
+    # on, scoped to the runner container and uid, and the Forgejo dind root jobs in /workspace (reviewed 2026-10-25).
     - macro: known_drop_and_execute_activities
       condition: >
         (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/cilium-cni" and proc.cmdline = "cilium-cni") or
@@ -32,16 +34,8 @@ customRules:
         (k8s.ns.name = "kube-system" and container.name in ("mount-cgroup", "apply-sysctl-overwrites") and user.uid = 0 and
           proc.pname = bash and proc.exepath in ("/opt/cni/bin/cilium-mount", "/opt/cni/bin/cilium-sysctlfix")) or
         (k8s.ns.name = "renovate" and container.name = "renovate" and proc.exepath startswith "/opt/containerbase/tools/") or
-        (container.id != host and user.uid = 0 and proc.cwd startswith "/workspace/" and
-          (proc.exepath startswith "/opt/hostedtoolcache/" or proc.exepath startswith "/root/setup-pnpm/")) or
-        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
-          proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/home/runner/") or
-        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
-          proc.cwd startswith "/home/runner/" and (proc.exepath startswith "/usr/bin/x86_64-linux-gnu-" or proc.exepath startswith "/usr/libexec/gcc/x86_64-linux-gnu/")) or
-        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
-          proc.cwd startswith "/home/runner/" and proc.exepath startswith "/home/runner/.rustup/toolchains/") or
-        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
-          proc.name = "rustup-init" and proc.exepath startswith "/tmp/")
+        (container.id != host and user.uid = 0 and proc.cwd startswith "/workspace/") or
+        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001)
     # Cilium runs its packet socket from the cilium-agent container in kube-system (reviewed 2026-10-23).
     - rule: Packet socket created in container
       override:
