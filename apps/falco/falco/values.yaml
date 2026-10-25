@@ -23,6 +23,7 @@ customRules:
     # Kubernetes namespace or container name. Scoped by job workspace and toolcache binaries instead (reviewed 2026-10-22).
     # Forgejo runner dind jobs often have no namespace metadata, so the namespace is not tested. Scoped by root,
     # the job workspace and the toolcache/pnpm binaries (reviewed 2026-10-25). Kept outside the condition block.
+    # ARC runners link Rust test binaries with the system GCC driver (cc from rustup-init) in their workspace, reviewed 2026-10-25.
     - macro: known_drop_and_execute_activities
       condition: >
         (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/cilium-cni" and proc.cmdline = "cilium-cni") or
@@ -33,7 +34,9 @@ customRules:
         (container.id != host and user.uid = 0 and proc.cwd startswith "/workspace/" and
           (proc.exepath startswith "/opt/hostedtoolcache/" or proc.exepath startswith "/root/setup-pnpm/")) or
         (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
-          proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/home/runner/")
+          proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/home/runner/") or
+        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001 and
+          proc.cwd startswith "/home/runner/_work/" and proc.exepath startswith "/usr/bin/x86_64-linux-gnu-gcc")
     # Cilium runs its packet socket from the cilium-agent container in kube-system (reviewed 2026-10-23).
     - rule: Packet socket created in container
       override:
