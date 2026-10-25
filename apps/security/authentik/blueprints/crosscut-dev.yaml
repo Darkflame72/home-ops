@@ -38,6 +38,10 @@ entries:
         - matching_mode: strict
           redirect_uri_type: authorization
           url: "https://crosscut-dev.darkflame.dev/ui/"
+        # crosscut signs MCP clients in here, then issues its own tokens
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://crosscut-dev.darkflame.dev/oauth/callback"
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
