@@ -19,6 +19,18 @@ deschedulerPolicy:
         - name: DefaultEvictor
           args:
             nodeFit: true
+            # Pods with emptyDir volumes (postgres clusters, minecraft, argocd repo-server) were never evictable, which
+            # left nodes that were overloaded with them stuck. Allow them, but never a CNPG primary (that forces a
+            # failover) and never Rook mon, mgr or OSD pods (that starts Ceph data movement). Reviewed 2026-10-25.
+            evictLocalStoragePods: true
+            labelSelector:
+              matchExpressions:
+                - key: cnpg.io/instanceRole
+                  operator: NotIn
+                  values: ["primary"]
+                - key: app
+                  operator: NotIn
+                  values: ["rook-ceph-osd", "rook-ceph-mon", "rook-ceph-mgr"]
             podProtections:
               extraEnabled:
                 - PodsWithPVC
