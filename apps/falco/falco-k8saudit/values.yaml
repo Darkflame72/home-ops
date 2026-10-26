@@ -158,13 +158,16 @@ customRules:
     # Node exporter and Spegel mount host paths by design, and the DaemonSet controller recreates them on restarts (reviewed 2026-10-25).
     - macro: user_known_host_mount_daemons
       condition: (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ((ka.target.namespace = "observability" and ka.req.pod.containers.image.repository in ("quay.io/prometheus/node-exporter")) or (ka.target.namespace = "kube-system" and ka.req.pod.containers.image.repository in ("ghcr.io/spegel-org/spegel"))))
+    # kubelet recreates static control-plane pods on each node boot, as the node identity (reviewed 2026-10-25).
+    - macro: user_known_kubelet_static_pods
+      condition: (ka.user.name startswith "system:node:" and ka.target.namespace = "kube-system")
     # Rook-Ceph daemons run with host networking by design. The ReplicaSet controller recreates them on node restarts (reviewed 2026-10-25).
     - macro: user_known_rook_ceph_hostnetwork
       condition: (ka.user.name = "system:serviceaccount:kube-system:replicaset-controller" and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph", "ghcr.io/rook/ceph"))
     - rule: Create HostNetwork Pod
       override:
         condition: append
-      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs and not user_known_rook_ceph_hostnetwork and not user_known_host_mount_daemons
+      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs and not user_known_rook_ceph_hostnetwork and not user_known_host_mount_daemons and not user_known_kubelet_static_pods
     # The OTel daemon collector mounts host log and kubelet paths by design. Scoped to the DaemonSet
     # controller, observability and the collector image (reviewed 2026-10-24).
     - macro: user_known_otel_daemon_collector
@@ -179,7 +182,7 @@ customRules:
     - rule: Create Privileged Pod
       override:
         condition: append
-      condition: and not user_known_rook_ceph_jobs and not user_known_rook_ceph_hostnetwork
+      condition: and not user_known_rook_ceph_jobs and not user_known_rook_ceph_hostnetwork and not (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "rook-ceph")
     # The OpenEBS local-PV provisioner starts privileged linux-utils helper pods for volume operations.
     - macro: user_known_openebs_privileged_helpers
       condition: (ka.user.name = "system:serviceaccount:openebs-system:openebs-localpv-provisioner" and ka.req.pod.containers.image.repository in ("quay.io/openebs/linux-utils"))
