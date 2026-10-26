@@ -138,10 +138,14 @@ customRules:
     # The descheduler CronJob runs in kube-system.
     - macro: user_known_descheduler_pods
       condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.req.pod.containers.image.repository in ("registry.k8s.io/descheduler/descheduler"))
+    # Controllers recreate the cluster's own kube-system workloads (cilium, coredns, keda, snapshot-controller, spegel) on
+    # every node restart (reviewed 2026-10-25).
+    - macro: user_known_kube_system_controller_pods
+      condition: (ka.user.name in ("system:serviceaccount:kube-system:replicaset-controller", "system:serviceaccount:kube-system:daemon-set-controller") and ka.target.namespace = "kube-system")
     - rule: Pod Created in Kube Namespace
       override:
         condition: append
-      condition: and not user_known_descheduler_pods
+      condition: and not user_known_descheduler_pods and not user_known_kube_system_controller_pods
     # The Cilium DaemonSet and its operator create hostNetwork pods and mount host paths on every rollout.
     - macro: user_known_cilium_pods
       condition: >
@@ -162,17 +166,20 @@ customRules:
     # controller, observability and the collector image (reviewed 2026-10-24).
     - macro: user_known_otel_daemon_collector
       condition: (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "observability" and ka.req.pod.containers.image.repository in ("otel/opentelemetry-collector-contrib"))
+    # Node exporter and Spegel mount host paths by design, and the DaemonSet controller recreates them on restarts (reviewed 2026-10-25).
+    - macro: user_known_host_mount_daemons
+      condition: (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ((ka.target.namespace = "observability" and ka.req.pod.containers.image.repository in ("quay.io/prometheus/node-exporter")) or (ka.target.namespace = "kube-system" and ka.req.pod.containers.image.repository in ("ghcr.io/spegel-org/spegel"))))
     - rule: Create Sensitive Mount Pod
       override:
         condition: append
-      condition: and not user_known_cilium_pods and not user_known_otel_daemon_collector
+      condition: and not user_known_cilium_pods and not user_known_otel_daemon_collector and not user_known_host_mount_daemons
     # Rook runs the OSD prepare jobs with the Ceph image, which needs privileged access to the disks.
     - macro: user_known_rook_ceph_jobs
       condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph"))
     - rule: Create Privileged Pod
       override:
         condition: append
-      condition: and not user_known_rook_ceph_jobs
+      condition: and not user_known_rook_ceph_jobs and not user_known_rook_ceph_hostnetwork
     # The OpenEBS local-PV provisioner starts privileged linux-utils helper pods for volume operations.
     - macro: user_known_openebs_privileged_helpers
       condition: (ka.user.name = "system:serviceaccount:openebs-system:openebs-localpv-provisioner" and ka.req.pod.containers.image.repository in ("quay.io/openebs/linux-utils"))

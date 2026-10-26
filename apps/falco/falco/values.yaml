@@ -55,6 +55,12 @@ customRules:
       condition: and not (k8s.ns.name in ("default", "observability") and container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and proc.exepath = "/bin/dash" and user.name = "postgres" and proc.cmdline startswith "sh -c /controller/manager wal-restore")
     - macro: user_known_contact_k8s_api_server_activities
       condition: >
+        (k8s.ns.name = "crosscut-dev" and proc.exepath = "/usr/local/bin/crosscut-sync" and proc.name = "tokio-rt-worker") or
+        (k8s.ns.name = "argo-rollouts" and proc.exepath = "/bin/rollouts-controller") or
+        (k8s.ns.name = "policy" and proc.exepath = "/ko-app/kyverno-init") or
+        (k8s.ns.name = "external-secrets" and proc.exepath = "/usr/bin/external-secrets") or
+        (k8s.ns.name = "cert-manager" and proc.exepath = "/app/cmd/controller/controller") or
+        (k8s.ns.name = "network" and proc.exepath = "/ko-app/external-dns") or
         (k8s.ns.name = "crosscut-dev" and proc.exepath = "/usr/local/bin/crosscut-sync" and proc.cmdline startswith "crosscut-sync serve") or
         (k8s.ns.name = "observability" and proc.exepath = "/app/policyreporter" and proc.cmdline startswith "policyreporter run") or
         (k8s.ns.name = "observability" and proc.exepath = "/ko-app/policy-reporter-ui" and proc.cmdline startswith "policy-reporter run --config") or
