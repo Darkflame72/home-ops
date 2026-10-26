@@ -52,7 +52,7 @@ customRules:
     - rule: Run shell untrusted
       override:
         condition: append
-      condition: and not (k8s.ns.name in ("default", "observability") and container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and proc.exepath = "/bin/dash" and user.name = "postgres" and proc.cmdline startswith "sh -c /controller/manager wal-restore")
+      condition: and not (container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and proc.exepath = "/bin/dash" and user.name = "postgres" and proc.cmdline startswith "sh -c /controller/manager wal-restore")
     - macro: user_known_contact_k8s_api_server_activities
       condition: >
         (k8s.ns.name = "crosscut-dev" and proc.exepath = "/usr/local/bin/crosscut-sync" and proc.name = "tokio-rt-worker") or
@@ -61,6 +61,12 @@ customRules:
         (k8s.ns.name = "external-secrets" and proc.exepath = "/usr/bin/external-secrets") or
         (k8s.ns.name = "cert-manager" and proc.exepath = "/app/cmd/controller/controller") or
         (k8s.ns.name = "network" and proc.exepath = "/ko-app/external-dns") or
+        (k8s.ns.name = "observability" and proc.exepath = "/main" and container.image.repository = "ghcr.io/open-telemetry/opentelemetry-operator/target-allocator") or
+        (k8s.ns.name = "policy" and proc.exepath = "/ko-app/cleanup-controller") or
+        (k8s.ns.name = "argocd" and proc.exepath = "/shared/argocd-dex") or
+        (k8s.ns.name = "rook-ceph" and proc.exepath = "/rook/copied-binaries/rook") or
+        (k8s.ns.name = "games" and proc.exepath = "/mc-router") or
+        (container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and proc.exepath = "/controller/manager") or
         (k8s.ns.name = "crosscut-dev" and proc.exepath = "/usr/local/bin/crosscut-sync" and proc.cmdline startswith "crosscut-sync serve") or
         (k8s.ns.name = "observability" and proc.exepath = "/app/policyreporter" and proc.cmdline startswith "policyreporter run") or
         (k8s.ns.name = "observability" and proc.exepath = "/ko-app/policy-reporter-ui" and proc.cmdline startswith "policy-reporter run --config") or
