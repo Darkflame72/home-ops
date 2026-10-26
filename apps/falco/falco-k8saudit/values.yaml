@@ -167,7 +167,7 @@ customRules:
     - rule: Create HostNetwork Pod
       override:
         condition: append
-      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs and not user_known_rook_ceph_hostnetwork and not user_known_host_mount_daemons and not user_known_kubelet_static_pods
+      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs and not user_known_rook_ceph_hostnetwork and not user_known_host_mount_daemons and not user_known_kubelet_static_pods and not (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "rook-ceph")
     # The OTel daemon collector mounts host log and kubelet paths by design. Scoped to the DaemonSet
     # controller, observability and the collector image (reviewed 2026-10-24).
     - macro: user_known_otel_daemon_collector
@@ -175,7 +175,7 @@ customRules:
     - rule: Create Sensitive Mount Pod
       override:
         condition: append
-      condition: and not user_known_cilium_pods and not user_known_otel_daemon_collector and not user_known_host_mount_daemons
+      condition: and not user_known_cilium_pods and not user_known_otel_daemon_collector and not user_known_host_mount_daemons and not user_known_rook_ceph_jobs
     # Rook runs the OSD prepare jobs with the Ceph image, which needs privileged access to the disks.
     - macro: user_known_rook_ceph_jobs
       condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph"))
@@ -183,6 +183,11 @@ customRules:
       override:
         condition: append
       condition: and not user_known_rook_ceph_jobs and not user_known_rook_ceph_hostnetwork and not (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "rook-ceph")
+    # The node-exporter DaemonSet runs in the host PID namespace by design (reviewed 2026-10-25).
+    - rule: Create HostPid Pod
+      override:
+        condition: append
+      condition: and not user_known_host_mount_daemons
     # The OpenEBS local-PV provisioner starts privileged linux-utils helper pods for volume operations.
     - macro: user_known_openebs_privileged_helpers
       condition: (ka.user.name = "system:serviceaccount:openebs-system:openebs-localpv-provisioner" and ka.req.pod.containers.image.repository in ("quay.io/openebs/linux-utils"))
