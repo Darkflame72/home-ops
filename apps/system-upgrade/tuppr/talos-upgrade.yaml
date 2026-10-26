@@ -5,7 +5,7 @@ metadata:
 spec:
   talos:
     # renovate: datasource=github-releases depName=siderolabs/talos
-    version: v1.14.4  # Required - target Talos version
+    version: v1.14.5  # Required - target Talos version
 
   # Custom health checks (optional)
   healthChecks:
