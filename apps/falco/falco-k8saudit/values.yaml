@@ -93,6 +93,9 @@ customRules:
           ka.target.namespace in ("kopiur-system", "comms", "default", "opencloud", "media", "games", "observability", "security", "renovate")) or
         (ka.user.name = "system:serviceaccount:external-secrets:external-secrets" and
           ka.target.namespace in ("external-secrets", "default", "media", "security", "observability", "agents", "argocd", "comms", "renovate", "network", "games", "opencloud", "cert-manager", "rook-ceph", "kube-system", "kopiur-system", "forgejo-runners", "database", "arc-runners", "crosscut-dev")) or
+        (ka.user.name = "system:serviceaccount:observability:policy-reporter-ui" and ka.target.namespace = "observability") or
+        (ka.user.name = "system:serviceaccount:network:envoy-gateway-gateway-helm-certgen" and ka.target.namespace = "network") or
+        (ka.user.name = "system:serviceaccount:network:envoy-gateway" and ka.target.namespace = "network") or
         (ka.user.name = "system:serviceaccount:security:authentik-postgres" and ka.target.namespace = "security") or
         (ka.user.name = "system:serviceaccount:default:harbor-postgres" and ka.target.namespace = "default") or
         (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.target.namespace = "argocd") or
@@ -148,10 +151,13 @@ customRules:
     # The etcd defragmentation CronJob runs with host networking to reach the local etcd (reviewed 2026-10-25).
     - macro: user_known_etcd_defrag_jobs
       condition: (ka.user.name = "system:serviceaccount:kube-system:job-controller" and ka.target.namespace = "kube-system" and ka.req.pod.containers.image.repository in ("ghcr.io/ahrtr/etcd-defrag"))
+    # Rook-Ceph daemons run with host networking by design. The ReplicaSet controller recreates them on node restarts (reviewed 2026-10-25).
+    - macro: user_known_rook_ceph_hostnetwork
+      condition: (ka.user.name = "system:serviceaccount:kube-system:replicaset-controller" and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph", "ghcr.io/rook/ceph"))
     - rule: Create HostNetwork Pod
       override:
         condition: append
-      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs
+      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs and not user_known_rook_ceph_hostnetwork
     # The OTel daemon collector mounts host log and kubelet paths by design. Scoped to the DaemonSet
     # controller, observability and the collector image (reviewed 2026-10-24).
     - macro: user_known_otel_daemon_collector
