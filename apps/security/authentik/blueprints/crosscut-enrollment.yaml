@@ -124,6 +124,17 @@ entries:
     identifiers:
       name: crosscut-enrollment-user-login
 
+  # Enrolled users are external, so authentik's own user interface (the default landing
+  # page after login) rejects them. Send them to crosscut instead.
+  - model: authentik_stages_redirect.redirectstage
+    id: crosscut-enrollment-redirect
+    identifiers:
+      name: crosscut-enrollment-redirect
+    attrs:
+      mode: static
+      target_static: https://crosscut-dev.darkflame.dev/ui/
+      keep_context: false
+
   - model: authentik_flows.flowstagebinding
     id: crosscut-binding-invitation
     identifiers:
@@ -178,6 +189,18 @@ entries:
       target: !KeyOf crosscut-enrollment-flow
       stage: !KeyOf crosscut-enrollment-user-login
       order: 100
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: crosscut-binding-redirect
+    identifiers:
+      target: !KeyOf crosscut-enrollment-flow
+      stage: !KeyOf crosscut-enrollment-redirect
+      order: 110
     attrs:
       evaluate_on_plan: true
       re_evaluate_policies: false
