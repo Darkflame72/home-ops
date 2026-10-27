@@ -206,3 +206,38 @@ entries:
       re_evaluate_policies: false
       policy_engine_mode: any
       invalid_response_action: retry
+
+  # Enrollment is not the only way in: returning external users sign in through the default
+  # authentication flow, which also ends at the user interface they cannot open. Send them
+  # to crosscut there too. Internal users are untouched.
+  - model: authentik_policies_expression.expressionpolicy
+    id: crosscut-policy-external-user
+    identifiers:
+      name: crosscut-user-is-external
+    attrs:
+      expression: |
+        return request.user.is_authenticated and request.user.type == "external"
+
+  - model: authentik_flows.flowstagebinding
+    id: crosscut-login-redirect-binding
+    identifiers:
+      pk: 1d470b6a-769d-4776-82a7-ae9371f74e49
+    attrs:
+      target: !Find [authentik_flows.flow, [slug, default-authentication-flow]]
+      stage: !KeyOf crosscut-enrollment-redirect
+      order: 110
+      evaluate_on_plan: false
+      re_evaluate_policies: true
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 43168570-00af-4960-a17e-e715f4f43171
+    attrs:
+      target: !KeyOf crosscut-login-redirect-binding
+      policy: !KeyOf crosscut-policy-external-user
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
