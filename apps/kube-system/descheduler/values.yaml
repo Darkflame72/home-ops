@@ -40,6 +40,11 @@ deschedulerPolicy:
                   protectedStorageClasses:
                     - name: openebs-hostpath
         - name: RemoveDuplicates
+          args:
+            # Job pods (crosscut mining and sync workers) that share a node were evicted mid-run,
+            # which counts as a failed pod and fails the Job at its backoff limit.
+            excludeOwnerKinds:
+              - Job
         - name: RemovePodsViolatingTopologySpreadConstraint
         - name: RemovePodsViolatingNodeAffinity
           args:
