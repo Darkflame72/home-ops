@@ -1,0 +1,185 @@
+version: 1
+metadata:
+  name: crosscut-enrollment
+entries:
+  # Invite-only enrollment for crosscut. Nobody can enroll without an invitation link:
+  # continue_flow_without_invitation is false. Invitations are created by hand in
+  # Directory > Invitations (they are secrets, so they stay out of git).
+  - model: authentik_flows.flow
+    id: crosscut-enrollment-flow
+    identifiers:
+      slug: crosscut-enrollment
+    attrs:
+      name: crosscut enrollment
+      title: Join crosscut
+      designation: enrollment
+      authentication: require_unauthenticated
+
+  - model: authentik_stages_invitation.invitationstage
+    id: crosscut-enrollment-invitation
+    identifiers:
+      name: crosscut-enrollment-invitation
+    attrs:
+      continue_flow_without_invitation: false
+
+  - model: authentik_stages_prompt.prompt
+    id: crosscut-field-username
+    identifiers:
+      name: crosscut-enrollment-field-username
+    attrs:
+      field_key: username
+      label: Username
+      type: username
+      required: true
+      placeholder: Username
+      order: 0
+      placeholder_expression: false
+
+  - model: authentik_stages_prompt.prompt
+    id: crosscut-field-password
+    identifiers:
+      name: crosscut-enrollment-field-password
+    attrs:
+      field_key: password
+      label: Password
+      type: password
+      required: true
+      placeholder: Password
+      order: 1
+      placeholder_expression: false
+
+  - model: authentik_stages_prompt.prompt
+    id: crosscut-field-password-repeat
+    identifiers:
+      name: crosscut-enrollment-field-password-repeat
+    attrs:
+      field_key: password_repeat
+      label: Password (repeat)
+      type: password
+      required: true
+      placeholder: Password (repeat)
+      order: 2
+      placeholder_expression: false
+
+  - model: authentik_stages_prompt.prompt
+    id: crosscut-field-name
+    identifiers:
+      name: crosscut-enrollment-field-name
+    attrs:
+      field_key: name
+      label: Name
+      type: text
+      required: true
+      placeholder: Name
+      order: 0
+      placeholder_expression: false
+
+  - model: authentik_stages_prompt.prompt
+    id: crosscut-field-email
+    identifiers:
+      name: crosscut-enrollment-field-email
+    attrs:
+      field_key: email
+      label: Email
+      type: email
+      required: true
+      placeholder: Email
+      order: 1
+      placeholder_expression: false
+
+  - model: authentik_stages_prompt.promptstage
+    id: crosscut-enrollment-prompt-credentials
+    identifiers:
+      name: crosscut-enrollment-prompt-credentials
+    attrs:
+      fields:
+        - !KeyOf crosscut-field-username
+        - !KeyOf crosscut-field-password
+        - !KeyOf crosscut-field-password-repeat
+      validation_policies: []
+
+  - model: authentik_stages_prompt.promptstage
+    id: crosscut-enrollment-prompt-details
+    identifiers:
+      name: crosscut-enrollment-prompt-details
+    attrs:
+      fields:
+        - !KeyOf crosscut-field-name
+        - !KeyOf crosscut-field-email
+      validation_policies: []
+
+  # Every account created through this flow lands in crosscut-users, the group the
+  # crosscut-dev application's policy binding checks.
+  - model: authentik_stages_user_write.userwritestage
+    id: crosscut-enrollment-user-write
+    identifiers:
+      name: crosscut-enrollment-user-write
+    attrs:
+      user_creation_mode: always_create
+      create_users_as_inactive: false
+      create_users_group: !Find [authentik_core.group, [name, "crosscut-users"]]
+
+  - model: authentik_stages_user_login.userloginstage
+    id: crosscut-enrollment-user-login
+    identifiers:
+      name: crosscut-enrollment-user-login
+
+  - model: authentik_flows.flowstagebinding
+    id: crosscut-binding-invitation
+    identifiers:
+      target: !KeyOf crosscut-enrollment-flow
+      stage: !KeyOf crosscut-enrollment-invitation
+      order: 5
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: true
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: crosscut-binding-credentials
+    identifiers:
+      target: !KeyOf crosscut-enrollment-flow
+      stage: !KeyOf crosscut-enrollment-prompt-credentials
+      order: 10
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: crosscut-binding-details
+    identifiers:
+      target: !KeyOf crosscut-enrollment-flow
+      stage: !KeyOf crosscut-enrollment-prompt-details
+      order: 15
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: crosscut-binding-user-write
+    identifiers:
+      target: !KeyOf crosscut-enrollment-flow
+      stage: !KeyOf crosscut-enrollment-user-write
+      order: 20
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: crosscut-binding-user-login
+    identifiers:
+      target: !KeyOf crosscut-enrollment-flow
+      stage: !KeyOf crosscut-enrollment-user-login
+      order: 100
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry

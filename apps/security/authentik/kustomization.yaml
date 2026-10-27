@@ -17,6 +17,8 @@ configMapGenerator:
       - blueprints/01-access-control.yaml
       - blueprints/bar-assistant.yaml
       - blueprints/crosscut-dev.yaml
+      - blueprints/crosscut-enrollment.yaml
+      - blueprints/recovery.yaml
       - blueprints/forgejo.yaml
       - blueprints/gotosocial.yaml
       - blueprints/grafana.yaml

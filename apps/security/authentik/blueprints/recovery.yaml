@@ -1,0 +1,193 @@
+version: 1
+metadata:
+  name: recovery
+entries:
+  # Brand-level default recovery flow. The admin "Create recovery link" action on a user
+  # uses this flow, so the link it produces resets that user's password.
+  - model: authentik_flows.flow
+    id: recovery-flow
+    identifiers:
+      slug: default-recovery-flow
+    attrs:
+      name: Default recovery flow
+      title: Reset your password
+      designation: recovery
+      authentication: require_unauthenticated
+
+  - model: authentik_stages_prompt.prompt
+    id: recovery-field-password
+    identifiers:
+      name: default-recovery-field-password
+    attrs:
+      field_key: password
+      label: Password
+      type: password
+      required: true
+      placeholder: Password
+      order: 0
+      placeholder_expression: false
+
+  - model: authentik_stages_prompt.prompt
+    id: recovery-field-password-repeat
+    identifiers:
+      name: default-recovery-field-password-repeat
+    attrs:
+      field_key: password_repeat
+      label: Password (repeat)
+      type: password
+      required: true
+      placeholder: Password (repeat)
+      order: 1
+      placeholder_expression: false
+
+  - model: authentik_stages_prompt.promptstage
+    id: recovery-prompt-password
+    identifiers:
+      name: Change your password
+    attrs:
+      fields:
+        - !KeyOf recovery-field-password
+        - !KeyOf recovery-field-password-repeat
+      validation_policies: []
+
+  # Skips identification and email when the flow was entered from a recovery link
+  # (the link already names the user). Self-service entry still goes through them.
+  - model: authentik_policies_expression.expressionpolicy
+    id: recovery-skip-if-restored
+    identifiers:
+      name: default-recovery-skip-if-restored
+    attrs:
+      expression: |
+        return bool(request.context.get('is_restored', True))
+
+  - model: authentik_stages_identification.identificationstage
+    id: recovery-identification
+    identifiers:
+      name: default-recovery-identification
+    attrs:
+      user_fields:
+        - email
+        - username
+
+  # Sends the reset email for self-service recovery. Admin-generated links don't need it.
+  - model: authentik_stages_email.emailstage
+    id: recovery-email
+    identifiers:
+      name: default-recovery-email
+    attrs:
+      use_global_settings: true
+      host: localhost
+      port: 25
+      username: ""
+      use_tls: false
+      use_ssl: false
+      timeout: 10
+      from_address: system@authentik.local
+      token_expiry: minutes=30
+      subject: authentik
+      template: email/password_reset.html
+      activate_user_on_success: false
+      recovery_max_attempts: 5
+      recovery_cache_timeout: minutes=5
+
+  - model: authentik_stages_user_write.userwritestage
+    id: recovery-user-write
+    identifiers:
+      name: default-recovery-user-write
+    attrs:
+      user_creation_mode: never_create
+
+  - model: authentik_stages_user_login.userloginstage
+    id: recovery-user-login
+    identifiers:
+      name: default-recovery-user-login
+
+  - model: authentik_flows.flowstagebinding
+    id: recovery-binding-identification
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf recovery-identification
+      order: 10
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: true
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: recovery-binding-email
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf recovery-email
+      order: 20
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: true
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: recovery-binding-prompt
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf recovery-prompt-password
+      order: 30
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: recovery-binding-user-write
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf recovery-user-write
+      order: 40
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_flows.flowstagebinding
+    id: recovery-binding-user-login
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf recovery-user-login
+      order: 100
+    attrs:
+      evaluate_on_plan: true
+      re_evaluate_policies: false
+      policy_engine_mode: any
+      invalid_response_action: retry
+
+  - model: authentik_policies.policybinding
+    id: recovery-skip-identification-binding
+    identifiers:
+      target: !KeyOf recovery-binding-identification
+      policy: !KeyOf recovery-skip-if-restored
+      order: 0
+    attrs:
+      negate: false
+      enabled: true
+      timeout: 30
+
+  - model: authentik_policies.policybinding
+    id: recovery-skip-email-binding
+    identifiers:
+      target: !KeyOf recovery-binding-email
+      policy: !KeyOf recovery-skip-if-restored
+      order: 0
+    attrs:
+      negate: false
+      enabled: true
+      timeout: 30
+
+  # Point the brand's "Recovery flow" at the flow above, which is what the admin
+  # "Create recovery link" action uses. Without this the action has no flow to use.
+  - model: authentik_brands.brand
+    identifiers:
+      domain: authentik-default
+    attrs:
+      flow_recovery: !KeyOf recovery-flow
