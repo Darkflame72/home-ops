@@ -263,10 +263,6 @@ collectors:
     podAnnotations:
       reloader.stakater.com/auto: "true"
     config:
-      exporters:
-        # TEMPORARY: detailed debug output to inspect volume-metric attributes.
-        debug:
-          verbosity: detailed
       receivers:
         otlp:
           protocols:
