@@ -94,6 +94,8 @@ entries:
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
       access_token_validity: minutes=5
+      # the device code the CLI shows must still be valid while the person signs in and approves
+      access_code_validity: minutes=10
       refresh_token_validity: days=30
       include_claims_in_id_token: true
       sub_mode: hashed_user_id
