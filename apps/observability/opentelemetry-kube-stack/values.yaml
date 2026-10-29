@@ -230,6 +230,12 @@ collectors:
             receivers: [prometheus]
             processors: [memory_limiter, transform/cluster_label, batch]
             exporters: [otlp_http/mimir, debug]
+          # kubernetesEvents preset receiver. Without this pipeline the events
+          # are read and then dropped.
+          logs:
+            receivers: [k8s_objects]
+            processors: [memory_limiter, batch]
+            exporters: [otlp_http/loki, debug]
   daemon:
     enabled: true
     mode: daemonset
