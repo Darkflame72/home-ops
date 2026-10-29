@@ -289,6 +289,14 @@ collectors:
           traces:
             span:
               - 'attributes["openinference.span.kind"] == nil and attributes["gen_ai.operation.name"] == nil and attributes["gen_ai.system"] == nil and attributes["gen_ai.provider.name"] == nil and attributes["gen_ai.request.model"] == nil'
+        # Kubelet volume inode metrics collapse into one series per pod, because
+        # the volume name never reaches Mimir as a label. Mimir rejects the
+        # conflicting samples, and the value it keeps is arbitrary. Drop them.
+        filter/volume_inodes:
+          error_mode: ignore
+          metrics:
+            metric:
+              - 'name == "k8s.volume.inodes" or name == "k8s.volume.inodes.free" or name == "k8s.volume.inodes.used"'
         resource/audit:
           attributes:
             - action: insert
@@ -307,6 +315,9 @@ collectors:
             processors: [filter/ai, batch]
             exporters: [otlp_http/phoenix]
           metrics:
+            # Presets' processors listed explicitly so the volume filter runs
+            # first; keep this list in sync with the enabled presets.
+            processors: [filter/volume_inodes, k8s_attributes, resource_detection/env, resource/hostname, batch]
             exporters: [otlp_http/mimir, debug]
           logs:
             exporters: [otlp_http/loki, debug]
