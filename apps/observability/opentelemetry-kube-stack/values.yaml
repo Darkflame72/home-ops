@@ -289,14 +289,14 @@ collectors:
           traces:
             span:
               - 'attributes["openinference.span.kind"] == nil and attributes["gen_ai.operation.name"] == nil and attributes["gen_ai.system"] == nil and attributes["gen_ai.provider.name"] == nil and attributes["gen_ai.request.model"] == nil'
-        # Kubelet volume inode metrics collapse into one series per pod, because
-        # the volume name never reaches Mimir as a label. Mimir rejects the
+        # Kubelet volume metrics collapse into one series per pod, because the
+        # volume name never reaches Mimir as a label. Mimir rejects the
         # conflicting samples, and the value it keeps is arbitrary. Drop them.
         filter/volume_inodes:
           error_mode: ignore
           metrics:
             metric:
-              - 'name == "k8s.volume.inodes" or name == "k8s.volume.inodes.free" or name == "k8s.volume.inodes.used"'
+              - 'name == "k8s.volume.inodes" or name == "k8s.volume.inodes.free" or name == "k8s.volume.inodes.used" or name == "k8s.volume.available" or name == "k8s.volume.capacity"'
         resource/audit:
           attributes:
             - action: insert
