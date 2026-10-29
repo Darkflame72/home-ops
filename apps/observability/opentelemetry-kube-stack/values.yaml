@@ -80,6 +80,11 @@ collectors:
     enabled: true
     mode: statefulset
     replicas: 1
+    presets:
+      clusterMetrics:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
     podSecurityContext:
       runAsNonRoot: true
     resources:
@@ -304,10 +309,13 @@ collectors:
         enabled: true
       kubernetesAttributes:
         enabled: true
+      # kubernetesEvents and clusterMetrics must run on a single replica, so
+      # they live on the cluster collector. On every daemon pod they duplicated
+      # events and cluster-level series.
       kubernetesEvents:
-        enabled: true
+        enabled: false
       clusterMetrics:
-        enabled: true
+        enabled: false
 
   # Single-replica tail-sampling gateway: every app/proxy head-samples at
   # 100% (see the Instrumentation CR above and each app's own tracing
