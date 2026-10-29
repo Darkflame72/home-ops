@@ -16,7 +16,7 @@ entries:
       name: Device code
       title: Device code
       designation: authentication
-      authentication: require_unauthenticated
+      authentication: none
   - model: authentik_brands.brand
     identifiers:
       default: true
