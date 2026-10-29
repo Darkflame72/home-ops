@@ -1,6 +1,6 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/monitoring.coreos.com/prometheusrule_v1.json
-# Synced into Mimir's ruler by Alloy's mimir.rules.kubernetes component.
+# Synced into Mimir's ruler by the prometheus-rules-sync CronJob (apps/observability/mimir/rules-sync.yaml).
 # Covers the syscall DaemonSet, the audit-log pipeline (falco-k8saudit + fluent-bit) and the listener certificate.
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule

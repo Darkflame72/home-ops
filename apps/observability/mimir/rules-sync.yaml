@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/batch/cronjob_v1.json
+# Keeps Mimir's ruler in step with PrometheusRule CRs. Runs rules-sync.sh
+# (kustomize ConfigMap prometheus-rules-sync-script) every 5 minutes.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-rules-sync
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-rules-sync
+rules:
+  - apiGroups: ["monitoring.coreos.com"]
+    resources: ["prometheusrules"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-rules-sync
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-rules-sync
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-rules-sync
+    namespace: observability
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: prometheus-rules-sync
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            # Plain client: no need for the ambient mesh to sit in front of a
+            # job that only talks to the Kubernetes API and mimir-ruler.
+            istio.io/dataplane-mode: none
+        spec:
+          serviceAccountName: prometheus-rules-sync
+          automountServiceAccountToken: true
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: sync
+              image: docker.io/alpine/k8s:1.37.1
+              command: ["/bin/sh", "/scripts/rules-sync.sh"]
+              env:
+                - name: HOME
+                  value: /tmp
+                - name: KUBECACHEDIR
+                  value: /tmp/kube-cache
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  memory: 128Mi
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: scripts
+              configMap:
+                name: prometheus-rules-sync-script
+                defaultMode: 0555
+            - name: tmp
+              emptyDir: {}

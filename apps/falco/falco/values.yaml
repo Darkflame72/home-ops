@@ -113,8 +113,6 @@ customRules:
           and proc.exepath = "/operator/manager_amd64" and user.uid = 10001 and proc.cmdline startswith "manager controller") or
         (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-migrate-resources-" and container.name = "kyverno-cli"
           and proc.exepath = "/ko-app/kubectl-kyverno" and user.uid = 65534 and proc.cmdline startswith "kubectl-kyverno migrate") or
-        (k8s.ns.name = "observability" and k8s.pod.name startswith "alloy-" and container.name = "alloy"
-          and proc.exepath = "/usr/bin/alloy" and user.uid = 0 and proc.cmdline startswith "alloy run") or
         (k8s.ns.name = "istio-system" and k8s.pod.name startswith "istiod-" and container.name = "discovery"
           and proc.exepath = "/usr/local/bin/pilot-discovery") or
         (k8s.ns.name = "rook-ceph" and k8s.pod.name startswith "rook-ceph.rbd.csi.ceph.com-ctrlplugin-" and container.name = "csi-provisioner"
@@ -145,8 +143,6 @@ customRules:
         (k8s.ns.name = "rook-ceph" and k8s.pod.name startswith "rook-ceph.rbd.csi.ceph.com-ctrlplugin-" and container.name = "csi-rbdplugin"
           and proc.exepath = "/usr/local/bin/cephcsi" and user.uid = 0
           and proc.cmdline startswith "cephcsi --type=rbd" and proc.cmdline contains "--controllerserver=true") or
-        (k8s.ns.name = "observability" and k8s.pod.name startswith "alloy-" and container.name = "alloy"
-          and proc.exepath = "/usr/bin/alloy" and user.uid = 473 and proc.cmdline startswith "alloy run") or
         (k8s.ns.name = "observability" and k8s.pod.name = "gatus-0" and container.name = "gatus-sidecar"
           and proc.exepath = "/gatus-sidecar" and user.uid = 1000 and proc.cmdline startswith "gatus-sidecar") or
         (k8s.ns.name = "system-upgrade" and k8s.pod.name startswith "tuppr-" and container.name = "manager"
