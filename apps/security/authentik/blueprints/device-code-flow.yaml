@@ -1,0 +1,24 @@
+version: 1
+metadata:
+  name: device-code-flow
+  labels:
+    blueprints.goauthentik.io/description: |
+      The flow that the device-code sign-in (`crosscut login`) starts from. The brand points at it;
+      without it, the device verification page returns 404.
+entries:
+  # An empty authentication flow: the device-code stage is added at request time, and the
+  # person must already be signed in (the verification page requires login).
+  - model: authentik_flows.flow
+    id: device-code-flow
+    identifiers:
+      slug: default-device-code
+    attrs:
+      name: Device code
+      title: Device code
+      designation: authentication
+      authentication: require_unauthenticated
+  - model: authentik_brands.brand
+    identifiers:
+      default: true
+    attrs:
+      flow_device_code: !KeyOf device-code-flow
