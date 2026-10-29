@@ -91,13 +91,15 @@ collectors:
         enabled: true
     podSecurityContext:
       runAsNonRoot: true
+    # Was 1Gi: the memory limiter (75% of the limit) started refusing scrape
+    # data at ~715Mi of steady use, so raise the ceiling above that.
     resources:
       limits:
         cpu: 1000m
-        memory: 1Gi
+        memory: 1536Mi
       requests:
         cpu: 150m
-        memory: 512Mi
+        memory: 768Mi
     targetAllocator:
       enabled: true
       allocationStrategy: consistent-hashing
