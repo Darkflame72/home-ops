@@ -23,6 +23,10 @@ kubeStateMetrics:
   enabled: true
 
 kube-state-metrics:
+  # Kept out of ambient: the cluster collector scrapes it through the mesh, and
+  # HBONE delivery to this pod is refused. Plaintext scrapes reach it.
+  podLabels:
+    istio.io/dataplane-mode: none
   resources:
     requests:
       cpu: 15m
