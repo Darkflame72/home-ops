@@ -16,7 +16,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/falcosecurity/charts
       chart: falco
-      targetRevision: 9.2.1
+      targetRevision: 9.2.2
       helm:
         releaseName: falco-k8saudit
         valueFiles:
