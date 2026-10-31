@@ -6,6 +6,3 @@ resources:
   - ./external-secret.yaml
   - ./deployment.yaml
   - ./network-policy.yaml
-  - ./plugin.yaml
-  - ./plugin-network-policy.yaml
-  - ./jobs.yaml
