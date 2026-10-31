@@ -256,6 +256,10 @@ collectors:
   daemon:
     enabled: true
     mode: daemonset
+    # Presets replace the chart's default daemon_scrape_configs.yaml (they are
+    # mutually exclusive with it). They cover the same three jobs: node-exporter,
+    # cAdvisor on the kubelet, and annotation-based pod scraping.
+    scrape_configs_file: ""
     # Observed per-node usage is ~50-110m CPU and ~115-160Mi memory.
     resources:
       requests:
@@ -291,6 +295,12 @@ collectors:
           retry_on_failure:
             enabled: true
       processors:
+        # Every other pipeline in this file has one; the daemon metrics pipeline
+        # was the only one without it, and it runs under a 320Mi limit.
+        memory_limiter:
+          check_interval: 1s
+          limit_percentage: 75
+          spike_limit_percentage: 15
         # Drop everything that isn't an LLM span (OpenInference or OTel GenAI
         # semconv attributes) before it goes to Phoenix.
         filter/ai:
@@ -333,7 +343,7 @@ collectors:
           metrics:
             # Presets' processors listed explicitly so the volume filter runs
             # first; keep this list in sync with the enabled presets.
-            processors: [filter/volume_inodes, transform/cluster_label, k8s_attributes, resource_detection/env, resource/hostname, batch]
+            processors: [memory_limiter, filter/volume_inodes, transform/cluster_label, k8s_attributes, resource_detection/env, resource/hostname, batch]
             exporters: [otlp_http/mimir, debug]
           logs:
             exporters: [otlp_http/loki, debug]
@@ -350,6 +360,13 @@ collectors:
         enabled: true
       kubernetesAttributes:
         enabled: true
+      prometheus:
+        nodeExporter:
+          enabled: true
+        cadvisor:
+          enabled: true
+        podAnnotations:
+          enabled: true
       # kubernetesEvents and clusterMetrics must run on a single replica, so
       # they live on the cluster collector. On every daemon pod they duplicated
       # events and cluster-level series.
