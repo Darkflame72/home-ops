@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/rook
       chart: rook-ceph
-      targetRevision: 1.21.0
+      targetRevision: 1.21.1
       helm:
         releaseName: rook-ceph
         valueFiles:
