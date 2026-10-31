@@ -27,6 +27,7 @@ customRules:
     # run rustup-init from /tmp. Scoped to the runner container and uid 1001 (reviewed 2026-10-25).
     # GitHub (ARC) and Forgejo runner containers run CI-built binaries by design. Their binary execution is not alerted
     # on, scoped to the runner container and uid, and the Forgejo dind root jobs in /workspace (reviewed 2026-10-25).
+    # uv builds sdists from its cache in a root CI container on the dind runner (reviewed 2026-10-31).
     - macro: known_drop_and_execute_activities
       condition: >
         (proc.pname = containerd and user.uid = 0 and proc.exepath = "/opt/cni/bin/cilium-cni" and proc.cmdline = "cilium-cni") or
@@ -35,7 +36,19 @@ customRules:
           proc.pname = bash and proc.exepath in ("/opt/cni/bin/cilium-mount", "/opt/cni/bin/cilium-sysctlfix")) or
         (k8s.ns.name = "renovate" and container.name = "renovate" and proc.exepath startswith "/opt/containerbase/tools/") or
         (container.id != host and user.uid = 0 and proc.cwd startswith "/workspace/") or
-        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001)
+        (k8s.ns.name = "arc-runners" and container.name = "runner" and user.uid = 1001) or
+        (container.id != host and user.uid = 0 and proc.exepath startswith "/root/.local/share/uv/python/" and
+          proc.cwd startswith "/root/.cache/uv/sdists-v")
+    # Forgejo dind CI jobs run a pg_isready health check as root. Its perl helper reads /etc/shadow through NSS.
+    # Scoped to that exact process and file (reviewed 2026-10-31).
+    - macro: user_known_read_sensitive_files_activities
+      condition: (proc.name = pg_isready and proc.exepath = "/usr/bin/perl" and fd.name = "/etc/shadow" and container.id != host and user.uid = 0)
+    # buildkit and containerd append to dpkg.log while apt installs packages in image build snapshots (reviewed 2026-10-31).
+    - macro: allowed_clear_log_files
+      condition: >
+        (proc.name in (buildkitd, containerd) and fd.name endswith "/var/log/dpkg.log" and
+          (fd.name startswith "/var/lib/buildkit/runc-overlayfs/snapshots/" or
+           fd.name startswith "/var/lib/docker/containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/"))
     # Cilium runs its packet socket from the cilium-agent container in kube-system (reviewed 2026-10-23).
     - rule: Packet socket created in container
       override:
