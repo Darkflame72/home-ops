@@ -2,6 +2,9 @@ apiVersion: v1alpha1
 kind: KubeletConfig
 config:
   serializeImagePulls: false
+  # Start image GC at 70% used (default 85%), so cached images stay well under the node disk ceiling. Low must be below high. (reviewed 2026-10-27)
+  imageGCHighThresholdPercent: 70
+  imageGCLowThresholdPercent: 65
 ---
 apiVersion: v1alpha1
 kind: KubeNodeConfig
