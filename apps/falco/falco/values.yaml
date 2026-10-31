@@ -43,12 +43,14 @@ customRules:
     # Scoped to that exact process and file (reviewed 2026-10-31).
     - macro: user_known_read_sensitive_files_activities
       condition: (proc.name = pg_isready and proc.exepath = "/usr/bin/perl" and fd.name = "/etc/shadow" and container.id != host and user.uid = 0)
-    # buildkit and containerd append to dpkg.log while apt installs packages in image build snapshots (reviewed 2026-10-31).
+    # buildkit and containerd append to dpkg.log while apt installs packages in image build snapshots, or while
+    # containerd unpacks an image into its tmpmount during a dind pull (reviewed 2026-10-31).
     - macro: allowed_clear_log_files
       condition: >
         (proc.name in (buildkitd, containerd) and fd.name endswith "/var/log/dpkg.log" and
           (fd.name startswith "/var/lib/buildkit/runc-overlayfs/snapshots/" or
-           fd.name startswith "/var/lib/docker/containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/"))
+           fd.name startswith "/var/lib/docker/containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/" or
+           fd.name startswith "/var/lib/docker/containerd/daemon/tmpmounts/"))
     # Cilium runs its packet socket from the cilium-agent container in kube-system (reviewed 2026-10-23).
     - rule: Packet socket created in container
       override:
