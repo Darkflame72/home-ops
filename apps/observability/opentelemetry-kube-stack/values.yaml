@@ -48,7 +48,6 @@ prometheus-node-exporter:
 defaultCRConfig:
   config:
     exporters:
-      debug: {}
       otlp_http/mimir:
         endpoint: http://mimir-gateway.observability.svc.cluster.local/otlp
         tls:
@@ -197,14 +196,14 @@ collectors:
           metrics:
             receivers: [prometheus]
             processors: [memory_limiter, transform/cluster_label, batch]
-            exporters: [otlp_http/mimir, debug]
+            exporters: [otlp_http/mimir]
           # kubernetesEvents preset receiver. Without this pipeline the events
           # are read and then dropped. Its leader-election extension must be
           # listed too, or the collector fails to start.
           logs:
             receivers: [k8s_objects]
             processors: [memory_limiter, batch]
-            exporters: [otlp_http/loki, debug]
+            exporters: [otlp_http/loki]
   daemon:
     enabled: true
     mode: daemonset
@@ -285,7 +284,7 @@ collectors:
           traces:
             # Sampling now happens tail-side in the gateway collector, not
             # here - see collectors.gateway.
-            exporters: [otlp/gateway, debug]
+            exporters: [otlp/gateway]
           # Fan-out of the same OTLP receiver, taken before tail sampling so
           # every AI span reaches Phoenix (not just the sampled ones).
           traces/phoenix:
@@ -296,13 +295,13 @@ collectors:
             # Presets' processors listed explicitly so the volume filter runs
             # first; keep this list in sync with the enabled presets.
             processors: [memory_limiter, filter/volume_inodes, transform/cluster_label, k8s_attributes, resource_detection/env, resource/hostname, batch]
-            exporters: [otlp_http/mimir, debug]
+            exporters: [otlp_http/mimir]
           logs:
-            exporters: [otlp_http/loki, debug]
+            exporters: [otlp_http/loki]
           logs/audit:
             receivers: [filelog/audit]
             processors: [resource/audit, resource_detection/env, resource/hostname, batch]
-            exporters: [otlp_http/loki, debug]
+            exporters: [otlp_http/loki]
     presets:
       logsCollection:
         enabled: true
@@ -390,7 +389,7 @@ collectors:
           traces:
             receivers: [otlp]
             processors: [memory_limiter, tail_sampling, batch]
-            exporters: [otlp/tempo, debug]
+            exporters: [otlp/tempo]
 
   # Only collector reachable from outside the cluster: terminates OTLP/HTTP
   # from remote clusters/services behind otlp.darkflame.dev (httproute.yaml,
