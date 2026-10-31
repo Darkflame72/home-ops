@@ -57,6 +57,18 @@ customRules:
       override:
         condition: append
       condition: and not (k8s.ns.name = "kube-system" and container.name = "cilium-agent" and proc.exepath = "/usr/bin/cilium-agent" and user.uid = 0)
+    # buildx's multi-platform check runs a QEMU probe binary it writes to /tmp under buildkitd (reviewed 2026-10-31).
+    # Scoped to that parent and path. Dind jobs carry no k8s metadata, so the namespace can't be tested here.
+    - rule: Drop and execute new binary in container
+      override:
+        condition: append
+      condition: and not (proc.pname = buildkitd and proc.name = check and proc.exepath startswith "/tmp/qemu-check")
+    # CI jobs run setup-python and pip-upgrade from the tool cache as root in a job container (reviewed 2026-10-31).
+    # Scoped to containers other than the host, root, and the tool cache's Python directory.
+    - rule: Drop and execute new binary in container
+      override:
+        condition: append
+      condition: and not (container.id != host and user.uid = 0 and proc.exepath startswith "/opt/hostedtoolcache/Python/" and proc.cwd startswith "/opt/hostedtoolcache/Python/")
     # Expected dind runner socket, reviewed 2026-10-22. Only the forgejo-runners dind dockerd is exempt.
     - rule: Packet socket created in container
       override:
