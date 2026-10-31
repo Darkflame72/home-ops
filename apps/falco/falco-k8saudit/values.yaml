@@ -162,8 +162,9 @@ customRules:
     - macro: user_known_kubelet_static_pods
       condition: (ka.user.name startswith "system:node:" and ka.target.namespace = "kube-system")
     # Rook-Ceph daemons run with host networking by design. The ReplicaSet controller recreates them on node restarts (reviewed 2026-10-25).
+    # Rook's osd-prepare jobs also run with host networking under provider: host, and job-controller creates them (reviewed 2026-10-31).
     - macro: user_known_rook_ceph_hostnetwork
-      condition: (ka.user.name = "system:serviceaccount:kube-system:replicaset-controller" and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph", "ghcr.io/rook/ceph"))
+      condition: (ka.user.name in ("system:serviceaccount:kube-system:replicaset-controller", "system:serviceaccount:kube-system:job-controller") and ka.target.namespace = "rook-ceph" and ka.req.pod.containers.image.repository in ("quay.io/ceph/ceph", "ghcr.io/rook/ceph"))
     - rule: Create HostNetwork Pod
       override:
         condition: append
