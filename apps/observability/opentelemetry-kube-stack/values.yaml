@@ -114,7 +114,14 @@ collectors:
       prometheusCR:
         enabled: true
         scrapeInterval: 30s
-        serviceMonitorSelector: {}
+        # node-exporter is scraped per node by the daemon collector
+        # (daemon_scrape_configs.yaml). Scraping it here too doubled every
+        # node_* series, and the duplicates broke the (cluster, instance) joins.
+        serviceMonitorSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: NotIn
+              values: [prometheus-node-exporter]
         podMonitorSelector: {}
     config:
       receivers:
@@ -299,6 +306,13 @@ collectors:
           metrics:
             metric:
               - 'name == "k8s.volume.inodes" or name == "k8s.volume.inodes.free" or name == "k8s.volume.inodes.used" or name == "k8s.volume.available" or name == "k8s.volume.capacity"'
+        # Same label as the cluster collector, so daemon series join with the
+        # cluster-scoped rules (e.g. CephNodeDiskspaceWarning on(cluster, instance)).
+        transform/cluster_label:
+          metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["cluster"], "home")
         resource/audit:
           attributes:
             - action: insert
@@ -319,7 +333,7 @@ collectors:
           metrics:
             # Presets' processors listed explicitly so the volume filter runs
             # first; keep this list in sync with the enabled presets.
-            processors: [filter/volume_inodes, k8s_attributes, resource_detection/env, resource/hostname, batch]
+            processors: [filter/volume_inodes, transform/cluster_label, k8s_attributes, resource_detection/env, resource/hostname, batch]
             exporters: [otlp_http/mimir, debug]
           logs:
             exporters: [otlp_http/loki, debug]
