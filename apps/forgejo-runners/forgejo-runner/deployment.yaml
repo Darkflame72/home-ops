@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: runner
-          image: code.forgejo.org/forgejo/runner:12.7.3@sha256:48b0539854bfc769fbf629725e089e35cfa1227ddedc7e45436b83bb9502ae27
+          image: code.forgejo.org/forgejo/runner:13.2.1@sha256:568cea8c15ddc01fc8f330124892f572af7db37fa28344a2c1914405793bf61d
           securityContext:
             # Stays root (runAsUser: 0): the image has no non-root user, and
             # it needs to reach the dind sidecar's docker.sock, which is

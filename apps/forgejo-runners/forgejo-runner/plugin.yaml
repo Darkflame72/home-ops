@@ -1,0 +1,72 @@
+---
+# Kubernetes execution plugin for Forgejo Runner (experimental, alpha). Runs
+# each job whose runs-on label is `k8s:kubernetes://...` as a separate Pod in
+# the forgejo-jobs namespace, so those jobs need no Docker daemon. The plugin
+# creates job Pods through the Kubernetes API using its own ServiceAccount;
+# see jobs.yaml for the Role it is bound to. Upstream's network model assumes
+# the plugin is only reachable from the runner (see plugin-network-policy.yaml).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: forgejo-runner-kubernetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo-runner-kubernetes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo-runner-kubernetes
+  template:
+    metadata:
+      labels:
+        app: forgejo-runner-kubernetes
+    spec:
+      serviceAccountName: forgejo-runner-kubernetes
+      containers:
+        - name: plugin
+          # renovate: datasource=docker depName=ghcr.io/sjones512/forgejo-runner-kubernetes
+          image: ghcr.io/sjones512/forgejo-runner-kubernetes:v0.1.0-alpha.14@sha256:82a70bff8facd26a0a845f13c9908cb264149d502f2a1f2e34cd3346cfe3d901
+          ports:
+            - name: grpc
+              containerPort: 50051
+          env:
+            - name: JOB_NAMESPACE
+              value: forgejo-jobs
+            - name: JOB_IMAGE
+              value: "ubuntu:24.04"
+            # Our nodes are amd64; upstream only tests arm64 (the default).
+            - name: JOB_ARCH
+              value: amd64
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            runAsUser: 10001
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          readinessProbe:
+            grpc:
+              port: 50051
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forgejo-runner-kubernetes
+spec:
+  selector:
+    app: forgejo-runner-kubernetes
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: grpc

@@ -40,6 +40,15 @@ spec:
               protocol: TCP
     - toEntities:
         - world
+    # Kubernetes execution plugin (see plugin.yaml): only the runner may reach it.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: forgejo-runners
+            app: forgejo-runner-kubernetes
+      toPorts:
+        - ports:
+            - port: "50051"
+              protocol: TCP
     - toEndpoints:
         # harbor.darkflame.dev resolves to the envoy-internal Gateway's LB IP
         # (10.0.60.12), which is same-/24 as the cluster nodes so Cilium
