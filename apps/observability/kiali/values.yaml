@@ -11,8 +11,6 @@ auth:
       - profile
       - email
 
-deployment:
-  cluster_wide_access: true
 
 login_token:
   signing_key: "secret:kiali:signing-key"

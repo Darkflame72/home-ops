@@ -1,6 +1,5 @@
 ---
 image:
-  repository: itzg/minecraft-server
   # renovate: datasource=docker depName=itzg/minecraft-server
   tag: 2026.10.1@sha256:d12aed7e35981dfe259b60fbfee77d23a19b5898a7a31dca298d18b47b7b5776
   pullPolicy: IfNotPresent
@@ -13,7 +12,6 @@ resources:
     memory: 6Gi # no cpu limit — avoids JVM GC stalls from CPU throttling
 
 persistence:
-  storageClass: ceph-block
   dataDir:
     enabled: true
     existingClaim: minecraft-data # PVC defined in pvc.yaml, so kopiur can back it up
@@ -32,7 +30,6 @@ minecraftServer:
   vanillaTweaksShareCodes:
     - "ZHRhv6"
   motd: "Welcome!"
-  servicePort: 25565
 
   modrinth:
     projects:
@@ -47,7 +44,6 @@ minecraftServer:
       # Pl3xMap version-type mismatch did. Add back once a 26.2-compatible build
       # is published.
       - discordsrv
-    downloadDependencies: none
 
   extraPorts:
     - name: map

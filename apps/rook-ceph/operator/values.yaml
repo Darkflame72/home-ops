@@ -8,6 +8,4 @@ monitoring:
   enabled: true
 resources:
   requests:
-    memory: 128Mi # unchangable
     cpu: 100m # unchangable
-  limits: {}

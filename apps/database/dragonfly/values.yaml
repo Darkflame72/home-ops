@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
 controllers:
   dragonfly-operator:
-    replicas: 1
     strategy: RollingUpdate
     containers:
       app:
@@ -63,7 +62,6 @@ defaultPodOptions:
           app.kubernetes.io/name: &app dragonfly-operator
 service:
   app:
-    controller: *app
     ports:
       http:
         port: *port
@@ -71,7 +69,6 @@ service:
         port: 8080
 serviceMonitor:
   app:
-    serviceName: *app
     endpoints:
       - port: metrics
         scheme: http

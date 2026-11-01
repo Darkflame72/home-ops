@@ -27,7 +27,6 @@ controllers:
             enabled: true
             spec:
               failureThreshold: 30
-              periodSeconds: 10
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -71,8 +70,6 @@ route:
 persistence:
   config:
     existingClaim: jellyfin
-    globalMounts:
-      - path: /config
   config-cache:
     existingClaim: jellyfin-cache
     globalMounts:

@@ -25,7 +25,3 @@ controller:
 
 monitoring:
   enabled: true
-  serviceMonitor:
-    interval: 15s
-  grafanaDashboard:
-    enabled: true

@@ -1,8 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
 controllers:
   gotosocial:
-    type: deployment
-    replicas: 1
     containers:
       app:
         image:
@@ -92,8 +90,6 @@ persistence:
 defaultPodOptions:
   annotations:
     instrumentation.opentelemetry.io/inject-sdk: "observability/opentelemetry-kube-stack"
-  automountServiceAccountToken: false
-  enableServiceLinks: false
   securityContext:
     runAsNonRoot: true
     runAsUser: &uid 568

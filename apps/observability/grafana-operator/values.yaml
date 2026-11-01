@@ -1,5 +1,4 @@
 # No yaml-language-server schema available: grafana/grafana-operator
-namespaceScope: false
 
 resources:
   limits:
@@ -8,11 +7,6 @@ resources:
     cpu: 10m
     memory: 128Mi
 
-securityContext:
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
-  capabilities:
-    drop: [ALL]
 
 podSecurityContext:
   runAsNonRoot: true

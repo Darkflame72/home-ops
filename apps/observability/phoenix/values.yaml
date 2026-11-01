@@ -1,11 +1,8 @@
-replicaCount: 1
-
 deployment:
   strategy:
     type: Recreate
     # chart default sets rollingUpdate params, which Recreate forbids
     rollingUpdate: null
-  podLabels: {}
 
 postgresql:
   enabled: false
@@ -26,12 +23,10 @@ database:
   defaultRetentionPolicyDays: 14
   postgres:
     host: phoenix-postgres-rw
-    port: 5432
     user: app
     db: app
 
 auth:
-  enableAuth: true
   # SSO only. PHOENIX_ADMIN_SECRET (bearer token) remains as break-glass API access.
   disableBasicAuth: true
   useSecureCookies: true
@@ -39,7 +34,6 @@ auth:
   # which Phoenix never links by email -> "An account with this email already exists".
   # First SSO login creates a MEMBER; promote once via SQL (users.user_role_id -> ADMIN).
   createSecret: false
-  name: phoenix-secret
   secret:
     - key: PHOENIX_SECRET
     - key: PHOENIX_ADMIN_SECRET
@@ -71,8 +65,6 @@ resources:
   requests:
     cpu: 50m
     memory: 512Mi
-  limits:
-    memory: 2Gi
 
 securityContext:
   pod:

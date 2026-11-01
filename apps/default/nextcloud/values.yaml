@@ -1,15 +1,10 @@
 image:
-  registry: docker.io
-  repository: library/nextcloud
-  flavor: apache
   # renovate: datasource=docker depName=nextcloud
   tag: 35.0.2-apache@sha256:e0b1a2af52c82c07b7a0e8e59878bd8769e704447734d5d238a836982f51b9c8
 
-replicaCount: 1
 
 phpClientHttpsFix:
   enabled: true
-  protocol: https
 
 httpRoute:
   enabled: true
@@ -31,8 +26,6 @@ service:
 
 nextcloud:
   host: cloud.darkflame.dev
-  containerPort: 80
-  datadir: /var/www/html/data
   existingSecret:
     enabled: true
     secretName: nextcloud-secret
@@ -43,13 +36,6 @@ nextcloud:
       value: "https://cloud.darkflame.dev"
     - name: OVERWRITEHOST
       value: "cloud.darkflame.dev"
-  strategy:
-    type: Recreate
-  startupProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    failureThreshold: 60
   configs:
     hide-login-form.config.php: |-
       <?php
@@ -70,14 +56,16 @@ nextcloud:
         'allow_local_remote_servers' => true,
       );
 
+startupProbe:
+  enabled: true
+  failureThreshold: 60
+
 internalDatabase:
   enabled: false
 
 externalDatabase:
-  enabled: true
   type: postgresql
   existingSecret:
-    enabled: true
     secretName: nextcloud-postgres-app
     usernameKey: user
     passwordKey: password
@@ -87,13 +75,11 @@ externalDatabase:
 externalRedis:
   enabled: true
   host: nextcloud-redis.default.svc.cluster.local
-  port: "6379"
 
 cronjob:
   enabled: true
   type: cronjob
   cronjob:
-    schedule: "*/5 * * * *"
     affinity:
       podAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:

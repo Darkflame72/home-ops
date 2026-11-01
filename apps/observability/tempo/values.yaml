@@ -1,5 +1,4 @@
 # No yaml-language-server schema available: grafana-community/tempo
-fullnameOverride: tempo
 
 # observability is an ambient-mesh namespace. The gateway collector was
 # already excluded from ambient (see opentelemetry-kube-stack's Kyverno
@@ -15,7 +14,6 @@ podLabels:
 
 tempo:
   reportingEnabled: false
-  multitenancyEnabled: false
 
   metricsGenerator:
     enabled: true
@@ -30,8 +28,6 @@ tempo:
         access_key: ${AWS_ACCESS_KEY_ID}
         secret_key: ${AWS_SECRET_ACCESS_KEY}
         insecure: true
-      wal:
-        path: /var/tempo/wal
 
   liveStore:
     max_block_duration: 30m
@@ -41,13 +37,10 @@ tempo:
     otlp:
       protocols:
         grpc:
-          endpoint: "0.0.0.0:4317"
           keepalive:
             enforcement_policy:
               min_time: 10s
               permit_without_stream: true
-        http:
-          endpoint: "0.0.0.0:4318"
 
   extraArgs:
     config.expand-env: "true"
@@ -67,9 +60,3 @@ tempo:
 
 persistence:
   enabled: true
-  size: 10Gi
-  storageClass: ceph-block
-
-metaMonitoring:
-  dashboards:
-    enabled: true

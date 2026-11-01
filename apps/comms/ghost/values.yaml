@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
 controllers:
   mysql:
-    strategy: Recreate
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
@@ -40,7 +39,6 @@ controllers:
             memory: 1Gi
 
   ghost:
-    strategy: Recreate
     annotations:
       reloader.stakater.com/auto: "true"
     initContainers:

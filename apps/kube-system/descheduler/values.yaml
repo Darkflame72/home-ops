@@ -1,12 +1,5 @@
 ---
-kind: CronJob
 schedule: "*/20 * * * *"
-
-service:
-  enabled: true
-
-serviceMonitor:
-  enabled: true
 
 deschedulerPolicy:
   # Temporary for initial rollout of LowNodeUtilization; remove once
