@@ -4,7 +4,7 @@ immich:
     enabled: true
   persistence:
     library:
-      existingClaim: immich
+      existingClaim: immich-nfs
   configuration:
     backup:
       database:
@@ -44,7 +44,6 @@ machine-learning:
       storageClass: "ceph-block"
       size: 10Gi
     data:
-      enabled: true
       existingClaim: immich-nfs
       globalMounts:
         - readOnly: true
@@ -60,47 +59,8 @@ server:
               memory: 512Mi
             limits:
               memory: 4Gi
-  probes:
-    liveness:
-      enabled: true
-      custom: true
-      spec:
-        httpGet:
-          path: /ping
-          port: http
-        initialDelaySeconds: 0
-        periodSeconds: 10
-        timeoutSeconds: 1
-        failureThreshold: 3
-    readiness:
-      enabled: true
-      custom: true
-      spec:
-        httpGet:
-          path: /ping
-          port: http
-        initialDelaySeconds: 0
-        periodSeconds: 10
-        timeoutSeconds: 1
-        failureThreshold: 3000
-    startup:
-      enabled: true
-      custom: true
-      spec:
-        httpGet:
-          path: /ping
-          port: http
-        initialDelaySeconds: 0
-        periodSeconds: 10
-        timeoutSeconds: 1
-        failureThreshold: 60
-  persistence:
-    data:
-      enabled: true
-      existingClaim: immich-nfs
   route:
     main:
-      enabled: true
       hostnames: ["photos.darkflame.dev"]
       rules:
         - matches:
@@ -114,5 +74,3 @@ server:
         - name: envoy-external
           namespace: network
           sectionName: https
-valkey:
-  enabled: false

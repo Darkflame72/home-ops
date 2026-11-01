@@ -82,14 +82,12 @@ controllers:
               app.kubernetes.io/name: miniflux
 service:
   app:
-    controller: miniflux
     ipFamilyPolicy: PreferDualStack
     ports:
       http:
         port: *port
 serviceMonitor:
   app:
-    serviceName: miniflux
     endpoints:
       - port: http
 route:

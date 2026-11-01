@@ -1,6 +1,5 @@
 # No yaml-language-server schema available: mogenius/renovate-operator (no schema published)
 crd:
-  install: true
   mode: template
 resources:
   requests:
@@ -38,18 +37,12 @@ webhook:
         namespace: network
         sectionName: https
 metrics:
-  enabled: true
   serviceMonitor:
     enabled: true
   dashboard:
     enabled: true
-    labels:
-      grafana_dashboard: "1"
     grafanaDashboard:
       allowCrossNamespaceImport: true
-      instanceSelector:
-        matchLabels:
-          grafana.internal/instance: grafana
 auth:
   # Only members of this Authentik group can see/manage RenovateJobs in the UI (secure by default).
   defaultAllowedGroups: "authentik Admins"
@@ -59,7 +52,6 @@ auth:
     # Set after creating the OAuth2 provider/application in Authentik (not secret, safe to commit).
     clientId: "5QCqRHGc0shjhX8raHtX2kyXajIOYStF7ST943j3"
     existingSecret: renovate-secret
-    secretKey: client-secret
     # The chart derives the redirect host from route.hostnames[0] but the scheme from
     # ingress.tls, which is unset since TLS terminates at the Gateway (envoy-internal).
     redirectScheme: https

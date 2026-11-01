@@ -194,19 +194,15 @@ collectors:
         extensions: [k8s_leader_elector/k8s_cluster, k8s_leader_elector/k8s_objects]
         pipelines:
           metrics:
-            receivers: [prometheus]
             processors: [memory_limiter, transform/cluster_label, batch]
             exporters: [otlp_http/mimir]
           # kubernetesEvents preset receiver. Without this pipeline the events
           # are read and then dropped. Its leader-election extension must be
           # listed too, or the collector fails to start.
           logs:
-            receivers: [k8s_objects]
             processors: [memory_limiter, batch]
             exporters: [otlp_http/loki]
   daemon:
-    enabled: true
-    mode: daemonset
     # Presets replace the chart's default daemon_scrape_configs.yaml (they are
     # mutually exclusive with it). They cover the same three jobs: node-exporter,
     # cAdvisor on the kubelet, and annotation-based pod scraping.
@@ -303,14 +299,6 @@ collectors:
             processors: [resource/audit, resource_detection/env, resource/hostname, batch]
             exporters: [otlp_http/loki]
     presets:
-      logsCollection:
-        enabled: true
-      hostMetrics:
-        enabled: true
-      kubeletMetrics:
-        enabled: true
-      kubernetesAttributes:
-        enabled: true
       prometheus:
         nodeExporter:
           enabled: true
@@ -337,7 +325,6 @@ collectors:
   gateway:
     enabled: true
     suffix: gateway
-    mode: deployment
     replicas: 1
     podSecurityContext:
       runAsNonRoot: true
@@ -400,7 +387,6 @@ collectors:
   ingress:
     enabled: true
     suffix: ingress
-    mode: deployment
     replicas: 2
     podSecurityContext:
       runAsNonRoot: true

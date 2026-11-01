@@ -56,7 +56,6 @@ redis-ha:
           memory: 128Mi
 
 controller:
-  replicas: 1
   resources:
     requests:
       cpu: 155m
@@ -131,14 +130,6 @@ server:
       # variant used here before flaked on 1.1.1.1 blips. A static HTTP endpoint
       # is defined in apps/observability/gatus/config/config.yaml instead.
       gatus.home-operations.com/enabled: "false"
-    rules:
-      - backendRefs:
-          - name: argocd-server
-            port: 80
-        matches:
-          - path:
-              type: PathPrefix
-              value: /
 
   autoscaling:
     enabled: true
@@ -191,7 +182,6 @@ dex:
       memory: 256Mi
 
 notifications:
-  enabled: true
   resources:
     requests:
       cpu: 10m
@@ -200,7 +190,6 @@ notifications:
       memory: 704Mi
   secret:
     create: false
-    name: argocd-notifications-secret
   notifiers:
     service.github: |
       appID: $github-appId

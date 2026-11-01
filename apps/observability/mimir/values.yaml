@@ -3,7 +3,6 @@
 # OBC secret "mimir-bucket" and configmap "mimir-bucket" are injected via global.extraEnvFrom.
 # config.expand-env is set automatically by the chart — no need to set it in extraArgs.
 
-fullnameOverride: mimir
 
 global:
   extraEnvFrom:
@@ -55,12 +54,6 @@ kafka:
   enabled: false
 
 alertmanager:
-  enabled: true
-  replicas: 1
-  statefulSet:
-    enabled: true
-  zoneAwareReplication:
-    enabled: false
   resources:
     limits:
       memory: 640Mi
@@ -120,7 +113,6 @@ alertmanager:
             message: *discord_message
 
 compactor:
-  replicas: 1
   resources:
     limits:
       memory: 2496Mi
@@ -129,7 +121,6 @@ compactor:
     prometheus.io/port: "8080"
 
 distributor:
-  replicas: 1
   resources:
     limits:
       memory: 1344Mi
@@ -174,7 +165,6 @@ querier:
     prometheus.io/port: "8080"
 
 query_frontend:
-  replicas: 1
   resources:
     limits:
       memory: 384Mi
@@ -188,8 +178,6 @@ query_scheduler:
       memory: 192Mi
 
 ruler:
-  enabled: true
-  replicas: 1
   resources:
     limits:
       memory: 960Mi
@@ -198,13 +186,11 @@ ruler:
     prometheus.io/port: "8080"
 
 overrides_exporter:
-  enabled: true
   resources:
     limits:
       memory: 128Mi
 
 store_gateway:
-  replicas: 1
   zoneAwareReplication:
     enabled: false
   resources:
@@ -215,7 +201,6 @@ store_gateway:
     prometheus.io/port: "8080"
 
 gateway:
-  replicas: 1
   resources:
     requests:
       cpu: 15m

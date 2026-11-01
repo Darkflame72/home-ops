@@ -1,5 +1,4 @@
 # No yaml-language-server schema available: home-operations/kromgo
-fullnameOverride: kromgo
 
 config:
   prometheus: http://mimir-gateway.observability.svc.cluster.local/prometheus

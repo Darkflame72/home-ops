@@ -1,0 +1,22 @@
+# Read by deadvalues (scan, diff and the GitHub Action).
+#
+# APIs the cluster serves (checked with `kubectl get crd`). Charts render
+# ServiceMonitors, PrometheusRules and GrafanaDashboards only when the API is
+# served, so without this the keys behind them are reported as CONDITIONAL.
+apiVersions:
+  - monitoring.coreos.com/v1/ServiceMonitor
+  - monitoring.coreos.com/v1/PrometheusRule
+  - grafana.integreatly.org/v1beta1/GrafanaDashboard
+
+# Keys the render cannot judge, and why they stay.
+ignore:
+  # openebs' pre-upgrade hook is gated on .Release.IsUpgrade, which a render
+  # never sets. false stops the hook from running on upgrades; keep it.
+  - app: openebs
+    keys:
+      - preUpgradeHook.enabled
+  # cilium is the CNI, so on a rebuild it installs before the monitoring CRDs
+  # exist. The guard only matters then; with the CRDs present it is inert.
+  - app: cilium
+    keys:
+      - prometheus.serviceMonitor.trustCRDsExist

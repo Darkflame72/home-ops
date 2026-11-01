@@ -1,6 +1,5 @@
 ---
 image:
-  repository: itzg/mc-router
   # renovate: datasource=docker depName=itzg/mc-router
   tag: 1.52.0@sha256:7c71e11ae3ab3b10c2f6e0090c0cee5544bbbb8f8f02b83ea696b8a182d3eca0
   pullPolicy: IfNotPresent
@@ -8,7 +7,6 @@ image:
 services:
   minecraft:
     type: LoadBalancer
-    port: 25565
     annotations:
       lbipam.cilium.io/ips: 10.0.60.16 # pinned so the router port-forward stays valid
 
@@ -17,9 +15,6 @@ minecraftRouter:
     - externalHostname: "mc.darkflame.dev"
       host: minecraft.games.svc.cluster.local
       port: 25565
-  autoScale:
-    up: { enabled: false }
-    down: { enabled: false }
 
 resources:
   requests:

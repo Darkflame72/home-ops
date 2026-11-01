@@ -6,9 +6,6 @@ controllers:
     cronjob:
       # Weekly on Sunday at 03:00
       schedule: "0 3 * * 0"
-      concurrencyPolicy: Forbid
-      successfulJobsHistory: 1
-      failedJobsHistory: 1
     containers:
       app:
         image:
@@ -57,5 +54,3 @@ persistence:
         readOnly: true
   tmp:
     type: emptyDir
-    globalMounts:
-      - path: /tmp

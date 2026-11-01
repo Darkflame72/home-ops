@@ -6,13 +6,6 @@ driver:
   loader:
     enabled: false
 
-controller:
-  kind: daemonset
-
-falco:
-  # JSON output so Loki and Falcosidekick can parse fields.
-  json_output: true
-  json_include_output_property: true
 
 customRules:
   customized-local-rules.yaml: |-
@@ -181,7 +174,6 @@ customRules:
 
 resources:
   requests:
-    cpu: 100m
     memory: 256Mi
   limits:
     memory: 512Mi
@@ -223,8 +215,6 @@ falcosidekick:
   # Explicit non-root, so the policy does not depend on the default user.
   podSecurityContext:
     runAsNonRoot: true
-    runAsUser: 1234
-    fsGroup: 1234
   resources:
     requests:
       cpu: 20m
@@ -234,7 +224,6 @@ falcosidekick:
   config:
     loki:
       hostport: http://loki-gateway.observability.svc.cluster.local
-      endpoint: /loki/api/v1/push
       format: json
       minimumpriority: debug
     alertmanager:

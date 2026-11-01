@@ -1,7 +1,6 @@
 # Kubernetes audit-log detection. A separate, unprivileged Falco release: no driver, no
 # collectors, one replica. Audit events arrive from Fluent Bit over TLS (see apps/falco/fluent-bit).
 # Base layout follows the chart's values-k8saudit.yaml.
-fullnameOverride: falco-k8saudit
 
 driver:
   enabled: false
@@ -11,8 +10,6 @@ collectors:
 
 controller:
   kind: deployment
-  deployment:
-    replicas: 1
 
 # Pods run as non-root with no host access. The audit listener needs nothing from the node.
 podSecurityContext:
@@ -38,7 +35,6 @@ falcoctl:
   artifact:
     install:
       # Plugin and rules are installed by the init container at pinned versions.
-      enabled: true
       resources:
         requests:
           cpu: 10m
@@ -56,7 +52,6 @@ falcoctl:
   config:
     artifact:
       install:
-        resolveDeps: true
         # Pinned to the chart's tested versions. Bump in a PR after reading release notes.
         refs: [k8saudit-rules:0.16, k8saudit:0.16]
 
@@ -221,7 +216,6 @@ customRules:
 
 falco:
   json_output: true
-  json_include_output_property: true
   # Off: the k8saudit plugin reads audit events only, so no host /proc mount is needed.
   plugins_hostinfo: false
   rules_files:
@@ -246,8 +240,6 @@ falco:
     enabled: true
     url: "http://falco-falcosidekick.falco.svc.cluster.local:2801/"
 
-falcosidekick:
-  enabled: false
 
 resources:
   requests:

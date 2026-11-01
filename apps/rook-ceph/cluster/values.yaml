@@ -3,7 +3,6 @@ monitoring:
   enabled: true
   # Rules are vendored in ./prometheus-rules.yaml with a local tweak (see that file's header) so the
   # chart's copy is disabled here to avoid a duplicate/conflicting PrometheusRule resource.
-  createPrometheusRules: false
 toolbox:
   enabled: true
 route:
@@ -12,24 +11,11 @@ route:
       gatus.home-operations.com/enabled: "false"
     host:
       name: rook.darkflame.dev
-      path: /
-      pathType: PathPrefix
     parentRefs:
       - group: gateway.networking.k8s.io
         kind: Gateway
         name: envoy-internal
         namespace: network
-    rules:
-    - backendRefs:
-        - group: ''
-          kind: Service
-          name: rook-ceph-mgr-dashboard
-          port: 7000
-          weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
 cephClusterSpec:
   # Mgr and exporter pods are scraped through their ServiceMonitors, which the OTel cluster collector
   # labels with cluster="home". The prometheus.io/scrape annotation also lets the daemon collector scrape
@@ -61,13 +47,10 @@ cephClusterSpec:
       rgw_sigv4_insecure: "true"
   cleanupPolicy:
     wipeDevicesFromOtherClusters: true
-  crashCollector:
-    disable: false
   csi:
     readAffinity:
       enabled: true
   dashboard:
-    enabled: true
     urlPrefix: /
     ssl: false
     prometheusEndpoint: http://mimir-gateway.observability.svc.cluster.local/prometheus
@@ -83,8 +66,6 @@ cephClusterSpec:
         enabled: true
   network:
     provider: host
-    connections:
-      requireMsgr2: true
   resources:
     # mon/mgr/osd cpu requests explicitly overridden (2026-08-10) - chart
     # defaults (mon/osd 1000m, mgr 500m) reserved ~10 cores cluster-wide
@@ -104,9 +85,6 @@ cephClusterSpec:
       limits:
         memory: 8Gi
     prepareosd:
-      requests:
-        cpu: 500m
-        memory: 50Mi
       limits:
         memory: 1Gi
   # skipUpgradeChecks: Rook's operator refuses ANY CephCluster spec change
@@ -146,7 +124,6 @@ cephClusterSpec:
         keyType: aes256k
   skipUpgradeChecks: true
   storage:
-    useAllNodes: true
     useAllDevices: false
     devicePathFilter: /dev/disk/by-id/nvme-WD_Green_SN3000_1TB_*
     config:
@@ -181,8 +158,6 @@ cephBlockPools:
 cephBlockPoolsVolumeSnapshotClass:
   enabled: true
   name: csi-ceph-blockpool
-  isDefault: false
-  deletionPolicy: Delete
 # CephFS (cephFileSystems / cephFileSystemVolumeSnapshotClass) intentionally removed:
 # nothing used it (zero PVCs on the ceph-filesystem StorageClass, no real subvolume
 # data), and its metadata/data pool IDs had somehow shifted to overlap with
@@ -199,8 +174,6 @@ cephBlockPoolsVolumeSnapshotClass:
 # 4Gi each) every time they were manually deleted. Setting an explicit
 # empty override is required to actually disable it.
 cephFileSystems: []
-cephFileSystemVolumeSnapshotClass:
-  enabled: false
 cephObjectStores:
   - name: ceph-objectstore
     spec:

@@ -1,5 +1,4 @@
 # No yaml-language-server schema available: grafana-community/loki
-deploymentMode: Monolithic
 
 loki:
   auth_enabled: false
@@ -20,7 +19,6 @@ loki:
       ruler: ${BUCKET_NAME}
     use_thanos_objstore: true
     object_store:
-      type: s3
       s3:
         endpoint: ${BUCKET_HOST}:${BUCKET_PORT}
         access_key_id: ${AWS_ACCESS_KEY_ID}
@@ -28,8 +26,6 @@ loki:
         insecure: true
         bucket_lookup_type: path
   limits_config:
-    reject_old_samples: true
-    reject_old_samples_max_age: 168h
     allow_structured_metadata: true
     retention_period: 720h
   compactor:
@@ -37,7 +33,6 @@ loki:
     delete_request_store: s3
 
 singleBinary:
-  replicas: 1
   resources:
     requests:
       cpu: 160m
@@ -55,8 +50,6 @@ singleBinary:
     - configMapRef:
         name: loki-bucket
   persistence:
-    enabled: true
-    size: 10Gi
     storageClass: ceph-block
 
 sidecar:
@@ -67,16 +60,7 @@ sidecar:
     limits:
       memory: 576Mi
 
-read:
-  replicas: 0
-write:
-  replicas: 0
-backend:
-  replicas: 0
-
 gateway:
-  enabled: true
-  replicas: 1
   resources:
     requests:
       cpu: 20m

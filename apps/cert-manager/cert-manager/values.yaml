@@ -3,7 +3,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cert-manager/cert-manager/v1.21.3/deploy/charts/cert-manager/values.schema.json
 crds:
   enabled: true
-replicaCount: 1
 dns01RecursiveNameservers: https://1.1.1.1:443/dns-query,https://1.0.0.1:443/dns-query
 dns01RecursiveNameserversOnly: true
 resources:
@@ -27,6 +26,5 @@ cainjector:
     limits:
       memory: 704Mi
 prometheus:
-  enabled: true
   servicemonitor:
     enabled: true

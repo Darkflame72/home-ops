@@ -23,11 +23,8 @@ updateStrategy:
   type: Recreate
 
 existingSecretAdminPassword: harbor-admin-secret
-existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
 
 persistence:
-  enabled: true
-  resourcePolicy: "keep"
   persistentVolumeClaim:
     registry:
       storageClass: ceph-block
@@ -37,19 +34,15 @@ persistence:
         storageClass: ceph-block
     trivy:
       storageClass: ceph-block
-  imageChartStorage:
-    type: filesystem
 
 # Dedicated CNPG cluster (harbor-postgres), see cluster.yaml
 database:
   type: external
   external:
     host: harbor-postgres-rw.default.svc.cluster.local
-    port: "5432"
     username: app
     coreDatabase: app
     existingSecret: harbor-postgres-app
-    sslmode: disable
 
 # Dedicated dragonfly instance (see redis.yaml), so the chart's default
 # db-index layout (core=0, jobservice=1, registry=2, trivy=5) is fine as-is.
@@ -66,13 +59,8 @@ metrics:
 trace:
   enabled: true
   provider: otel
-  sample_rate: 1
   otel:
     endpoint: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local:4318
-    url_path: /v1/traces
-    compression: false
-    insecure: true
-    timeout: 10
 
 # The chart ships these commented out by default; set explicitly to satisfy
 # the require-requests-limits Kyverno policy.

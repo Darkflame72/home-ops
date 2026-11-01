@@ -1,11 +1,7 @@
 # Ships the apiserver audit log from control-plane nodes to the k8saudit listener (falco-k8saudit).
 # Runs only on control-plane nodes, reads one file read-only, and sends over verified TLS.
 # Reference: https://falco.org/blog/deploy-falco-talos-cluster/ (updated for TLS, non-root and filtering).
-kind: DaemonSet
 
-image:
-  # Official image. cr.fluentbit.io is on the registry allowlist.
-  repository: cr.fluentbit.io/fluent/fluent-bit
 
 # Only control-plane nodes produce the audit log. The taint is already removed in this cluster.
 nodeSelector:

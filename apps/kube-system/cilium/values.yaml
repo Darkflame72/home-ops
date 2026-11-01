@@ -13,7 +13,7 @@ cni:
   # Required for pairing with Multus CNI
   exclusive: false
 cgroup:
-  automount:
+  autoMount:
     enabled: false
   hostRoot: /sys/fs/cgroup
 # NOTE: devices might need to be set if you have more than one active NIC on your hosts
@@ -73,7 +73,6 @@ operator:
   dashboards:
     enabled: true
   prometheus:
-    enabled: true
     serviceMonitor:
       enabled: true
   replicas: 1
@@ -111,5 +110,3 @@ securityContext:
       - NET_ADMIN
       - SYS_ADMIN
       - SYS_RESOURCE
-socketLB:
-  hostNamespaceOnly: true
