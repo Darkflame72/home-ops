@@ -74,6 +74,12 @@ customRules:
       override:
         condition: append
       condition: and not (container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and proc.exepath in ("/bin/dash", "/usr/bin/dash") and user.name = "postgres" and proc.cmdline startswith "sh -c /controller/manager wal-restore")
+    # Nextcloud's image probes for office suites at startup with command -v (reviewed 2026-11-01).
+    - rule: Run shell untrusted
+      override:
+        condition: append
+      condition: and not (k8s.ns.name = "default" and container.name = "nextcloud" and proc.name = "sh" and proc.cmdline startswith "sh -c -- command -v -- " and (proc.cmdline contains "libreoffice" or proc.cmdline contains "openoffice"))
+    # Scheduled sync job lists PrometheusRules on every run (reviewed 2026-11-01).
     - macro: user_known_contact_k8s_api_server_activities
       condition: >
         (k8s.ns.name = "crosscut-dev" and proc.exepath = "/usr/local/bin/crosscut-sync" and proc.name = "tokio-rt-worker") or
@@ -90,6 +96,8 @@ customRules:
         (k8s.ns.name = "network" and proc.exepath = "/usr/local/bin/envoy-gateway") or
         (container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and proc.exepath = "/controller/manager") or
         (k8s.ns.name = "crosscut-dev" and proc.exepath = "/usr/local/bin/crosscut-sync" and proc.cmdline startswith "crosscut-sync serve") or
+        (k8s.ns.name = "observability" and container.name = "sync" and proc.name = "kubectl"
+          and proc.cmdline startswith "kubectl get prometheusrules -A") or
         (k8s.ns.name = "observability" and proc.exepath = "/app/policyreporter" and proc.cmdline startswith "policyreporter run") or
         (k8s.ns.name = "observability" and proc.exepath = "/ko-app/policy-reporter-ui" and proc.cmdline startswith "policy-reporter run --config") or
         (k8s.ns.name = "cert-manager" and proc.exepath = "/app/cmd/webhook/webhook" and proc.cmdline startswith "webhook --v=2") or
