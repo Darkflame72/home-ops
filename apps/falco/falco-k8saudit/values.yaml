@@ -246,7 +246,9 @@ resources:
     cpu: 50m
     memory: 256Mi
   limits:
-    memory: 512Mi
+    # Was 512Mi: OOMKilled 6 times, and fluent-bit backs up while the listener restarts.
+    memory: 1Gi
+    cpu: 2
 
 metrics:
   enabled: true
