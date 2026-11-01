@@ -16,6 +16,8 @@ initContainers:
 persistence:
   claimName: forgejo
 gitea:
+  admin:
+    existingSecret: forgejo-admin-keys
   config:
     APP_NAME: "Forgejo Darkflame72"
     server:
