@@ -73,6 +73,9 @@ portal:
       memory: 64Mi
 
 core:
+  existingSecret: harbor-core-keys
+  existingXsrfSecret: harbor-core-keys
+  secretName: harbor-token-ca
   resources:
     requests:
       cpu: 50m
@@ -81,6 +84,7 @@ core:
       memory: 512Mi
 
 jobservice:
+  existingSecret: harbor-jobservice-keys
   resources:
     requests:
       cpu: 50m
@@ -89,6 +93,9 @@ jobservice:
       memory: 512Mi
 
 registry:
+  existingSecret: harbor-registry-keys
+  credentials:
+    existingSecret: harbor-registry-credentials
   registry:
     resources:
       requests:
