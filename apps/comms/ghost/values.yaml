@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
 controllers:
   mysql:
-    strategy: Recreate
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
@@ -9,7 +8,7 @@ controllers:
         image:
           repository: docker.io/library/mysql
           # renovate: datasource=docker depName=mysql
-          tag: 26.7.0@sha256:45abdd9b4144660b5c93a5b7d0ebb21e024f0ba9851ecb4ab43bf83c6bf83592
+          tag: 26.10.0@sha256:7b16ec7caa94ca7e92f4c5ec287de69d2e8738db056ceb629022951a6f6d910b
         securityContext:
           runAsUser: 999
           runAsGroup: 999
@@ -40,7 +39,6 @@ controllers:
             memory: 1Gi
 
   ghost:
-    strategy: Recreate
     annotations:
       reloader.stakater.com/auto: "true"
     initContainers:
@@ -48,7 +46,7 @@ controllers:
         image:
           repository: ghcr.io/tryghost/activitypub-migrations
           # renovate: datasource=docker depName=ghcr.io/tryghost/activitypub-migrations
-          tag: 1.2.9@sha256:f8a376e83187cc927fd6286a9e825b71056b2ac7dd8afcd1af1c8c7dc4657a8e
+          tag: 1.2.16@sha256:1ecd26490dc668c6e5e467f85ea2e40d8bfc033bae8eb70f5378a24a27bb75d6
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
@@ -73,7 +71,7 @@ controllers:
         image:
           repository: docker.io/library/ghost
           # renovate: datasource=docker depName=ghost
-          tag: 6.64.0-alpine@sha256:47ecbe856dd06dcd20cb9410e1c4d532fc085eba776cfabc203609c7d15d8320
+          tag: 6.73.0-alpine@sha256:4195f6c405e40230cd10c0770425cf500c1f542a96e9f6584c11649c150e5a89
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
@@ -117,7 +115,7 @@ controllers:
         image:
           repository: ghcr.io/tryghost/activitypub
           # renovate: datasource=docker depName=ghcr.io/tryghost/activitypub
-          tag: 1.2.9@sha256:f950017169c778f90bc1d4097c0c83735dd88ee26a7dfacda56fb6325d4053a0
+          tag: 1.2.16@sha256:b440548b8a87eaf70c9440d4b157beee4898b85ba4294509926517a85e7573c7
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000

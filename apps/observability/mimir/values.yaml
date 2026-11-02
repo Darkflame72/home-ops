@@ -3,7 +3,6 @@
 # OBC secret "mimir-bucket" and configmap "mimir-bucket" are injected via global.extraEnvFrom.
 # config.expand-env is set automatically by the chart — no need to set it in extraArgs.
 
-fullnameOverride: mimir
 
 global:
   extraEnvFrom:
@@ -43,7 +42,11 @@ mimir:
       ingestion_burst_size: 300000
       max_global_series_per_user: 10000000
       compactor_blocks_retention_period: 90d
-      max_label_names_per_series: 40
+      max_label_names_per_series: 50
+      # kubeletstats and k8s_attributes put pod identity on the resource, not on
+      # datapoints. Without promotion every pod's series collapses into one
+      # label-less series and Mimir rejects the conflicting samples.
+      promote_otel_resource_attributes: "k8s.pod.name,k8s.pod.uid,k8s.namespace.name,k8s.node.name,k8s.container.name"
     ingest_storage:
       enabled: false
 
@@ -51,12 +54,6 @@ kafka:
   enabled: false
 
 alertmanager:
-  enabled: true
-  replicas: 1
-  statefulSet:
-    enabled: true
-  zoneAwareReplication:
-    enabled: false
   resources:
     limits:
       memory: 640Mi
@@ -116,7 +113,6 @@ alertmanager:
             message: *discord_message
 
 compactor:
-  replicas: 1
   resources:
     limits:
       memory: 2496Mi
@@ -125,7 +121,6 @@ compactor:
     prometheus.io/port: "8080"
 
 distributor:
-  replicas: 1
   resources:
     limits:
       memory: 1344Mi
@@ -140,6 +135,8 @@ ingester:
   persistentVolume:
     size: 30Gi
   resources:
+    requests:
+      memory: 2560Mi
     limits:
       memory: 13120Mi
   podAnnotations:
@@ -168,7 +165,6 @@ querier:
     prometheus.io/port: "8080"
 
 query_frontend:
-  replicas: 1
   resources:
     limits:
       memory: 384Mi
@@ -182,8 +178,6 @@ query_scheduler:
       memory: 192Mi
 
 ruler:
-  enabled: true
-  replicas: 1
   resources:
     limits:
       memory: 960Mi
@@ -192,13 +186,11 @@ ruler:
     prometheus.io/port: "8080"
 
 overrides_exporter:
-  enabled: true
   resources:
     limits:
       memory: 128Mi
 
 store_gateway:
-  replicas: 1
   zoneAwareReplication:
     enabled: false
   resources:
@@ -209,7 +201,6 @@ store_gateway:
     prometheus.io/port: "8080"
 
 gateway:
-  replicas: 1
   resources:
     requests:
       cpu: 15m
@@ -217,8 +208,8 @@ gateway:
     limits:
       memory: 128Mi
   podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
+    # The gateway is nginx and serves no /metrics (404). Component metrics come from the Mimir components themselves.
+    prometheus.io/scrape: "false"
 
 rollout_operator:
   enabled: false

@@ -2,7 +2,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
 controllers:
   opencloud:
-    type: deployment
     containers:
       app:
         image:
@@ -120,13 +119,10 @@ defaultPodOptions:
     fsGroup: 1000
 service:
   app:
-    controller: opencloud
     ports:
       http: {port: 9200}
 route:
   external:
-    enabled: true
-    kind: HTTPRoute
     parentRefs:
       - name: envoy-external
         namespace: network

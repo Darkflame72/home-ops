@@ -8,3 +8,8 @@ resources:
   - ./llm.yaml
   - ./external-secret.yaml
   - ./ciliumnetworkpolicy.yaml
+  - ./tracing.yaml
+  - ./claude.yaml
+  - ./codex.yaml
+  - ./openai.yaml
+  - ./mistral.yaml

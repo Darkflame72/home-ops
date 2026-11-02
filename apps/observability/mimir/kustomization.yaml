@@ -7,3 +7,10 @@ resources:
   - ./external-secret.yaml
   - ./grafanadatasource.yaml
   - ./prometheus-rules.yaml
+  - ./rules-sync.yaml
+configMapGenerator:
+  - name: prometheus-rules-sync-script
+    files:
+      - ./rules-sync.sh
+generatorOptions:
+  disableNameSuffixHash: true

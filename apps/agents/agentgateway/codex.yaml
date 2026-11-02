@@ -1,0 +1,167 @@
+---
+# SPIKE: Codex CLI with a ChatGPT-subscription login through agentgateway.
+# agentgateway only documents/tests Codex with a gateway client key; this
+# points a pass-through OpenAI-format backend at the ChatGPT Codex backend
+# instead (no auth secret, so the client's own ChatGPT bearer goes upstream
+# unchanged). Client side: chatgpt_base_url = "https://llm.darkflame.dev/backend-api/"
+# in ~/.codex/config.toml. Codex prefers a WebSocket transport and falls back
+# to HTTP/SSE; this proxies HTTP only, so expect a one-off stall before the
+# fallback (see openai/codex issues on responses_websocket).
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: chatgpt-codex
+  namespace: agents
+spec:
+  ai:
+    provider:
+      openai: {}
+      host: chatgpt.com
+      port: 443
+      pathPrefix: /backend-api/codex
+  policies:
+    # A host override doesn't imply upstream TLS (plain HTTP hit chatgpt.com:443
+    # and Cloudflare returned 400), so originate TLS explicitly.
+    tls:
+      sni: chatgpt.com
+    ai:
+      routes:
+        "/responses": Responses
+        "*": Passthrough
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  # Renamed from "codex": edits to an existing HTTPRoute's rules were not being
+  # applied (Argo's global HTTPRoute ignoreDifferences + RespectIgnoreDifferences
+  # left the live object at generation 1), so a fresh name forces a full create.
+  name: codex-chatgpt
+  namespace: agents
+  annotations:
+    # LLM API routes never return a health-check status (auth-only, streaming, or 426 for websockets).
+    gatus.home-operations.com/enabled: "false"
+  labels:
+    # Same reason as the claude route: llm-internal owns the DNS record.
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /backend-api/codex
+      # The backend re-adds /backend-api/codex (provider pathPrefix); without
+      # stripping it here, pass-through paths like /models were forwarded as
+      # /backend-api/codex/backend-api/codex/models (404).
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: chatgpt-codex
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
+---
+# Codex also calls non-inference ChatGPT endpoints under the same base URL
+# (/backend-api/wham/accounts/check, /ps/plugins/*, /ps/mcp, ...). Without a
+# route these fell through to the claude "/" catch-all (Anthropic -> 404) and
+# Codex aborted with "workspace routing discovery failed". Plain pass-through,
+# no provider pathPrefix, so paths are forwarded unchanged. New object names
+# for the same reason as codex-chatgpt above.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: chatgpt-backend
+  namespace: agents
+spec:
+  ai:
+    provider:
+      openai: {}
+      host: chatgpt.com
+      port: 443
+  policies:
+    tls:
+      sni: chatgpt.com
+    ai:
+      routes:
+        "*": Passthrough
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: chatgpt-backend
+  namespace: agents
+  annotations:
+    # LLM API routes never return a health-check status (auth-only, streaming, or 426 for websockets).
+    gatus.home-operations.com/enabled: "false"
+  labels:
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    # Shorter than codex-chatgpt's /backend-api/codex, which still wins for
+    # inference traffic.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /backend-api
+      backendRefs:
+        - name: chatgpt-backend
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
+---
+# Codex tries a WebSocket upgrade (GET /responses) before HTTP/SSE. That GET
+# has no body, so the Responses AI route 400s on it, and Codex treats a 400 as
+# fatal instead of falling back. 426 Upgrade Required is the signal it falls
+# back on, and keeps all inference on the HTTP path where it is parsed and
+# traced to Phoenix (a proxied WebSocket would bypass LLM telemetry).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: codex-ws-fallback
+  namespace: agents
+  annotations:
+    # LLM API routes never return a health-check status (auth-only, streaming, or 426 for websockets).
+    gatus.home-operations.com/enabled: "false"
+  labels:
+    home-operations.com/pihole: ignore
+spec:
+  hostnames:
+    - llm.darkflame.dev
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agents
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /backend-api/codex/responses
+          method: GET
+      backendRefs:
+        - name: chatgpt-backend
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: codex-ws-fallback
+  namespace: agents
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: codex-ws-fallback
+  traffic:
+    directResponse:
+      status: 426

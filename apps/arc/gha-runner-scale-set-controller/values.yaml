@@ -1,0 +1,11 @@
+# Pinned numeric UID so runAsNonRoot can be verified by the kubelet
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi

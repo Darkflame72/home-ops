@@ -1,12 +1,5 @@
 ---
-kind: CronJob
 schedule: "*/20 * * * *"
-
-service:
-  enabled: true
-
-serviceMonitor:
-  enabled: true
 
 deschedulerPolicy:
   # Temporary for initial rollout of LowNodeUtilization; remove once
@@ -19,7 +12,20 @@ deschedulerPolicy:
         - name: DefaultEvictor
           args:
             nodeFit: true
+            # Pods with emptyDir volumes (postgres clusters, minecraft, argocd repo-server) were never evictable, which
+            # left nodes that were overloaded with them stuck. Allow them, but never a CNPG primary (that forces a
+            # failover) and never Rook mon, mgr or OSD pods (that starts Ceph data movement). Reviewed 2026-10-25.
+            labelSelector:
+              matchExpressions:
+                - key: cnpg.io/instanceRole
+                  operator: NotIn
+                  values: ["primary"]
+                - key: app
+                  operator: NotIn
+                  values: ["rook-ceph-osd", "rook-ceph-mon", "rook-ceph-mgr"]
             podProtections:
+              defaultDisabled:
+                - PodsWithLocalStorage
               extraEnabled:
                 - PodsWithPVC
               config:
@@ -27,6 +33,11 @@ deschedulerPolicy:
                   protectedStorageClasses:
                     - name: openebs-hostpath
         - name: RemoveDuplicates
+          args:
+            # Job pods (crosscut mining and sync workers) that share a node were evicted mid-run,
+            # which counts as a failed pod and fails the Job at its backoff limit.
+            excludeOwnerKinds:
+              - Job
         - name: RemovePodsViolatingTopologySpreadConstraint
         - name: RemovePodsViolatingNodeAffinity
           args:

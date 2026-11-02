@@ -1,6 +1,4 @@
 # No yaml-language-server schema available: forgejo-contrib/forgejo-helm (codeberg, no schema published)
-image:
-  rootless: true
 containerSecurityContext:
   runAsNonRoot: true
 resources:
@@ -13,13 +11,13 @@ initContainers:
   resources:
     requests:
       cpu: 10m
-      memory: 128Mi
     limits:
       memory: 512Mi
 persistence:
-  enabled: true
   claimName: forgejo
 gitea:
+  admin:
+    existingSecret: forgejo-admin-keys
   config:
     APP_NAME: "Forgejo Darkflame72"
     server:
@@ -94,5 +92,3 @@ gitea:
         secretKeyRef:
           name: forgejo-postgres-app
           key: password
-strategy:
-  type: Recreate

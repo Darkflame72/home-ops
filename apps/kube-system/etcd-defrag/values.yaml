@@ -6,14 +6,11 @@ controllers:
     cronjob:
       # Weekly on Sunday at 03:00
       schedule: "0 3 * * 0"
-      concurrencyPolicy: Forbid
-      successfulJobsHistory: 1
-      failedJobsHistory: 1
     containers:
       app:
         image:
           repository: ghcr.io/ahrtr/etcd-defrag
-          tag: v0.45.0@sha256:b2a97f7fac6efceb4c74b90e86325f0d9536af77a2f77a5201fb34a4659abf91
+          tag: v0.47.0@sha256:58e8e0bd8fbe1c3c3dd454ab76098d521917921bacfc76a401228445aa951bb7
         args:
           - --endpoints=https://127.0.0.1:2379
           - --cluster
@@ -57,5 +54,3 @@ persistence:
         readOnly: true
   tmp:
     type: emptyDir
-    globalMounts:
-      - path: /tmp

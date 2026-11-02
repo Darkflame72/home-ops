@@ -1,0 +1,27 @@
+name: Dead Values
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  deadvalues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      # renovate: datasource=github-releases depName=guarnz/deadvalues
+      - uses: guarnz/deadvalues@6ed0a88f1513ea7c3c93b3bb9a4b4fc71b951b25 # v0.1.9
+        with:
+          version: v0.1.9
+          fail-on-diff: breaking
+          fail-on-scan: dead
+          fail-on-error: "true"

@@ -1,6 +1,5 @@
 ---
 # No yaml-language-server schema available: coredns/helm (no values.schema.json)
-fullnameOverride: coredns
 image:
   repository: mirror.gcr.io/coredns/coredns
 podSecurityContext:
@@ -10,8 +9,6 @@ podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65532
 k8sAppLabelOverride: kube-dns
-serviceAccount:
-  create: true
 service:
   name: kube-dns
   clusterIP: "10.43.0.10"

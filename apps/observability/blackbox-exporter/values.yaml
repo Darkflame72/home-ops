@@ -18,5 +18,3 @@ resources:
     memory: 192Mi
 
 # OTel handles scraping — no ServiceMonitor needed
-serviceMonitor:
-  enabled: false

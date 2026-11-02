@@ -9,8 +9,15 @@ spec:
   groups:
     - name: miniflux
       rules:
+        # Fires when the background scheduler (6h cadence, so two batches in 12h
+        # when healthy) has run nothing in 12h. The coverage guard holds it back
+        # until the scraped series spans the full 12h: a scrape gap otherwise
+        # reads as a flat counter and looks like a stall.
         - alert: MinifluxFeedRefreshStalled
-          expr: sum(increase(miniflux_background_feed_refresh_duration_count[12h])) == 0
+          expr: >-
+            sum(increase(miniflux_background_feed_refresh_duration_count[12h])) == 0
+            and on()
+            (time() - min(min_over_time(timestamp(up{job="miniflux"})[12h:]))) >= 43200
           for: 5m
           labels:
             severity: warning

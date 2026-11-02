@@ -21,7 +21,7 @@ jobs:
       - name: Validate Kubernetes manifests
         env:
           # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-          KUBERNETES_VERSION: v1.37.0
+          KUBERNETES_VERSION: v1.37.2
         run: |
           find apps -name '*.yaml' -not -name 'values.yaml' \
             | xargs grep -l '^apiVersion:' \
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
       - name: Validate Helm values against schemas
         run: |

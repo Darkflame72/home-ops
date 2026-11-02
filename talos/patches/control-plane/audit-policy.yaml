@@ -1,0 +1,101 @@
+# Kubernetes API audit policy. Replaces the Talos default (Metadata for everything).
+# Read by Falco's k8saudit detection via the audit log files on control-plane nodes
+# (apps/falco/falco-k8saudit + apps/falco/fluent-bit).
+#
+# Levels:
+#   Request       - for workload and RBAC changes; the request body is logged so Falco can read it.
+#   Metadata      - for secrets and tokens; never log bodies, so no secret material reaches the log.
+#   None          - high-volume noise (leases, events, health probes, system heartbeats).
+apiVersion: v1alpha1
+kind: KubeAuditPolicyConfig
+configuration:
+  apiVersion: audit.k8s.io/v1
+  kind: Policy
+  omitStages:
+    - RequestReceived
+  rules:
+    # Health and readiness probes, anonymous and authenticated.
+    - level: None
+      nonResourceURLs:
+        - /livez*
+        - /readyz*
+        - /healthz*
+        - /version
+        - /api*
+        - /apis*
+      userGroups: ["system:authenticated", "system:unauthenticated"]
+
+    # Lease heartbeats from controllers and schedulers. Roughly 40% of all events.
+    - level: None
+      resources:
+        - group: coordination.k8s.io
+          resources: ["leases"]
+
+    # Events are high volume and carry no security signal Falco needs.
+    - level: None
+      resources:
+        - group: ""
+          resources: ["events"]
+        - group: events.k8s.io
+          resources: ["events"]
+
+    # Node status and heartbeat patches from kubelets.
+    - level: None
+      userGroups: ["system:nodes"]
+      verbs: ["update", "patch"]
+      resources:
+        - group: ""
+          resources: ["nodes/status", "nodes"]
+
+    # Watch traffic from system components on endpoints and services.
+    - level: None
+      users: ["system:kube-proxy", "system:kube-scheduler", "system:kube-controller-manager"]
+      verbs: ["watch", "get", "list"]
+      resources:
+        - group: ""
+          resources: ["endpoints", "services", "endpointslices", "nodes", "pods"]
+        - group: discovery.k8s.io
+          resources: ["endpointslices"]
+
+    # Secrets and tokens: Metadata only, so bodies never reach the log.
+    - level: Metadata
+      resources:
+        - group: ""
+          resources: ["secrets", "serviceaccounts/token"]
+        - group: authentication.k8s.io
+          resources: ["tokenreviews"]
+        - group: authentication.k8s.io
+          resources: ["tokenrequests"]
+        - group: certificates.k8s.io
+          resources: ["certificatesigningrequests"]
+
+    # Pod exec, attach and port-forward are the high-signal operator actions. Request level keeps the command.
+    - level: Request
+      resources:
+        - group: ""
+          resources: ["pods/exec", "pods/attach", "pods/portforward"]
+
+    # ConfigMaps often hold credentials, so bodies are not logged.
+    - level: Metadata
+      resources:
+        - group: ""
+          resources: ["configmaps"]
+
+    # Workloads, RBAC, admission and CRDs: Request level so Falco can read privilege and host-access fields.
+    - level: Request
+      resources:
+        - group: ""
+          resources: ["pods", "services", "serviceaccounts", "namespaces"]
+        - group: apps
+          resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
+        - group: batch
+          resources: ["jobs", "cronjobs"]
+        - group: rbac.authorization.k8s.io
+          resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+        - group: admissionregistration.k8s.io
+          resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+        - group: apiextensions.k8s.io
+          resources: ["customresourcedefinitions"]
+
+    # Catch-all: record who did what at Metadata level, without request bodies.
+    - level: Metadata

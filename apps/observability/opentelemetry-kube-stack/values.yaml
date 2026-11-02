@@ -23,6 +23,10 @@ kubeStateMetrics:
   enabled: true
 
 kube-state-metrics:
+  # Kept out of ambient: the cluster collector scrapes it through the mesh, and
+  # HBONE delivery to this pod is refused. Plaintext scrapes reach it.
+  podLabels:
+    istio.io/dataplane-mode: none
   resources:
     requests:
       cpu: 15m
@@ -44,7 +48,6 @@ prometheus-node-exporter:
 defaultCRConfig:
   config:
     exporters:
-      debug: {}
       otlp_http/mimir:
         endpoint: http://mimir-gateway.observability.svc.cluster.local/otlp
         tls:
@@ -64,11 +67,12 @@ defaultCRConfig:
         endpoint: opentelemetry-kube-stack-gateway-collector.observability.svc.cluster.local:4317
         tls:
           insecure: true
-      syslog/wazuh:
-        endpoint: wazuh-manager.security.svc.cluster.local
-        port: 514
-        network: udp
-        protocol: rfc5424
+      # AI/LLM traces only (see traces/phoenix in the daemon). Phoenix runs with
+      # auth on; PHOENIX_ADMIN_SECRET from phoenix-secret works as a bearer token.
+      otlp_http/phoenix:
+        endpoint: http://phoenix-svc.observability.svc.cluster.local:6006
+        headers:
+          authorization: Bearer ${env:PHOENIX_ADMIN_SECRET}
         tls:
           insecure: true
 
@@ -79,14 +83,22 @@ collectors:
     enabled: true
     mode: statefulset
     replicas: 1
+    presets:
+      clusterMetrics:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
     podSecurityContext:
       runAsNonRoot: true
+    # Was 1Gi: the memory limiter (75% of the limit) started refusing scrape
+    # data at ~715Mi of steady use, so raise the ceiling above that.
     resources:
       limits:
-        memory: 1Gi
+        cpu: 1000m
+        memory: 1536Mi
       requests:
-        cpu: 100m
-        memory: 512Mi
+        cpu: 150m
+        memory: 768Mi
     targetAllocator:
       enabled: true
       allocationStrategy: consistent-hashing
@@ -101,7 +113,14 @@ collectors:
       prometheusCR:
         enabled: true
         scrapeInterval: 30s
-        serviceMonitorSelector: {}
+        # node-exporter is scraped per node by the daemon collector
+        # (daemon_scrape_configs.yaml). Scraping it here too doubled every
+        # node_* series, and the duplicates broke the (cluster, instance) joins.
+        serviceMonitorSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: NotIn
+              values: [prometheus-node-exporter]
         podMonitorSelector: {}
     config:
       receivers:
@@ -152,54 +171,6 @@ collectors:
                     target_label: namespace
                   - source_labels: [__meta_kubernetes_pod_name]
                     target_label: pod
-              - job_name: kubernetes-cadvisor
-                kubernetes_sd_configs:
-                  - role: node
-                scheme: https
-                tls_config:
-                  insecure_skip_verify: true
-                bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-                metrics_path: /metrics/cadvisor
-                relabel_configs:
-                  - action: labelmap
-                    regex: __meta_kubernetes_node_label_(.+)
-                  - source_labels: [__address__]
-                    regex: '(.*):.*'
-                    replacement: $$1:10250
-                    target_label: __address__
-                  - target_label: job
-                    replacement: kubernetes-cadvisor
-                  - source_labels: [__meta_kubernetes_node_name]
-                    target_label: node
-              - job_name: kubernetes-pods
-                kubernetes_sd_configs:
-                  - role: pod
-                relabel_configs:
-                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-                    action: keep
-                    regex: "true"
-                  # rook-ceph is already scraped via its own ServiceMonitors; avoid double-scrape
-                  - source_labels: [__meta_kubernetes_namespace]
-                    action: drop
-                    regex: rook-ceph
-                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-                    action: replace
-                    target_label: __metrics_path__
-                    regex: (.+)
-                  - source_labels: [__meta_kubernetes_pod_ip, __meta_kubernetes_pod_annotation_prometheus_io_port]
-                    action: replace
-                    regex: (.+);(\d+)
-                    replacement: $$1:$$2
-                    target_label: __address__
-                  - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_label_app_kubernetes_io_name]
-                    separator: /
-                    target_label: job
-                  - source_labels: [__meta_kubernetes_namespace]
-                    target_label: namespace
-                  - source_labels: [__meta_kubernetes_pod_name]
-                    target_label: pod
-                  - source_labels: [__meta_kubernetes_pod_node_name]
-                    target_label: node
           target_allocator:
             endpoint: http://opentelemetry-kube-stack-collector-targetallocator:80
             interval: 30s
@@ -218,14 +189,39 @@ collectors:
           send_batch_size: 1000
           timeout: 1s
       service:
+        # Both leader-election extensions: the events receiver fails to start
+        # unless its own extension is listed here.
+        extensions: [k8s_leader_elector/k8s_cluster, k8s_leader_elector/k8s_objects]
         pipelines:
           metrics:
-            receivers: [prometheus]
             processors: [memory_limiter, transform/cluster_label, batch]
-            exporters: [otlp_http/mimir, debug]
+            exporters: [otlp_http/mimir]
+          # kubernetesEvents preset receiver. Without this pipeline the events
+          # are read and then dropped. Its leader-election extension must be
+          # listed too, or the collector fails to start.
+          logs:
+            processors: [memory_limiter, batch]
+            exporters: [otlp_http/loki]
   daemon:
-    enabled: true
-    mode: daemonset
+    # Presets replace the chart's default daemon_scrape_configs.yaml (they are
+    # mutually exclusive with it). They cover the same three jobs: node-exporter,
+    # cAdvisor on the kubelet, and annotation-based pod scraping.
+    scrape_configs_file: ""
+    # Observed per-node usage is ~50-110m CPU and ~115-160Mi memory.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 320Mi
+    env:
+      - name: PHOENIX_ADMIN_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: phoenix-secret
+            key: PHOENIX_ADMIN_SECRET
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
     config:
       receivers:
         otlp:
@@ -246,6 +242,34 @@ collectors:
           retry_on_failure:
             enabled: true
       processors:
+        # Every other pipeline in this file has one; the daemon metrics pipeline
+        # was the only one without it, and it runs under a 320Mi limit.
+        memory_limiter:
+          check_interval: 1s
+          limit_percentage: 75
+          spike_limit_percentage: 15
+        # Drop everything that isn't an LLM span (OpenInference or OTel GenAI
+        # semconv attributes) before it goes to Phoenix.
+        filter/ai:
+          error_mode: ignore
+          traces:
+            span:
+              - 'attributes["openinference.span.kind"] == nil and attributes["gen_ai.operation.name"] == nil and attributes["gen_ai.system"] == nil and attributes["gen_ai.provider.name"] == nil and attributes["gen_ai.request.model"] == nil'
+        # Kubelet volume metrics collapse into one series per pod, because the
+        # volume name never reaches Mimir as a label. Mimir rejects the
+        # conflicting samples, and the value it keeps is arbitrary. Drop them.
+        filter/volume_inodes:
+          error_mode: ignore
+          metrics:
+            metric:
+              - 'name == "k8s.volume.inodes" or name == "k8s.volume.inodes.free" or name == "k8s.volume.inodes.used" or name == "k8s.volume.available" or name == "k8s.volume.capacity"'
+        # Same label as the cluster collector, so daemon series join with the
+        # cluster-scoped rules (e.g. CephNodeDiskspaceWarning on(cluster, instance)).
+        transform/cluster_label:
+          metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["cluster"], "home")
         resource/audit:
           attributes:
             - action: insert
@@ -256,36 +280,39 @@ collectors:
           traces:
             # Sampling now happens tail-side in the gateway collector, not
             # here - see collectors.gateway.
-            exporters: [otlp/gateway, debug]
+            exporters: [otlp/gateway]
+          # Fan-out of the same OTLP receiver, taken before tail sampling so
+          # every AI span reaches Phoenix (not just the sampled ones).
+          traces/phoenix:
+            receivers: [otlp]
+            processors: [filter/ai, batch]
+            exporters: [otlp_http/phoenix]
           metrics:
-            exporters: [otlp_http/mimir, debug]
+            # Presets' processors listed explicitly so the volume filter runs
+            # first; keep this list in sync with the enabled presets.
+            processors: [memory_limiter, filter/volume_inodes, transform/cluster_label, k8s_attributes, resource_detection/env, resource/hostname, batch]
+            exporters: [otlp_http/mimir]
           logs:
-            exporters: [otlp_http/loki, debug]
+            exporters: [otlp_http/loki]
           logs/audit:
             receivers: [filelog/audit]
             processors: [resource/audit, resource_detection/env, resource/hostname, batch]
-            exporters: [otlp_http/loki, debug]
-          # Fans the same audit receiver out to Wazuh too - a receiver can
-          # feed multiple pipelines, so this is additive, not a reroute.
-          # Land only after apps/security/wazuh's manager+dashboard are
-          # verified up (see the plan's sequencing).
-          logs/audit_wazuh:
-            receivers: [filelog/audit]
-            processors: [resource/audit, resource_detection/env, resource/hostname, batch]
-            exporters: [syslog/wazuh, debug]
+            exporters: [otlp_http/loki]
     presets:
-      logsCollection:
-        enabled: true
-      hostMetrics:
-        enabled: true
-      kubeletMetrics:
-        enabled: true
-      kubernetesAttributes:
-        enabled: true
+      prometheus:
+        nodeExporter:
+          enabled: true
+        cadvisor:
+          enabled: true
+        podAnnotations:
+          enabled: true
+      # kubernetesEvents and clusterMetrics must run on a single replica, so
+      # they live on the cluster collector. On every daemon pod they duplicated
+      # events and cluster-level series.
       kubernetesEvents:
-        enabled: true
+        enabled: false
       clusterMetrics:
-        enabled: true
+        enabled: false
 
   # Single-replica tail-sampling gateway: every app/proxy head-samples at
   # 100% (see the Instrumentation CR above and each app's own tracing
@@ -298,7 +325,6 @@ collectors:
   gateway:
     enabled: true
     suffix: gateway
-    mode: deployment
     replicas: 1
     podSecurityContext:
       runAsNonRoot: true
@@ -350,4 +376,74 @@ collectors:
           traces:
             receivers: [otlp]
             processors: [memory_limiter, tail_sampling, batch]
-            exporters: [otlp/tempo, debug]
+            exporters: [otlp/tempo]
+
+  # Only collector reachable from outside the cluster: terminates OTLP/HTTP
+  # from remote clusters/services behind otlp.darkflame.dev (httproute.yaml,
+  # Cloudflare tunnel -> envoy-external). Requires a bearer token, then
+  # fans out to the same backends as in-cluster telemetry; traces go via the
+  # gateway collector so tail sampling still applies. Nothing else in the
+  # stack is exposed. HTTP only - CF tunnel gRPC needs extra setup.
+  ingress:
+    enabled: true
+    suffix: ingress
+    replicas: 2
+    podSecurityContext:
+      runAsNonRoot: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
+    env:
+      - name: OTLP_INGEST_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: otlp-ingest-tokens
+            key: token
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
+    config:
+      extensions:
+        bearertokenauth:
+          token: ${env:OTLP_INGEST_TOKEN}
+      receivers:
+        otlp:
+          protocols:
+            http:
+              endpoint: 0.0.0.0:4318
+              max_request_body_size: 10485760
+              auth:
+                authenticator: bearertokenauth
+      processors:
+        memory_limiter:
+          check_interval: 1s
+          limit_percentage: 75
+          spike_limit_percentage: 15
+        # Remote senders should set k8s.cluster.name themselves; this only
+        # guarantees the attribute exists so remote data is never mistaken
+        # for the home cluster.
+        resource/remote:
+          attributes:
+            - action: insert
+              key: k8s.cluster.name
+              value: remote-unknown
+        batch:
+          send_batch_size: 1000
+          timeout: 1s
+      service:
+        extensions: [bearertokenauth]
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [memory_limiter, resource/remote, batch]
+            exporters: [otlp/gateway]
+          metrics:
+            receivers: [otlp]
+            processors: [memory_limiter, resource/remote, batch]
+            exporters: [otlp_http/mimir]
+          logs:
+            receivers: [otlp]
+            processors: [memory_limiter, resource/remote, batch]
+            exporters: [otlp_http/loki]

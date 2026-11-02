@@ -1,19 +1,17 @@
 ---
 image:
-  repository: itzg/minecraft-server
   # renovate: datasource=docker depName=itzg/minecraft-server
-  tag: 2026.9.1@sha256:e8640538dac5d54c2838d57fa9641e735ad0cf2b71fb0e8a68da3b542a315749
+  tag: 2026.10.1@sha256:d12aed7e35981dfe259b60fbfee77d23a19b5898a7a31dca298d18b47b7b5776
   pullPolicy: IfNotPresent
 
 resources:
   requests:
-    cpu: 1000m
+    cpu: 300m
     memory: 4Gi
   limits:
     memory: 6Gi # no cpu limit — avoids JVM GC stalls from CPU throttling
 
 persistence:
-  storageClass: ceph-block
   dataDir:
     enabled: true
     existingClaim: minecraft-data # PVC defined in pvc.yaml, so kopiur can back it up
@@ -32,18 +30,20 @@ minecraftServer:
   vanillaTweaksShareCodes:
     - "ZHRhv6"
   motd: "Welcome!"
-  servicePort: 25565
 
   modrinth:
     projects:
-      - squaremap
+      # pinned: 1.4.0+ targets Paper API 26.3, incompatible with our pinned
+      # server version 26.2 — an unpinned "latest" fetch downloads it
+      # alongside the working jar, and Paper refuses to load either
+      # (ambiguous plugin name), which is what took the map down 2026-09-30.
+      - squaremap:1.3.15
       - chunky
       # chunkyborder omitted: its newest Paper build only supports up to MC 1.21.11,
       # no release yet for 26.2 — would crash-loop the same way the earlier
       # Pl3xMap version-type mismatch did. Add back once a 26.2-compatible build
       # is published.
       - discordsrv
-    downloadDependencies: none
 
   extraPorts:
     - name: map

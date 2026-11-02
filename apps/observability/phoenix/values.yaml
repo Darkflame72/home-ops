@@ -1,0 +1,73 @@
+deployment:
+  strategy:
+    type: Recreate
+    # chart default sets rollingUpdate params, which Recreate forbids
+    rollingUpdate: null
+
+postgresql:
+  enabled: false
+
+ingress:
+  enabled: false
+
+service:
+  type: ClusterIP
+
+server:
+  rootUrl: https://phoenix.darkflame.dev
+  telemetryEnabled: false
+
+database:
+  # Spans carry full prompts/completions (Claude Code/Codex send file contents),
+  # so bound size and secret exposure.
+  defaultRetentionPolicyDays: 14
+  postgres:
+    host: phoenix-postgres-rw
+    user: app
+    db: app
+
+auth:
+  # SSO only. PHOENIX_ADMIN_SECRET (bearer token) remains as break-glass API access.
+  disableBasicAuth: true
+  useSecureCookies: true
+  # Don't set auth.admins: it pre-creates OAUTH2 users with a NULL oauth2_user_id,
+  # which Phoenix never links by email -> "An account with this email already exists".
+  # First SSO login creates a MEMBER; promote once via SQL (users.user_role_id -> ADMIN).
+  createSecret: false
+  secret:
+    - key: PHOENIX_SECRET
+    - key: PHOENIX_ADMIN_SECRET
+    - key: PHOENIX_OAUTH2_AUTHENTIK_CLIENT_SECRET
+    - key: PHOENIX_POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: phoenix-postgres-app
+          key: password
+  oauth2:
+    enabled: true
+    providers:
+      authentik:
+        client_id: sFZTXim5Li25zTnc6EzZnJhAIFvu4wVbOo6zE5WS
+        oidc_config_url: https://auth.darkflame.dev/application/o/phoenix/.well-known/openid-configuration
+        display_name: Authentik
+
+image:
+  tag: version-20.19.0-nonroot@sha256:f2109e09662e2bd9570af155e707fab8cf92eab79911727d183d8e667d9411c9
+
+# Default startup probe gives 30s; first start runs DB migrations and takes longer,
+# so the kubelet kills it mid-migration and it crash-loops.
+healthChecks:
+  startupProbe:
+    periodSeconds: 5
+    failureThreshold: 60
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 512Mi
+
+securityContext:
+  pod:
+    enabled: true
+  container:
+    enabled: true

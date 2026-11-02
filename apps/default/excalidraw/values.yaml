@@ -24,10 +24,6 @@ service:
     ports:
       http:
         port: &port 80
-serviceMonitor:
-  app:
-    endpoints:
-      - port: http
 route:
   app:
     hostnames: ["draw.darkflame.dev"]

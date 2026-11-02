@@ -1,7 +1,7 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/monitoring.coreos.com/prometheusrule_v1.json
-# General cluster infra-health rules, synced into Mimir's ruler by Alloy's
-# mimir.rules.kubernetes component (apps/observability/alloy/values.yaml).
+# General cluster infra-health rules, synced into Mimir's ruler by the
+# prometheus-rules-sync CronJob (apps/observability/mimir/rules-sync.yaml).
 # Ceph-specific health/capacity alerting already lives in
 # apps/rook-ceph/cluster/prometheus-rules.yaml — don't duplicate here.
 apiVersion: monitoring.coreos.com/v1

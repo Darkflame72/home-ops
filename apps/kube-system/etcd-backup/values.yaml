@@ -6,9 +6,6 @@ controllers:
     cronjob:
       # Every 6 hours at 10 minutes past the hour
       schedule: "10 */6 * * *"
-      concurrencyPolicy: Forbid
-      successfulJobsHistory: 1
-      failedJobsHistory: 1
     pod:
       restartPolicy: OnFailure
     containers:
@@ -50,8 +47,6 @@ defaultPodOptions:
 persistence:
   tmp:
     type: emptyDir
-    globalMounts:
-      - path: /tmp
   talos-secrets:
     type: secret
     name: etcd-backup

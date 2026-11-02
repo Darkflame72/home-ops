@@ -4,7 +4,7 @@ This guide walks through setting up a Kubernetes cluster using Talos Linux and A
 
 ## Prerequisites
 
-- [talhelper](https://github.com/budimanjojo/talhelper) installed
+- [topf](https://github.com/postfinance/topf) installed
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) installed
 - [helmfile](https://github.com/helmfile/helmfile) installed
 - Access to the hardware nodes (8 nodes total: 3 control plane, 5 workers)
@@ -25,30 +25,23 @@ Ensure Talos is installed on your local machine by following the [official insta
 
 All commands are run from the `talos/` directory.
 
-#### 1. Generate Talos Configuration
+#### 1. Review the Talos Configuration
 
-Generate the Talos machine configurations from the `talconfig.yaml`:
+Render the machine configs from `topf.yaml` and the `patches/` tree for inspection (writes to
+`output/`, gitignored — contains plaintext secrets, never commit it):
 
 ```bash
-talhelper genconfig
+topf render
 ```
 
-This creates configuration files for all nodes in the `clusterconfig/` directory.
+#### 2. Apply Talos Configuration and Bootstrap
 
-#### 2. Apply Talos Configuration to Nodes
-
-Apply the generated configurations to each node. The `--insecure` flag is needed for initial installation:
-
-```bash
-talhelper gencommand apply --extra-flags "--insecure" | bash
-```
-
-#### 3. Bootstrap the Cluster
-
-Bootstrap the Kubernetes control plane on the first control plane node:
+Check what would change against the live cluster first, then apply for real. `--auto-bootstrap`
+bootstraps the Kubernetes control plane automatically once nodes are ready:
 
 ```bash
-talhelper gencommand bootstrap | bash
+topf apply --dry-run
+topf apply --auto-bootstrap
 ```
 
 Wait for the cluster to initialize. You can check the status with:
@@ -147,6 +140,6 @@ All applications are managed through ArgoCD. To deploy a new application:
 
 To update Talos configuration:
 
-1. Modify `talos/talconfig.yaml` or patch files in `talos/patches/`
-2. Regenerate configurations: `talhelper genconfig`
-3. Apply updates: `talhelper gencommand upgrade | bash`
+1. Modify `talos/topf.yaml` or patch files in `talos/patches/`
+2. Review the change: `topf apply --dry-run` (run from `talos/`)
+3. Apply it: `topf apply`

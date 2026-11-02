@@ -48,6 +48,52 @@ let
     };
   };
 
+  # topf is not yet packaged in nixpkgs (https://github.com/NixOS/nixpkgs/pull/559285 is open
+  # but unmerged); fetch the prebuilt release binary in the meantime.
+  # https://github.com/postfinance/topf
+  topfVersion = "0.6.0";
+  topfPlatforms = {
+    x86_64-linux = {
+      target = "linux_amd64";
+      sha256 = "458df4b25f4181a31ed361c0592194f7eb9e6e7b13e7096f8745453afdeaadfb";
+    };
+    aarch64-linux = {
+      target = "linux_arm64";
+      sha256 = "7e5d4bf21f07ba91b83c4653eb65dd3cf5ee67aa8fa4131ca403b38791476367";
+    };
+    x86_64-darwin = {
+      target = "darwin_amd64";
+      sha256 = "b4c76fb5985c2e0c73d6a365a5ae7a45f97f9d61cb502a01b1ee82e63da0b1cd";
+    };
+    aarch64-darwin = {
+      target = "darwin_arm64";
+      sha256 = "48b22175d61eadba0c287411c34a90f73dbaa716fd792b7b28625d3edbf870e2";
+    };
+  };
+  topfPlatform = topfPlatforms.${pkgs.stdenv.hostPlatform.system};
+
+  topf = pkgs.stdenv.mkDerivation {
+    pname = "topf";
+    version = topfVersion;
+
+    src = pkgs.fetchurl {
+      url = "https://github.com/postfinance/topf/releases/download/v${topfVersion}/topf_${topfPlatform.target}.tar.gz";
+      sha256 = topfPlatform.sha256;
+    };
+
+    sourceRoot = ".";
+    dontBuild = true;
+
+    installPhase = ''
+      install -Dm755 topf $out/bin/topf
+    '';
+
+    meta = {
+      description = "Talos orchestrator by PostFinance";
+      homepage = "https://github.com/postfinance/topf";
+    };
+  };
+
 in
 pkgs.mkShell {
   packages = [
@@ -62,7 +108,7 @@ pkgs.mkShell {
     pkgs.kubectl
     pkgs.talosctl
     pkgs.kubernetes-helm
-    pkgs.talhelper
+    topf
     pkgs.cmctl
     pkgs.kubectl-cnpg
     pkgs.kubectl-rook-ceph
@@ -77,6 +123,6 @@ pkgs.mkShell {
 
   KUBECONFIG = "${toString ./.}/kubeconfig";
   SOPS_AGE_KEY_FILE = "${toString ./.}/age.key";
-  TALOSCONFIG = "${toString ./.}/talos/clusterconfig/talosconfig";
+  TALOSCONFIG = "${toString ./.}/talos/talosconfig";
 
 }

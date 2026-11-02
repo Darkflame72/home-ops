@@ -1,6 +1,6 @@
 ---
 # renovate: datasource=github-releases depName=cilium/cilium
-# yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/v1.20.2/install/kubernetes/cilium/values.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/v1.20.4/install/kubernetes/cilium/values.schema.json
 autoDirectNodeRoutes: true
 bpf:
   # Disabled: BPF masquerade doesn't handle the link-local SNAT address
@@ -13,7 +13,7 @@ cni:
   # Required for pairing with Multus CNI
   exclusive: false
 cgroup:
-  automount:
+  autoMount:
     enabled: false
   hostRoot: /sys/fs/cgroup
 # NOTE: devices might need to be set if you have more than one active NIC on your hosts
@@ -73,7 +73,6 @@ operator:
   dashboards:
     enabled: true
   prometheus:
-    enabled: true
     serviceMonitor:
       enabled: true
   replicas: 1
@@ -111,5 +110,3 @@ securityContext:
       - NET_ADMIN
       - SYS_ADMIN
       - SYS_RESOURCE
-socketLB:
-  hostNamespaceOnly: true

@@ -72,6 +72,9 @@ metadata:
       istio-authz-agents-default-allow's source.namespaces instead — real
       mesh-identity matching, not a blanket port exception — so only the
       genuinely-unmeshed network caller needs to stay here.
+      Port 15020 is back because the daemon OTel collector's scrapes of
+      agentgateway-proxy reach ztunnel without a source identity and so match
+      this exception (reviewed 2026-10-24).
 spec:
   matchConstraints:
     resourceRules:
@@ -99,7 +102,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80"]}}
+                  {"operation": {"ports": ["80", "15020"]}}
                 ]
               })])
             })
@@ -814,7 +817,7 @@ metadata:
       Namespace-wide exception for envoy-external/envoy-internal (both
       unmeshed, network namespace — see istio-authz-media-allow-ingress for
       why this is needed). envoy-external: gatus 80, grafana 3000, kromgo
-      8080. envoy-internal: policy-reporter-ui 8080, kiali 20001. Metrics scraping
+      8080. envoy-internal: policy-reporter-ui 8080, kiali 20001, phoenix 6006. Metrics scraping
       (gatus-postgres's exporter, kromgo's own metrics, mimir/loki
       memberlist gossip between their own pods) is NOT included here: the
       scraper (observability's own OTel collector) and every target here
@@ -823,6 +826,10 @@ metadata:
       source.namespaces=["observability", ...] via normal mesh-identity
       matching — no unmeshed-caller gap, unlike every other namespace in
       this rollout where the scraper lived elsewhere and wasn't meshed yet.
+      In practice the daemon OTel collector's scrapes reach ztunnel without a
+      source identity, so they match this exception instead: 3100 (loki),
+      9090 (kiali metrics), 8888 (collector self-metrics) are allowed for that
+      reason (reviewed 2026-10-24).
 spec:
   matchConstraints:
     resourceRules:
@@ -850,7 +857,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80", "3000", "8080", "20001"]}}
+                  {"operation": {"ports": ["80", "3000", "3100", "6006", "8080", "8888", "9090", "20001"]}}
                 ]
               })])
             })
@@ -968,7 +975,7 @@ metadata:
       why this is needed and why it's namespace-wide-by-port rather than
       workload-scoped). envoy-external: authentik-server 9000 (http) and
       9443 (https, the Gateway backend port per its HTTPRoute); vaultwarden
-      80 (http) and 3012 (websocket). envoy-internal: wazuh-dashboard 5601.
+      80 (http) and 3012 (websocket).
 spec:
   matchConstraints:
     resourceRules:
@@ -996,7 +1003,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["9000", "9443", "80", "3012", "5601"]}}
+                  {"operation": {"ports": ["9000", "9443", "80", "3012"]}}
                 ]
               })])
             })

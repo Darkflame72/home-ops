@@ -325,28 +325,6 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
-  name: alloy-run-as-root
-  namespace: policy
-  annotations:
-    policies.kyverno.io/description: >-
-      grafana/alloy runs as root by default; Grafana documents non-root
-      support as experimental/undocumented
-      (grafana.com/docs/alloy/latest/configure/nonroot/). Confirmed running
-      as UID 0 live.
-spec:
-  policyRefs:
-    - name: require-run-as-nonroot
-      kind: ValidatingPolicy
-  matchConditions:
-    - name: alloy-workloads
-      expression: >-
-        object.metadata.namespace == 'observability' &&
-        object.metadata.name.startsWith('alloy')
-
----
-apiVersion: policies.kyverno.io/v1
-kind: PolicyException
-metadata:
   name: spegel-run-as-root
   namespace: policy
   annotations:
@@ -492,3 +470,112 @@ spec:
         object.metadata.namespace == 'default' &&
         object.metadata.?labels['app.kubernetes.io/name'].orValue('') == 'nextcloud' &&
         object.metadata.?labels['app.kubernetes.io/component'].orValue('') == 'app'
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: arc-runner-dind-privileged
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The dind sidecar in ARC runner pods (arc-runners namespace, containerMode
+      dind) needs privileged mode and root to run nested containers so workflow
+      docker commands work — an unavoidable requirement of Docker-in-Docker.
+      The runner container must also reach dind's docker.sock.
+spec:
+  policyRefs:
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: arc-runner-workloads
+      expression: >-
+        object.metadata.namespace == 'arc-runners'
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: falco-privileged
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The Falco DaemonSet (falco namespace) runs privileged to load its eBPF
+      probe and read host syscall state. It runs as root for the same reason.
+      The modern_ebpf driver needs CAP_BPF/CAP_PERFMON so least-privilege
+      mode is not used. Falcosidekick is not excepted: it runs non-root.
+spec:
+  policyRefs:
+    - name: disallow-privileged-containers
+      kind: ValidatingPolicy
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: falco-workloads
+      expression: >-
+        object.metadata.namespace == 'falco' &&
+        object.metadata.?labels['app.kubernetes.io/instance'].orValue('') == 'falco' &&
+        object.metadata.?labels['app.kubernetes.io/name'].orValue('') == 'falco'
+
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: otel-daemon-collector-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The OpenTelemetry daemon collector reads host log files through a hostPath mount. It runs
+      as root, which the host file permissions require. Pinned to the daemon collector pods only.
+spec:
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: otel-daemon-collector
+      expression: >-
+        object.metadata.namespace == 'observability' &&
+        object.metadata.name.startsWith('opentelemetry-kube-stack-daemon-collector')
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: minecraft-server-root
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The itzg minecraft-server image starts as root and drops privileges itself, using its UID
+      setting. Changing the pod user would break the world data permissions. Pinned to the
+      minecraft server pod in games.
+spec:
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: minecraft-server
+      expression: >-
+        object.metadata.namespace == 'games' &&
+        object.metadata.name.startsWith('minecraft-')
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: arc-crosscut-listener
+  namespace: policy
+  annotations:
+    policies.kyverno.io/description: >-
+      The ARC scale-set listener pod is created by the gha runner scale-set controller and
+      runs as root in its generated spec. Its resources are set through listenerTemplate in
+      apps/arc/crosscut-runners. Pinned to the crosscut-runners listener pod.
+spec:
+  policyRefs:
+    - name: require-run-as-nonroot
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: crosscut-listener
+      expression: >-
+        object.metadata.namespace == 'arc-systems' &&
+        object.metadata.name.startsWith('crosscut-runners-') &&
+        object.metadata.name.contains('listener')

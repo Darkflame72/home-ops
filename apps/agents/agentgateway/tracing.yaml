@@ -1,0 +1,52 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/agentgateway.dev/agentgatewaypolicy_v1alpha1.json
+# Export every request span (including LLM spans: gen_ai.* model, token usage,
+# prompts) to the cluster's OTel daemon collector. The collector's
+# traces/phoenix pipeline filters the AI spans and forwards them to Phoenix;
+# everything else follows the normal tail-sampled path to Tempo.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: tracing
+  namespace: agents
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+  frontend:
+    tracing:
+      backendRef:
+        name: opentelemetry-kube-stack-daemon-collector
+        namespace: observability
+        port: 4317
+      protocol: GRPC
+      randomSampling: "true"
+      # Full prompt/completion content for Phoenix (OpenInference input/output
+      # keys, which Phoenix renders as the span's I/O). Bounded by Phoenix's
+      # retention (defaultRetentionPolicyDays). NOTE: Claude Code/Codex prompts
+      # carry file contents, so treat Phoenix as sensitive.
+      attributes:
+        add:
+          - name: input.value
+            expression: toJson(llm.prompt)
+          - name: output.value
+            expression: toJson(llm.completion)
+          # llm.prompt/completion are text-only: tool_use and tool_result
+          # blocks come out as empty content. Tool calls are exposed
+          # separately; tool results only exist in the raw request body.
+          - name: llm.tool_calls
+            expression: toJson(llm.toolCalls)
+          - name: http.request.body
+            expression: request.body
+          # Phoenix groups spans into Sessions by session.id; without it every
+          # request is an unrelated trace. Claude Code sends
+          # x-claude-code-session-id and goose agent-session-id. Codex sends no
+          # session header, but its Responses body carries prompt_cache_key,
+          # which is its thread/session id. default() falls through when a
+          # header is absent or the body isn't JSON.
+          - name: session.id
+            expression: >-
+              default(request.headers["x-claude-code-session-id"],
+              default(request.headers["agent-session-id"],
+              json(request.body).prompt_cache_key))

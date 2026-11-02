@@ -32,19 +32,13 @@ global:
           name: authentik-secret
           key: secret-key
 authentik:
-  log_level: info
   postgresql:
-    port: 5432
     name: ""
     user: ""
-    password: ""
   email:
     host: smtp-relay.default.svc.cluster.local
-    use_tls: false
     port: 25
     from: "Authentik <noreply@darkflame.dev>"
-postgresql:
-  enabled: false
 blueprints:
   configMaps:
     - authentik-blueprints
@@ -52,7 +46,6 @@ prometheus:
   rules:
     enabled: true
 server:
-  replicas: 1
   securityContext:
     runAsNonRoot: true
   resources:

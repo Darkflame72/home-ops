@@ -16,11 +16,16 @@ configMapGenerator:
       - blueprints/00-groups.yaml
       - blueprints/01-access-control.yaml
       - blueprints/bar-assistant.yaml
+      - blueprints/crosscut-dev.yaml
+      - blueprints/device-code-flow.yaml
+      - blueprints/crosscut-enrollment.yaml
+      - blueprints/recovery.yaml
       - blueprints/forgejo.yaml
       - blueprints/gotosocial.yaml
       - blueprints/grafana.yaml
       - blueprints/harbor.yaml
       - blueprints/miniflux.yaml
+      - blueprints/phoenix.yaml
       - blueprints/renovate.yaml
       - blueprints/nextcloud.yaml
       - blueprints/jellyfin.yaml

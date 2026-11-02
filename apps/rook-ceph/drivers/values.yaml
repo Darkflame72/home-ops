@@ -12,7 +12,6 @@ drivers:
   nvmeof:
     enabled: false
   rbd:
-    enabled: true
     name: rook-ceph.rbd.csi.ceph.com
     snapshotPolicy: volumeSnapshot
     nodePlugin:

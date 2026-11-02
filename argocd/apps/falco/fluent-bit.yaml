@@ -1,31 +1,29 @@
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_cd_kustomize_schema.json
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: alloy
+  name: fluent-bit
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+  - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: '2'
 spec:
   project: default
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
-      path: apps/observability/alloy
+      path: apps/falco/fluent-bit
       targetRevision: main
       ref: repo
-    - repoURL: https://grafana.github.io/helm-charts
-      chart: alloy
-      targetRevision: 1.12.1
+    - repoURL: https://fluent.github.io/helm-charts
+      chart: fluent-bit
+      targetRevision: 0.58.3
       helm:
-        releaseName: alloy
+        releaseName: fluent-bit
         valueFiles:
-          - $repo/apps/observability/alloy/values.yaml
+          - $repo/apps/falco/fluent-bit/values.yaml
   destination:
     name: in-cluster
-    namespace: observability
+    namespace: falco
   syncPolicy:
     automated:
       allowEmpty: true
