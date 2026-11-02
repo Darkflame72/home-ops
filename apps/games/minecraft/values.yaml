@@ -28,15 +28,19 @@ minecraftServer:
   maxPlayers: 20
   spawnProtection: 0
   vanillaTweaksShareCodes:
-    - "ZHRhv6"
+    - "CZwwGs"
   motd: "Welcome!"
 
   modrinth:
     projects:
-      - squaremap
+      # pinned: an unpinned "latest" fetch downloads a build for a different
+      # Paper API alongside the working jar, and Paper refuses to load either
+      # (ambiguous plugin name), which is what took the map down 2026-09-30.
+      - squaremap:1.4.3
       - chunky
       - chunkyborder
       - discordsrv
+    downloadDependencies: none
 
   extraPorts:
     - name: map
