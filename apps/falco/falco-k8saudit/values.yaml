@@ -111,6 +111,7 @@ customRules:
         (ka.user.name = "system:serviceaccount:security:vaultwarden-postgres" and ka.target.namespace = "security") or
         (ka.user.name = "system:serviceaccount:observability:phoenix-postgres" and ka.target.namespace = "observability") or
         (ka.user.name = "system:serviceaccount:agents:agentgateway" and ka.target.namespace = "agents" and ka.target.name = "agentgateway-proxy-session-key") or
+        (ka.user.name = "system:serviceaccount:system-upgrade:tuppr" and ka.target.namespace = "system-upgrade" and ka.target.name = "tuppr-talosconfig") or
         ka.user.name = "talos:admin"
     # Helm charts create their own ServiceAccounts, and the kubelet identity performs those creations.
     - macro: user_known_node_serviceaccount_creation
@@ -198,10 +199,15 @@ customRules:
       override:
         condition: append
       condition: and not user_known_talos_backup_pods
-    # kube-controller-manager creates ServiceAccounts for its own controllers.
+    # kube-controller-manager creates ServiceAccounts for its own controllers. The exception must cover both rules that fire
+    # on ServiceAccount creation, as K8s Serviceaccount Created is the one that actually alerts (reviewed 2026-11-05).
     - macro: user_known_controller_manager_serviceaccounts
       condition: (ka.user.name = "system:kube-controller-manager")
     - rule: Service Account Created in Kube Namespace
+      override:
+        condition: append
+      condition: and not user_known_controller_manager_serviceaccounts
+    - rule: K8s Serviceaccount Created
       override:
         condition: append
       condition: and not user_known_controller_manager_serviceaccounts
@@ -213,6 +219,30 @@ customRules:
       override:
         condition: append
       condition: and not user_known_secret_get_activities
+    # ArgoCD server-side applies the metrics-server ClusterRoles it manages from the chart (reviewed 2026-11-05).
+    # Scoped to the application controller, these two names and patch only.
+    - macro: user_known_argocd_metrics_server_clusterroles
+      condition: (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.verb = "patch" and
+        ka.target.name in ("system:metrics-server", "system:metrics-server-aggregated-reader"))
+    - rule: System ClusterRole Modified/Deleted
+      override:
+        condition: append
+      condition: and not user_known_argocd_metrics_server_clusterroles
+    # kopiur recreates its kopia-primary-discovery ConfigMap during reconciles (reviewed 2026-11-05).
+    - macro: user_known_kopiur_discovery_configmap
+      condition: (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and ka.target.namespace = "kopiur-system" and
+        ka.target.name = "kopia-primary-discovery")
+    - rule: K8s ConfigMap Deleted
+      override:
+        condition: append
+      condition: and not user_known_kopiur_discovery_configmap
+    # CloudNativePG execs into the instance pods it manages, in the namespaces of each Postgres cluster (reviewed 2026-11-05).
+    - macro: user_known_cnpg_pod_exec
+      condition: (ka.user.name = "system:serviceaccount:database:cloudnative-pg")
+    - rule: Attach/Exec Pod
+      override:
+        condition: append
+      condition: and not user_known_cnpg_pod_exec
 
 falco:
   json_output: true
