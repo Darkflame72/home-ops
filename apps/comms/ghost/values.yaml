@@ -71,7 +71,7 @@ controllers:
         image:
           repository: docker.io/library/ghost
           # renovate: datasource=docker depName=ghost
-          tag: 6.75.0-alpine@sha256:bea7100f19d83b23c234fd8ad94a90505552f7b0f5f307b079907c1fd03dbdf7
+          tag: 6.75.0-alpine@sha256:3af1575bb8917c6c0057beff85db92a4ac650f726956fd9de96932fea01c397c
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
