@@ -75,10 +75,16 @@ config:
 
   filters: |
     # Drop lease heartbeats and events (the policy already drops them; this is a second guard).
+    # Also drop authz checks ("can I do X") and all Kyverno API traffic: about half the volume (2026-11-09),
+    # which overran the falco-k8saudit listener and got it OOMKilled. Kyverno is trusted, so it is dropped by principal.
     [FILTER]
         Name    grep
         Match   kube.audit
-        Exclude $objectRef['resource'] ^(leases|events)$
+        Exclude $objectRef['resource'] ^(leases|events|selfsubjectaccessreviews|subjectaccessreviews)$
+    [FILTER]
+        Name    grep
+        Match   kube.audit
+        Exclude $user['username'] ^system:serviceaccount:policy:kyverno-
     # Drop health probes.
     [FILTER]
         Name    grep
