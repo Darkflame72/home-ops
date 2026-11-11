@@ -96,6 +96,7 @@ customRules:
         (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.target.namespace = "argocd") or
         (ka.user.name = "system:serviceaccount:argocd:argocd-redis-secret-init" and ka.target.namespace = "argocd") or
         (ka.user.name = "system:serviceaccount:policy:kyverno-cleanup-controller" and ka.target.namespace = "policy") or
+        (ka.user.name = "system:serviceaccount:kube-system:keda-operator" and ka.target.namespace = "kube-system" and ka.target.name = "kedaorg-certs") or
         (ka.user.name = "system:serviceaccount:cert-manager:cert-manager-cainjector" and ka.target.namespace in ("cert-manager", "observability")) or
         (ka.user.name = "system:serviceaccount:observability:gatus-postgres" and ka.target.namespace = "observability") or
         (ka.user.name = "system:serviceaccount:istio-system:istiod" and ka.target.namespace = "istio-system") or
