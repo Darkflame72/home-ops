@@ -274,7 +274,8 @@ falco:
 
 resources:
   requests:
-    cpu: 50m
+    # Sustained use is ~0.9 to 1.2 cores (2026-11-11). At 50m the scheduler gave no headroom, so bursts starved the listener and Fluent Bit timed out.
+    cpu: 1000m
     memory: 256Mi
   limits:
     # Was 512Mi: OOMKilled 6 times. Raised to 1Gi, then OOMKilled 10 times at ~934Mi (2026-11-09). Now 2Gi.
