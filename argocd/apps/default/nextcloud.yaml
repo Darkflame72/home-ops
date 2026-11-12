@@ -16,7 +16,7 @@ spec:
       path: apps/default/nextcloud
       targetRevision: main
       ref: repo
-    - repoURL: https://nextcloud.github.io/helm/
+    - repoURL: ghcr.io/nextcloud/helm
       chart: nextcloud
       targetRevision: 9.4.1
       helm:

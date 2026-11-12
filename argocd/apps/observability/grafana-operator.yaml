@@ -16,7 +16,7 @@ spec:
       path: apps/observability/grafana-operator
       targetRevision: main
       ref: repo
-    - repoURL: https://grafana.github.io/helm-charts
+    - repoURL: ghcr.io/grafana/helm-charts
       chart: grafana-operator
       targetRevision: 5.25.0
       helm:

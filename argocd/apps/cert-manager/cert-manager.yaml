@@ -15,7 +15,7 @@ spec:
       path: apps/cert-manager/cert-manager
       targetRevision: main
       ref: repo
-    - repoURL: https://charts.jetstack.io
+    - repoURL: quay.io/jetstack/charts
       chart: cert-manager
       targetRevision: v1.21.3
       helm:

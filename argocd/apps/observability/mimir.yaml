@@ -16,7 +16,7 @@ spec:
       path: apps/observability/mimir
       targetRevision: main
       ref: repo
-    - repoURL: https://grafana.github.io/helm-charts
+    - repoURL: ghcr.io/grafana/helm-charts
       chart: mimir-distributed
       targetRevision: 6.2.2
       helm:

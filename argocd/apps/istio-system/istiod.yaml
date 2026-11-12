@@ -16,7 +16,7 @@ spec:
       path: apps/istio-system/istiod
       targetRevision: main
       ref: repo
-    - repoURL: https://istio-release.storage.googleapis.com/charts
+    - repoURL: gcr.io/istio-release/charts
       chart: istiod
       targetRevision: 1.30.8
       helm:

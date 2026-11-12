@@ -16,7 +16,7 @@ spec:
       path: apps/observability/opentelemetry-kube-stack
       targetRevision: main
       ref: repo
-    - repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    - repoURL: ghcr.io/open-telemetry/opentelemetry-helm-charts
       chart: opentelemetry-kube-stack
       targetRevision: 0.27.1
       helm:

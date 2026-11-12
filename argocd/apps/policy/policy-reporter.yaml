@@ -16,7 +16,7 @@ spec:
       path: apps/policy/policy-reporter
       targetRevision: main
       ref: repo
-    - repoURL: https://kyverno.github.io/policy-reporter
+    - repoURL: ghcr.io/kyverno/charts
       chart: policy-reporter
       targetRevision: 3.11.2
       helm:

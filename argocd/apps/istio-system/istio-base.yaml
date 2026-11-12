@@ -12,7 +12,7 @@ metadata:
 spec:
   project: default
   sources:
-    - repoURL: https://istio-release.storage.googleapis.com/charts
+    - repoURL: gcr.io/istio-release/charts
       chart: base
       targetRevision: 1.30.8
       helm:

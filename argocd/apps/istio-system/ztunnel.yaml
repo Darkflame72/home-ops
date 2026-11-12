@@ -16,7 +16,7 @@ spec:
       path: apps/istio-system/ztunnel
       targetRevision: main
       ref: repo
-    - repoURL: https://istio-release.storage.googleapis.com/charts
+    - repoURL: gcr.io/istio-release/charts
       chart: ztunnel
       targetRevision: 1.30.8
       helm:

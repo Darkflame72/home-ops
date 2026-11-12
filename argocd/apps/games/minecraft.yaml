@@ -16,7 +16,7 @@ spec:
       path: apps/games/minecraft
       targetRevision: main
       ref: repo
-    - repoURL: https://itzg.github.io/minecraft-server-charts/
+    - repoURL: ghcr.io/itzg/minecraft-server-charts
       chart: minecraft
       targetRevision: 5.3.1
       helm:

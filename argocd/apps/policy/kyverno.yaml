@@ -15,7 +15,7 @@ spec:
       path: apps/policy/kyverno
       targetRevision: main
       ref: repo
-    - repoURL: https://kyverno.github.io/kyverno/
+    - repoURL: ghcr.io/kyverno/charts
       chart: kyverno
       targetRevision: 3.10.0
       helm:

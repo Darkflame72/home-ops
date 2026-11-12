@@ -15,7 +15,7 @@ spec:
       path: apps/observability/blackbox-exporter
       targetRevision: main
       ref: repo
-    - repoURL: https://prometheus-community.github.io/helm-charts
+    - repoURL: ghcr.io/prometheus-community/charts
       chart: prometheus-blackbox-exporter
       targetRevision: 11.21.3
       helm:

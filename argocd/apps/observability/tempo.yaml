@@ -16,7 +16,7 @@ spec:
       path: apps/observability/tempo
       targetRevision: main
       ref: repo
-    - repoURL: https://grafana-community.github.io/helm-charts
+    - repoURL: ghcr.io/grafana-community/helm-charts
       chart: tempo
       targetRevision: 3.2.1
       helm:

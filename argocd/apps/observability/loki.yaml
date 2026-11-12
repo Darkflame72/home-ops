@@ -16,7 +16,7 @@ spec:
       path: apps/observability/loki
       targetRevision: main
       ref: repo
-    - repoURL: https://grafana-community.github.io/helm-charts
+    - repoURL: ghcr.io/grafana-community/helm-charts
       chart: loki
       targetRevision: 21.2.1
       helm:
