@@ -42,6 +42,10 @@ entries:
         - matching_mode: strict
           redirect_uri_type: authorization
           url: "https://crosscut-dev.darkflame.dev/oauth/callback"
+        # the web UI on its own origin: it signs in and returns to its root
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://crosscut-ui-dev.darkflame.dev/"
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
