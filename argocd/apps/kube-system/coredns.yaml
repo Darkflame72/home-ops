@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/coredns/charts
       chart: coredns
-      targetRevision: 1.50.7
+      targetRevision: 1.50.8
       helm:
         releaseName: coredns
         valueFiles:
