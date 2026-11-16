@@ -6,7 +6,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/cry-inc/dmarc-report-viewer
-          tag: 2.7.1@sha256:9dc9b0a31f3c81e936c8668125de611f6bf08d10f969af1f74829cbcdeae5c3d
+          tag: 2.7.2@sha256:a017bf93731fb0cd79af54d1d9c29a15a19d2ce5846e5748c9f41e54fd01adad
         env:
           IMAP_HOST: mail.darkflame.dev
           IMAP_USER: mailauth-reports@darkflame.dev
