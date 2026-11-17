@@ -103,10 +103,20 @@ config:
         tls             On
         tls.verify      On
         tls.ca_file     /fluent-bit/tls/ca.crt
-        Retry_Limit     5
+        # No drop after a fixed number of retries: chunks were being discarded ("cannot be retried")
+        # while the listener was slow. Input pauses at Mem_Buf_Limit instead, and tail resumes from its DB offset.
+        Retry_Limit     no_limits
 
 serviceMonitor:
   enabled: true
+
+# Readiness on the process, not the outputs. /api/v2/health (chart default) returns 500 while the
+# webhook is slow, which marked every pod unready. Nothing routes traffic to these pods, so readiness
+# only drives alerts. Output failures show up in logs and the retry/drop metrics instead.
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
 
 resources:
   requests:
