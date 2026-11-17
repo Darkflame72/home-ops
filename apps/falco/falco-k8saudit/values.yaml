@@ -280,7 +280,9 @@ resources:
   limits:
     # Was 512Mi: OOMKilled 6 times. Raised to 1Gi, then OOMKilled 10 times at ~934Mi (2026-11-09). Now 2Gi, then 3Gi:
     # the listener sat at ~1.9Gi on 2026-11-11 while Fluent Bit was timing out.
-    memory: 3Gi
+    # 2026-11-17: Now 4Gi. Spikes reached 2.6Gi on 2026-11-14 and the pod sat at ~2.9-3.0Gi
+    # on 2026-11-17 while Fluent Bit was retrying (Retry_Limit no_limits).
+    memory: 4Gi
     cpu: 2
 
 metrics:
