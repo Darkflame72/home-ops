@@ -18,7 +18,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/open-telemetry/opentelemetry-helm-charts
       chart: opentelemetry-kube-stack
-      targetRevision: 0.27.1
+      targetRevision: 0.27.2
       helm:
         releaseName: opentelemetry-kube-stack
         valueFiles:
