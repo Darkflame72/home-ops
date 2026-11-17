@@ -103,9 +103,9 @@ config:
         tls             On
         tls.verify      On
         tls.ca_file     /fluent-bit/tls/ca.crt
-        # No drop after a fixed number of retries: chunks were being discarded ("cannot be retried")
-        # while the listener was slow. Input pauses at Mem_Buf_Limit instead, and tail resumes from its DB offset.
-        Retry_Limit     no_limits
+        # Bounded retries. no_limits let the backlog grow without end while the listener was slow,
+        # and the listener's memory grew with it (OOMKilled 2026-11-17). Chunks that fail 5 times are dropped.
+        Retry_Limit     5
 
 serviceMonitor:
   enabled: true
