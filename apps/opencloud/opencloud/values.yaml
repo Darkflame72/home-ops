@@ -7,7 +7,7 @@ controllers:
         image:
           repository: docker.io/opencloudeu/opencloud
           # renovate: datasource=docker depName=opencloudeu/opencloud
-          tag: 7.2.6@sha256:196f4137f69fd81ad241c4a17eae13902da6aa70b2567ea7c51ef9ac235f4d96
+          tag: 9.1.1@sha256:d7d5b547f9e41db24f030d6a6857c4184752b2c875c936952ee0601b6531cd51
         # The official image's CMD is just ["server"], which crash-loops with
         # "jwt_secret has not been set properly" unless `opencloud init` has
         # already run against /etc/opencloud. Mirrors the official
