@@ -49,6 +49,19 @@ daemonSetVolumeMounts:
   - name: state
     mountPath: /fluent-bit/state
 
+luaScripts:
+  kopiur-filter.lua: |
+    -- Drop kopiur's non-secret GET audit events. Returning -1 discards the record.
+    function drop_kopiur_reads(tag, timestamp, record)
+      local user = record["user"] and record["user"]["username"]
+      local verb = record["verb"]
+      local res = record["objectRef"] and record["objectRef"]["resource"]
+      if user == "system:serviceaccount:kopiur-system:kopiur" and verb == "get" and res ~= "secrets" then
+        return -1, timestamp, record
+      end
+      return 0, timestamp, record
+    end
+
 config:
   customParsers: |
     [PARSER]
@@ -90,6 +103,13 @@ config:
         Name    grep
         Match   kube.audit
         Exclude $requestURI ^/(livez|readyz|healthz)
+    # kopiur reads its own objects (SnapshotSchedule, Snapshot, StorageClass, etc.) constantly: about a
+    # third of listener traffic (2026-11-17). Its secret reads stay in, since Falco allowlists them by principal.
+    [FILTER]
+        Name    lua
+        Match   kube.audit
+        script  /fluent-bit/scripts/kopiur-filter.lua
+        call    drop_kopiur_reads
 
   outputs: |
     [OUTPUT]
