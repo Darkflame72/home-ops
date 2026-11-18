@@ -24,8 +24,8 @@ spec:
         url: https://github.com/Darkflame72/home-ops-private
         type: git
         githubAppPrivateKey: "{{ .githubAppPrivateKey }}"
-        githubAppId: "{{ .githubAppId }}"
-        githubAppInstallationId: "{{ .githubAppInstallationId }}"
+        githubAppID: "{{ .githubAppID }}"
+        githubAppInstallationID: "{{ .githubAppInstallationID }}"
 
   data:
     - secretKey: githubAppPrivateKey
@@ -35,14 +35,14 @@ spec:
         metadataPolicy: None
         key: /argocd/github-app-private-key
 
-    - secretKey: githubAppId
+    - secretKey: githubAppID
       remoteRef:
         conversionStrategy: Default
         decodingStrategy: None
         metadataPolicy: None
         key: /argocd/github-app-id
 
-    - secretKey: githubAppInstallationId
+    - secretKey: githubAppInstallationID
       remoteRef:
         conversionStrategy: Default
         decodingStrategy: None
