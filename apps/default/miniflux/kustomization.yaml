@@ -6,5 +6,6 @@ resources:
   - ./external-secret.yaml
   - ./cluster.yaml
   - ./scheduled-backup.yaml
+  - ./objectstore.yaml
   - ./podmonitor.yaml
   - ./prometheus-rules.yaml

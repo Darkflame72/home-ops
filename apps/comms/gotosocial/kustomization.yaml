@@ -6,6 +6,7 @@ resources:
   - ./external-secret.yaml
   - ./cluster.yaml
   - ./scheduled-backup.yaml
+  - ./objectstore.yaml
   - ./pvc.yaml
   - ./podmonitor.yaml
   - ./kopiur.yaml

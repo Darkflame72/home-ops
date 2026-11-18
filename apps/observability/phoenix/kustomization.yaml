@@ -7,4 +7,5 @@ resources:
   - ./httproute.yaml
   - ./cluster.yaml
   - ./scheduled-backup.yaml
+  - ./objectstore.yaml
   - ./podmonitor.yaml

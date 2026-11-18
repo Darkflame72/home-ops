@@ -7,6 +7,7 @@ resources:
   - ./blueprint-secrets.yaml
   - ./cluster.yaml
   - ./scheduled-backup.yaml
+  - ./objectstore.yaml
   - ./podmonitor.yaml
   - ./ciliumnetworkpolicy.yaml
   - ./httproute-oauth2-trailing-slash-fix.yaml

@@ -25,6 +25,15 @@ spec:
     - toEntities:
         - cluster
         - kube-apiserver
+    # CNPG instance pods reach the Barman Cloud plugin (gRPC/mTLS, database ns) for WAL archiving + backups.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: database
+            k8s:app.kubernetes.io/name: plugin-barman-cloud
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
     - toCIDR:
         - "10.0.60.15/32"
       toPorts:

@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./cluster.yaml
   - ./scheduled-backup.yaml
+  - ./objectstore.yaml
   - ./external-secret.yaml
   - ./podmonitor.yaml
   - ./kopiur.yaml

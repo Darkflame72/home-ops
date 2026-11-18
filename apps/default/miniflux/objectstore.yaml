@@ -1,0 +1,25 @@
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: miniflux-postgres
+  namespace: default
+spec:
+  configuration:
+    destinationPath: s3://cnpg/miniflux-postgres
+    endpointURL: http://10.0.60.15:30188
+    s3Credentials:
+      accessKeyId:
+        name: cnpg-backup-secret
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: cnpg-backup-secret
+        key: ACCESS_SECRET_KEY
+      region:
+        name: cnpg-backup-secret
+        key: REGION
+    wal:
+      compression: gzip
+    data:
+      compression: gzip
+  retentionPolicy: "30d"

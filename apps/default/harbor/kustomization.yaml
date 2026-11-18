@@ -8,6 +8,7 @@ resources:
   - ./cluster.yaml
   - ./redis.yaml
   - ./scheduled-backup.yaml
+  - ./objectstore.yaml
   - ./podmonitor.yaml
   - ./kopiur.yaml
   - ./oidc-config-job.yaml
