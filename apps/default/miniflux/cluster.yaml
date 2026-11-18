@@ -7,7 +7,7 @@ metadata:
   namespace: default
 spec:
   instances: 3
-  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6
   primaryUpdateStrategy: unsupervised
 
   # default is enrolled in the Istio ambient mesh (with an L7 waypoint as of
