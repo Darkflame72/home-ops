@@ -42,20 +42,11 @@ spec:
 
   externalClusters:
     - name: immich-backup
-      barmanObjectStore:
-        serverName: immich
-        destinationPath: s3://cnpg/immich
-        endpointURL: http://10.0.60.15:30188
-        s3Credentials:
-          accessKeyId:
-            name: cnpg-backup-secret
-            key: ACCESS_KEY_ID
-          secretAccessKey:
-            name: cnpg-backup-secret
-            key: ACCESS_SECRET_KEY
-          region:
-            name: cnpg-backup-secret
-            key: REGION
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: immich-backup
+          serverName: immich
 
   postgresql:
     shared_preload_libraries:
@@ -68,22 +59,8 @@ spec:
         name: cnpg-backup-secret
         key: REGION
 
-  backup:
-    barmanObjectStore:
-      destinationPath: s3://cnpg/immich-v2
-      endpointURL: http://10.0.60.15:30188
-      s3Credentials:
-        accessKeyId:
-          name: cnpg-backup-secret
-          key: ACCESS_KEY_ID
-        secretAccessKey:
-          name: cnpg-backup-secret
-          key: ACCESS_SECRET_KEY
-        region:
-          name: cnpg-backup-secret
-          key: REGION
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-    retentionPolicy: "30d"
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: immich-v2

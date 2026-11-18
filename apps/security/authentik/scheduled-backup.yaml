@@ -10,4 +10,6 @@ spec:
   backupOwnerReference: self
   cluster:
     name: authentik-postgres
-  method: barmanObjectStore
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
