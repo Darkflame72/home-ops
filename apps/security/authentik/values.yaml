@@ -42,6 +42,7 @@ authentik:
 blueprints:
   configMaps:
     - authentik-blueprints
+    - authentik-blueprints-crosscut
 prometheus:
   rules:
     enabled: true
