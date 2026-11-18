@@ -2,9 +2,21 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
 controllers:
   cloudflare-tunnel:
+    # Two replicas, one per node: cloudflared only routes to the nearest
+    # replica, so a second one keeps the tunnel up when the other node's UDP
+    # path degrades (see the QUIC idle-timeout 504s).
+    replicas: 2
     strategy: RollingUpdate
     annotations:
       reloader.stakater.com/auto: "true"
+    pod:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/controller: cloudflare-tunnel
     containers:
       app:
         image:
