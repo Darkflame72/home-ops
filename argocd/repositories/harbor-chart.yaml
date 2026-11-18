@@ -1,0 +1,42 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: harbor-chart-repo-credentials
+  namespace: argocd
+spec:
+  refreshInterval: 15m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+
+  target:
+    name: harbor-chart-repo-credentials
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      type: Opaque
+      metadata:
+        labels:
+          argocd.argoproj.io/secret-type: repository
+      data:
+        name: harbor-crosscut-charts
+        url: harbor.darkflame.dev/crosscut/charts
+        type: helm
+        enableOCI: "true"
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+
+  data:
+    - secretKey: username
+      remoteRef:
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
+        key: /argocd/harbor-username
+
+    - secretKey: password
+      remoteRef:
+        conversionStrategy: Default
+        decodingStrategy: None
+        metadataPolicy: None
+        key: /argocd/harbor-password

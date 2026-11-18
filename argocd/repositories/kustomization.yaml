@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./github.yaml
   - ./home-ops-private.yaml
+  - ./harbor-chart.yaml
