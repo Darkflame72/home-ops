@@ -148,6 +148,11 @@
         "external-secrets/external-secrets"
       ],
       "groupName": "external-secrets"
+    },
+    {
+      "description": "CNPG vectorchord tags are <pg-major>-<vectorchord-version>; the Postgres major is the major version so a Postgres bump is proposed as a major update",
+      "matchDepNames": ["ghcr.io/tensorchord/cloudnative-vectorchord"],
+      "versioning": "regex:^(?<major>\\d+)-(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)$"
     }
   ],
   "customManagers": [
@@ -186,6 +191,15 @@
         "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s*[\\w.-]+:\\s*[^\\s@]+:(?<currentValue>[^\\s@]+)(@(?<currentDigest>sha256:[a-f0-9]+))?"
       ],
       "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}"
+    },
+    {
+      "description": "CloudNativePG Cluster images (imageName is not a field the built-in kubernetes manager reads; the only current users are CNPG Cluster resources)",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)apps/.+\\.ya?ml$/"],
+      "matchStrings": [
+        "imageName:\\s*[\"']?(?<depName>[^\\s\"'@:]+):(?<currentValue>[^\\s\"'@]+)"
+      ],
+      "datasourceTemplate": "docker"
     }
   ]
 }
