@@ -67,6 +67,25 @@ customRules:
       override:
         condition: append
       condition: and not (k8s.ns.name = "forgejo-runners" and container.name = "dind" and proc.exepath = "/usr/local/bin/dockerd" and user.uid = 0)
+    # ARC runner namespaces are excluded from the syscall rules below at the operator's request (2026-11-19). Runners execute
+    # package post-install tooling and build binaries as root by design, and many of their events cannot be attributed to a container.
+    # The k8s audit rules (falco-k8saudit) are not changed by this.
+    - rule: Drop and execute new binary in container
+      override:
+        condition: append
+      condition: and not (k8s.ns.name in ("arc-runners", "arc-systems"))
+    - rule: Run shell untrusted
+      override:
+        condition: append
+      condition: and not (k8s.ns.name in ("arc-runners", "arc-systems"))
+    - rule: Packet socket created in container
+      override:
+        condition: append
+      condition: and not (k8s.ns.name in ("arc-runners", "arc-systems"))
+    - rule: Contact K8S API Server From Container
+      override:
+        condition: append
+      condition: and not (k8s.ns.name in ("arc-runners", "arc-systems"))
     # Each entry pins namespace, pod, container, binary, uid and command line,
     # so only that exact process in that exact workload is allowed to call the API server.
     # CloudNativePG runs wal-restore through dash in its own postgres containers (reviewed 2026-10-25).
@@ -86,6 +105,8 @@ customRules:
         condition: append
       condition: and not (container.id != host and user.name = "postgres" and proc.pname = "postgres" and proc.pcmdline startswith "postgres --single" and proc.cmdline = "sh -c -- locale -a")
     # Scheduled sync job lists PrometheusRules on every run (reviewed 2026-11-01).
+    # CloudNativePG Barman Cloud plugin sidecar calls the API server for backup and WAL archiving (reviewed 2026-11-19).
+    # Scoped to the sidecar image, binary and command line. Comments must stay outside the folded condition block.
     - macro: user_known_contact_k8s_api_server_activities
       condition: >
         (k8s.ns.name = "crosscut-dev" and proc.exepath = "/usr/local/bin/crosscut-sync" and proc.name = "tokio-rt-worker") or
@@ -186,6 +207,7 @@ customRules:
           and proc.exepath = "/gatus-sidecar" and user.uid = 1000 and proc.cmdline startswith "gatus-sidecar") or
         (k8s.ns.name = "system-upgrade" and k8s.pod.name startswith "tuppr-" and container.name = "manager"
           and proc.exepath = "/manager" and user.uid = 65532 and proc.cmdline startswith "manager --log-level=info") or
+        (container.image.repository = "ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar" and proc.exepath = "/manager" and proc.cmdline startswith "manager instance") or
         ((k8s.ns.name = "comms" or k8s.ns.name = "default" or k8s.ns.name = "games" or k8s.ns.name = "media" or
           k8s.ns.name = "observability" or k8s.ns.name = "opencloud" or k8s.ns.name = "security") and container.name = "mover"
           and proc.exepath = "/usr/local/bin/kopiur-mover" and proc.cmdline startswith "kopiur-mover")
