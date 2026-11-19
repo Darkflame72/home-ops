@@ -114,6 +114,8 @@ customRules:
         (ka.user.name = "system:serviceaccount:observability:phoenix-postgres" and ka.target.namespace = "observability") or
         (ka.user.name = "system:serviceaccount:crosscut-dev:crosscut-db" and ka.target.namespace = "crosscut-dev" and
           ka.target.name in ("cnpg-backup-secret", "crosscut-db-server", "crosscut-db-replication", "crosscut-db-ca", "crosscut-db-app")) or
+        (ka.user.name = "system:serviceaccount:crosscut-dev:crosscut-db-reader" and ka.target.namespace = "crosscut-dev" and
+          ka.target.name in ("crosscut-db-app", "crosscut-sync-token")) or
         (ka.user.name = "system:serviceaccount:agents:agentgateway" and ka.target.namespace = "agents" and ka.target.name = "agentgateway-proxy-session-key") or
         (ka.user.name = "system:serviceaccount:system-upgrade:tuppr" and ka.target.namespace = "system-upgrade" and ka.target.name = "tuppr-talosconfig") or
         ka.user.name = "talos:admin"
