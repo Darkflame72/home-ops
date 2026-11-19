@@ -73,7 +73,8 @@ customRules:
       items: ["talos:admin"]
     - macro: user_known_portforward_activities
       condition: (ka.user.name = "system:serviceaccount:observability:kiali" and ka.target.namespace = "istio-system")
-    # Kopia backups read application secrets in the namespaces they back up.
+    # Kopia backups read application secrets in the namespaces they back up. The crosscut-db CloudNativePG ServiceAccount
+    # reads its Barman Cloud backup secret through its own RoleBinding (reviewed 2026-11-19).
     - macro: user_known_secret_get_activities
       condition: >
         (ka.user.name = "system:serviceaccount:observability:grafana-operator" and ka.target.namespace = "observability") or
@@ -111,6 +112,7 @@ customRules:
         (ka.user.name = "system:serviceaccount:comms:gotosocial-postgres" and ka.target.namespace = "comms") or
         (ka.user.name = "system:serviceaccount:security:vaultwarden-postgres" and ka.target.namespace = "security") or
         (ka.user.name = "system:serviceaccount:observability:phoenix-postgres" and ka.target.namespace = "observability") or
+        (ka.user.name = "system:serviceaccount:crosscut-dev:crosscut-db" and ka.target.namespace = "crosscut-dev" and ka.target.name = "cnpg-backup-secret") or
         (ka.user.name = "system:serviceaccount:agents:agentgateway" and ka.target.namespace = "agents" and ka.target.name = "agentgateway-proxy-session-key") or
         (ka.user.name = "system:serviceaccount:system-upgrade:tuppr" and ka.target.namespace = "system-upgrade" and ka.target.name = "tuppr-talosconfig") or
         ka.user.name = "talos:admin"
