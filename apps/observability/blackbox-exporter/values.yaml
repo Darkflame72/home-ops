@@ -2,6 +2,10 @@
 # No yaml-language-server schema available: prometheus-community/prometheus-blackbox-exporter
 fullnameOverride: blackbox-exporter
 
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
 config:
   modules:
     tcp_connect:
