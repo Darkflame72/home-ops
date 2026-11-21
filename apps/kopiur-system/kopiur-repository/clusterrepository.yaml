@@ -38,3 +38,7 @@ spec:
     service:
       type: ClusterIP
       port: 51515
+  parameters:
+    epoch:
+      # Index epochs advance at most every 6h, so the content-index blobs compact more often.
+      minDuration: 6h
