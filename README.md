@@ -61,7 +61,7 @@ This Git repository contains the following directories.
 
 ## 📚 Documentation
 
-Detailed documentation is available in the `docs/` directory:
+Detailed documentation is available at [docs.darkflame.dev](https://docs.darkflame.dev), built from the `docs/` directory:
 
 - **[Setup Guide](./docs/setup.md)**: Step-by-step installation and bootstrapping instructions
 - **[Architecture](./docs/architecture.md)**: Comprehensive cluster architecture, networking, and design decisions
