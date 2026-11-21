@@ -11,6 +11,12 @@
 # all plaintext OTLP already.
 podLabels:
   istio.io/dataplane-mode: none
+# Tempo's own metrics (distributor, ingester, compactor) on the HTTP port. The daemon collector
+# discovers annotated pods, so these are scraped into Mimir.
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3200"
+  prometheus.io/path: /metrics
 
 tempo:
   reportingEnabled: false
