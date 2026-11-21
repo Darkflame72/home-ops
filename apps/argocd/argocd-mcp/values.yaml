@@ -60,7 +60,6 @@ controllers:
               failureThreshold: 3
 defaultPodOptions:
   # Talks to ArgoCD over HTTP with its own token, never to the Kubernetes API.
-  automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
@@ -78,5 +77,3 @@ service:
 persistence:
   tmp:
     type: emptyDir
-    globalMounts:
-      - path: /tmp
