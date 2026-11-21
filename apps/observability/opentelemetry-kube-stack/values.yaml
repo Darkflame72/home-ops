@@ -424,8 +424,16 @@ collectors:
             authorization: Bearer ${env:PHOENIX_ADMIN_SECRET}
           tls:
             insecure: true
+        # TEMPORARY duplicate-hunting debug output. Remove once the duplicate source is found.
+        debug:
+          verbosity: detailed
       service:
         pipelines:
+          # TEMPORARY: every metric point that is about to be sent to Mimir, printed to stdout.
+          metrics/debug:
+            receivers: [otlp]
+            processors: []
+            exporters: [debug]
           traces:
             receivers: [otlp]
             processors: [memory_limiter, tail_sampling, batch]
