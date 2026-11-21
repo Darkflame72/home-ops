@@ -9,6 +9,12 @@
     "enabled": true,
     "title": "Renovate Dashboard 🤖"
   },
+  "minimumReleaseAge": "3 days",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
   "argocd": {
     "managerFilePatterns": ["/argocd/apps/.+\\.yaml$/"]
   },
