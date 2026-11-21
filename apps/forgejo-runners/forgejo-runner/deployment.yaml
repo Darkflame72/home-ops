@@ -30,14 +30,14 @@ spec:
             - "sh"
             - "-c"
             - |
-              while [ ! -S /var/run/docker.sock ]; do
+              while [ ! -S /run/user/1000/docker.sock ]; do
                 echo 'waiting for docker daemon...';
                 sleep 5;
               done
               /bin/forgejo-runner --config /etc/runner/config.yaml daemon
           env:
             - name: DOCKER_HOST
-              value: unix:///var/run/docker.sock
+              value: unix:///run/user/1000/docker.sock
           resources:
             requests:
               cpu: 100m
@@ -48,13 +48,22 @@ spec:
             - name: runner-configfile
               mountPath: /etc/runner
             - name: docker-sock
-              mountPath: /var/run
+              mountPath: /run/user/1000
             - name: runner-data
               mountPath: /data
+        # Rootless Docker: the daemon runs as uid 1000 inside its own user namespace, so the
+        # container is not privileged. Rootless needs an unconfined seccomp profile to create
+        # user namespaces, and Talos already allows them (user.max_user_namespaces).
         - name: dind
-          image: docker:29.3.1-dind@sha256:686d2c5464787b0ca42420e0aa03a94fc9781ff9bf8b5ff947614b9fa4c3c3e0
+          image: docker:29.3.1-dind-rootless@sha256:5fd70e50e710078a3c8c3eaa96c0e788740ee71934f48efce17573a47db7cf4b
           securityContext:
-            privileged: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: Unconfined
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 250m
@@ -63,7 +72,7 @@ spec:
               memory: 2Gi
           volumeMounts:
             - name: docker-sock
-              mountPath: /var/run
+              mountPath: /run/user/1000
       volumes:
         - name: docker-sock
           emptyDir: {}
