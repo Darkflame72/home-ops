@@ -99,7 +99,8 @@ configs:
       clientSecret: $oidc.authentik.clientSecret
       requestedScopes: ["openid", "profile", "email", "argocd-groups"]
       requestedIDTokenClaims: {"groups": {"essential": true}}
-    # Local admin stays enabled until SSO is verified. Disable it after a successful login.
+    # Local admin is disabled: administrators sign in through Authentik SSO.
+    admin.enabled: "false"
     accounts.argocd-mcp: apiKey
     resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
       jqPathExpressions:
