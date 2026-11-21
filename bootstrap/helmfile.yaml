@@ -8,8 +8,9 @@ helmDefaults:
 releases:
   - name: cilium
     namespace: kube-system
-    chart: oci://ghcr.io/home-operations/charts-mirror/cilium
-    version: 1.18.6
+    # Upstream chart, the same source and version the cilium ArgoCD Application uses.
+    chart: oci://quay.io/cilium/charts/cilium
+    version: 1.20.5
     values: ['../apps/kube-system/cilium/values.yaml']
 
   - name: coredns
