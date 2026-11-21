@@ -5,6 +5,10 @@ profile: ambient
 replicaCount: 2
 autoscaleMin: 2
 pilot:
+  # Istiod is distroless and already runs with a read-only root filesystem. Add the
+  # RuntimeDefault seccomp profile. Its token stays on because it calls the Kubernetes API.
+  seccompProfile:
+    type: RuntimeDefault
   env:
     # Required for agentgateway (agents/agentgateway-proxy) to receive xDS
     # config from istiod - without it istiod can't serve the agentgateway
