@@ -7,7 +7,7 @@ Backups run at four layers. Each layer protects a different kind of data.
 | Persistent volumes            | Kopiur (Kopia)                      | Kopia repository in S3 (Garage)      |
 | PostgreSQL databases          | CloudNativePG + Barman Cloud plugin | S3 (Garage), base backups and WAL    |
 | etcd (control plane state)    | talos-backup CronJob                | S3 (Garage), age-encrypted           |
-| NAS datasets                  | TrueNAS ZFS replication, hourly     | Second ZFS target (see Offsite)      |
+| NAS datasets                  | TrueNAS ZFS snapshots, hourly       | Local to the NAS (not offsite)       |
 | Offsite copy                  | TrueNAS Cloud Sync                  | Backblaze B2                         |
 
 The S3 endpoint is Garage on the LAN (`10.0.60.15`, on the NAS). It has three buckets: `kopia` for volume
@@ -20,7 +20,7 @@ flowchart LR
     PG["CNPG clusters"] -->|Barman Cloud<br/>base backups + WAL| S3
     ETCD["etcd"] -->|talos-backup<br/>age-encrypted| S3
     KREPO --> S3[("Garage S3 on the NAS")]
-    S3 -->|NAS hourly ZFS replication| ZFS[("Second ZFS target")]
+    S3 -->|hourly ZFS snapshots<br/>on the NAS| SNAP[("Local snapshots")]
     S3 -->|TrueNAS Cloud Sync| B2[("Backblaze B2")]
 ```
 
@@ -66,13 +66,14 @@ Test restores before you need them. A backup that has never been restored is an 
 
 ## Offsite
 
-The NAS hosts Garage, so its datasets are protected in two ways:
+The NAS hosts Garage, and two mechanisms protect its datasets:
 
-- **ZFS replication** runs hourly on TrueNAS and copies its datasets to a second ZFS target.
-- **Cloud Sync** runs on TrueNAS and pushes data to Backblaze B2. This is the copy that survives losing
-  the site.
+- **ZFS snapshots** are taken hourly on TrueNAS. They are stored on the NAS only, so they protect against
+  accidental deletion and bad writes, not against losing the NAS.
+- **Cloud Sync** runs on TrueNAS and pushes data to Backblaze B2. This is the only copy that survives
+  losing the site.
 
-These are two separate paths. Test restores from both.
+Test restores from both before you need them.
 
 ## Failure History
 

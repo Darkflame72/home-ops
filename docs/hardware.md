@@ -87,7 +87,7 @@ topf apply             # apply
 These run outside the cluster:
 
 - **NAS (TrueNAS)**: NFS shares for applications that need them, and the host for Garage. It runs hourly
-  ZFS replication and a TrueNAS Cloud Sync job to Backblaze B2 (see [Backups](backups.md#offsite)).
+  hourly ZFS snapshots and a TrueNAS Cloud Sync job to Backblaze B2 (see [Backups](backups.md#offsite)).
 - **Garage**: S3-compatible object storage used for backups. It is served from the NAS at `10.0.60.15`.
 - **OPNsense**: Firewall and routing.
 - **Pi-hole**: Network DNS, also managed by external-dns.
