@@ -39,3 +39,10 @@ server:
   web_fqdn: kiali.darkflame.dev
   web_schema: https
   web_port: "443"
+
+# Pod security: the RuntimeDefault seccomp profile. Kiali needs its API token to read the mesh,
+# so token automount is left on.
+deployment:
+  security_context:
+    seccompProfile:
+      type: RuntimeDefault
