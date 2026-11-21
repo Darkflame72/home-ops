@@ -7,7 +7,7 @@ Each layer is a separate control, so a failure in one does not expose everything
 
 ```mermaid
 flowchart TB
-    NET["Network<br/>Cilium policies, only the Cloudflare Tunnel ingresses"] --> ADM["Admission<br/>Kyverno policies (audit mode), cosign checks"]
+    NET["Network<br/>Cilium policies, only the Cloudflare Tunnel ingresses"] --> ADM["Admission<br/>Kyverno policies (audit mode), cosign checks mostly disabled"]
     ADM --> MESH["Mesh<br/>Istio ambient waypoint in security"]
     MESH --> ID["Identity<br/>Authentik SSO with MFA for admins"]
     ID --> RUN["Runtime<br/>Falco eBPF detection"]
@@ -29,9 +29,14 @@ flowchart TB
 
 ## Admission Policy: Kyverno
 
-[Kyverno](https://kyverno.io) runs in **audit mode**. Its validating and image-verification policies
+[Kyverno](https://kyverno.io) (v1.20) runs in **audit mode**. Its validating and image-verification policies
 record violations but do not reject resources, so nothing is blocked at admission today. Results are
-shown in [Policy Reporter](https://github.com/kyverno/policy-reporter).
+shown in [Policy Reporter](https://github.com/kyverno/policy-reporter). The admission controller runs two
+replicas behind a PodDisruptionBudget, because its `Fail` webhook on Pods blocks pod creation when it is down.
+
+Most image-signature policies are **disabled**. They were turned off on Kyverno v1.18.2, which reported false
+fails for images they don't match. One is re-enabled as a canary (`verify-image-signatures-argocd`) to test
+whether v1.20 fixes that. Check its policy reports before enabling the others.
 
 The policies use Kyverno's CEL-based types (`policies.kyverno.io`) and are defined in
 `apps/policy/kyverno/policies/`. The live cluster has:
@@ -39,7 +44,7 @@ The policies use Kyverno's CEL-based types (`policies.kyverno.io`) and are defin
 | Type                    | Count | What it does                                                             | Mode  |
 |-------------------------|-------|--------------------------------------------------------------------------|-------|
 | `ValidatingPolicy`      | 5     | Pinned image tags, no privileged containers, run as non-root, resource requests and limits, registry allowlist | Audit |
-| `ImageValidatingPolicy` | 22    | Cosign signature checks, one per workload                                | Audit |
+| `ImageValidatingPolicy` | 22    | Cosign signature checks, one per workload; 21 disabled, 1 canary (see above) | Audit |
 | `MutatingPolicy`       | 3     | Istio ambient namespace labels, OpenTelemetry collector exclusion, waypoint resources | n/a |
 | `GeneratingPolicy`      | 23    | Default Istio authorization policies per namespace, Grafana dashboards   | n/a   |
 | `PolicyException`       | 24    | Exemptions for infrastructure workloads, all in the `policy` namespace   | n/a   |
