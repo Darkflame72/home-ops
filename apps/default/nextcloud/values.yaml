@@ -25,6 +25,17 @@ service:
   port: 80
 
 nextcloud:
+  # Apache starts as root and drops privileges, so capabilities are left as the chart sets them.
+  podSecurityContext:
+    # fsGroup 33 lets www-data write its config and data volumes. Overriding this block drops it,
+    # so it is set explicitly here.
+    fsGroup: 33
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
   host: cloud.darkflame.dev
   existingSecret:
     enabled: true

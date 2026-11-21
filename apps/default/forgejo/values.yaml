@@ -1,6 +1,14 @@
 # No yaml-language-server schema available: forgejo-contrib/forgejo-helm (codeberg, no schema published)
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
 containerSecurityContext:
   runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  seccompProfile:
+    type: RuntimeDefault
 resources:
   requests:
     cpu: 10m
