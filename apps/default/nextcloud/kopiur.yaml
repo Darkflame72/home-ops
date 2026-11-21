@@ -1,0 +1,55 @@
+---
+# Backs up the Nextcloud application volume: config/config.php (instance secrets, DB
+# credentials, trusted domains) and the app code. User files live on NFS and are
+# protected by the NAS snapshots and Cloud Sync, so they are not duplicated here.
+# The mover runs as uid 1000 because Kopiur refuses a mover uid that matches a workload
+# writing to the source PVC, and Nextcloud and its cron run as uid 33.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: nextcloud
+  namespace: default
+spec:
+  compression:
+    compressor: zstd-fastest
+  copyMethod: Snapshot
+  defaultDeletionPolicy: Delete
+  groupBy: VolumeGroupSnapshot
+  identity:
+    hostname: default
+    username: nextcloud
+  mover:
+    cache:
+      capacity: 5Gi
+      storageClassName: openebs-hostpath
+    podSecurityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  retention:
+    keepDaily: 7
+    keepHourly: 24
+  sources:
+  - pvc:
+      name: nextcloud-app
+    readOnly: true
+    sourcePathStrategy: PvcName
+  upload:
+    maxParallelFileReads: 2
+  volumeSnapshotClassName: csi-ceph-blockpool
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: nextcloud
+  namespace: default
+spec:
+  policyRef:
+    name: nextcloud
+  schedule:
+    cron: 0 * * * *

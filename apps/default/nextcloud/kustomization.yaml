@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./external-secret.yaml
   - ./pvc.yaml
+  - ./kopiur.yaml
   - ./cluster.yaml
   - ./redis.yaml
   - ./scheduled-backup.yaml
