@@ -259,6 +259,14 @@ falcosidekick:
   # Explicit non-root, so the policy does not depend on the default user.
   podSecurityContext:
     runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  # Container keys of the falcosidekick subchart. Sidekick only forwards alerts, so it can run read-only.
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
   resources:
     requests:
       cpu: 20m
