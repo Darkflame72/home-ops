@@ -7,3 +7,4 @@ resources:
   - ./referencegrant.yaml
   - ./external-secret.yaml
   - ./httproute.yaml
+  - ./control-plane-collector.yaml

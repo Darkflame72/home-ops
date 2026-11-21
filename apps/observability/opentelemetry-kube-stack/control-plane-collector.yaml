@@ -1,0 +1,63 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/opentelemetry.io/opentelemetrycollector_v1beta1.json
+# Scrapes control-plane metrics that only exist on the node itself. etcd listens on
+# 127.0.0.1:2381 (talos/patches/control-plane/cluster.yaml), so this collector runs with
+# hostNetwork on control-plane nodes and reaches that loopback address. Other collectors
+# cannot reach it, which is the point: the endpoint is not exposed to the LAN or pod network.
+# The node name goes into the instance label, because every control-plane node serves the
+# same loopback address and series would otherwise collide in Mimir.
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: control-plane
+  namespace: observability
+spec:
+  mode: daemonset
+  hostNetwork: true
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
+  env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  config:
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: etcd
+              scrape_interval: 30s
+              static_configs:
+                - targets: ["127.0.0.1:2381"]
+                  labels:
+                    component: etcd
+              relabel_configs:
+                - target_label: instance
+                  replacement: ${env:NODE_NAME}
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+      batch: {}
+    exporters:
+      otlp_http/mimir:
+        endpoint: http://mimir-gateway.observability.svc.cluster.local/otlp
+        tls:
+          insecure: true
+    extensions:
+      health_check: {}
+    service:
+      extensions: [health_check]
+      pipelines:
+        metrics:
+          receivers: [prometheus]
+          processors: [memory_limiter, batch]
+          exporters: [otlp_http/mimir]
