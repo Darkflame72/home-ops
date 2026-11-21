@@ -2,6 +2,9 @@
 preUpgradeHook:
   enabled: false
 localpv-provisioner:
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
   analytics:
     enabled: false
   localpv:
