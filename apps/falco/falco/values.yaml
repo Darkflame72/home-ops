@@ -1,5 +1,13 @@
 # Runtime threat detection on every node. Events go to Loki (queryable) and to
 # Mimir's Alertmanager (existing Discord routes in apps/observability/mimir/values.yaml).
+# Falco container. Setting this replaces the chart's helper, so the four eBPF capabilities the
+# probe needs are listed here as well. Everything else is dropped.
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+    add: ["BPF", "SYS_RESOURCE", "PERFMON", "SYS_PTRACE"]
 driver:
   # Talos is immutable with no kernel headers, so no kernel module build or driver loader.
   kind: modern_ebpf
