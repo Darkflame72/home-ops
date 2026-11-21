@@ -85,9 +85,21 @@ configs:
       p, role:mcp-agent, applications, action/argoproj.io/Rollout/abort, */*, allow
       p, role:mcp-agent, logs, get, */*, allow
       g, argocd-mcp, role:mcp-agent
+      g, argocd-admins, role:admin
   cm:
     statusbadge.enabled: "true"
     accounts.ci: apiKey
+    # Sign in with Authentik. The client secret is $oidc.authentik.clientSecret in argocd-secret.
+    # Only members of "authentik Admins" can log in (enforced by the Authentik policy binding),
+    # and the groups claim maps them to argocd-admins, which gets role:admin below.
+    oidc.config: |
+      name: Authentik
+      issuer: https://auth.darkflame.dev/application/o/argocd/
+      clientID: PMqqSnEB2bgza0nhW9n2MvcD8ys2Oz0yniOKyyGr
+      clientSecret: $oidc.authentik.clientSecret
+      requestedScopes: ["openid", "profile", "email", "argocd-groups"]
+      requestedIDTokenClaims: {"groups": {"essential": true}}
+    # Local admin stays enabled until SSO is verified. Disable it after a successful login.
     accounts.argocd-mcp: apiKey
     resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
       jqPathExpressions:

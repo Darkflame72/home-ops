@@ -5,5 +5,6 @@ kind: Kustomization
 resources:
   - ./argocd-notifications-secret.yaml
   - ./argocd-webhook-secret.yaml
+  - ./argocd-oidc-secret.yaml
   - ./argocd-webhook-httproute.yaml
   - ./grafanadashboard.yaml
