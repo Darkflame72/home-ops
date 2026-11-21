@@ -49,6 +49,9 @@ prometheus:
 server:
   # Two replicas so SSO for every app survives a pod restart or node drain.
   replicas: 2
+  pdb:
+    enabled: true
+    minAvailable: 1
   securityContext:
     runAsNonRoot: true
   resources:

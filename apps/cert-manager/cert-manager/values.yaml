@@ -5,6 +5,8 @@ crds:
   enabled: true
 # Two controller and webhook replicas: a webhook outage blocks every Certificate change.
 replicaCount: 2
+podDisruptionBudget:
+  enabled: true
 dns01RecursiveNameservers: https://1.1.1.1:443/dns-query,https://1.0.0.1:443/dns-query
 dns01RecursiveNameserversOnly: true
 resources:
@@ -15,6 +17,8 @@ resources:
     memory: 192Mi
 webhook:
   replicaCount: 2
+  podDisruptionBudget:
+    enabled: true
   resources:
     requests:
       cpu: 10m
