@@ -42,3 +42,14 @@ spec:
     epoch:
       # Index epochs advance at most every 6h, so the content-index blobs compact more often.
       minDuration: 6h
+  maintenance:
+    # Temporary: the maintenance lease was lost during the 15:20 apiserver outage and not
+    # reacquired. Force takes it once. Remove this line after the index blobs compact.
+    takeoverPolicy: Force
+    schedule:
+      full:
+        cron: 0 */6 * * *
+        jitter: 1h
+      quick:
+        cron: 0 */6 * * *
+        jitter: 30m
