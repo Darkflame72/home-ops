@@ -14,7 +14,9 @@ template:
         # The runner already runs as uid 1001, so dropping capabilities and blocking
         # escalation only narrows what the process could do if it were compromised.
         securityContext:
+          # The image's default user is a name, so the kubelet cannot verify non-root. Set the numeric uid.
           runAsNonRoot: true
+          runAsUser: 1001
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
