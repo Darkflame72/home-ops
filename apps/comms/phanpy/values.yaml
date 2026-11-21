@@ -13,6 +13,11 @@ controllers:
             memory: 32Mi
           limits:
             memory: 128Mi
+defaultPodOptions:
+  automountServiceAccountToken: false
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
 service:
   app:
     ports:

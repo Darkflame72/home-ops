@@ -14,6 +14,8 @@ controllers:
           # refuses to start with CreateContainerConfigError.
           runAsNonRoot: true
           runAsUser: 101
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
         probes:
           liveness:
             enabled: true
@@ -25,6 +27,11 @@ controllers:
             memory: 10Mi
           limits:
             memory: 50Mi
+defaultPodOptions:
+  automountServiceAccountToken: false
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
 service:
   app:
     ports:
