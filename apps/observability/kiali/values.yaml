@@ -46,3 +46,6 @@ deployment:
   security_context:
     seccompProfile:
       type: RuntimeDefault
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
