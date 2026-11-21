@@ -43,6 +43,9 @@ spec:
       # Index epochs advance at most every 6h, so the content-index blobs compact more often.
       minDuration: 6h
   maintenance:
+    # Force: with Never the lease is not re-taken from its current holder, and compaction stops.
+    # Set Never again only after the index-blob health condition reports healthy for a full cycle.
+    takeoverPolicy: Force
     schedule:
       full:
         cron: 0 */6 * * *
