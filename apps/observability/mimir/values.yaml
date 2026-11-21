@@ -129,7 +129,8 @@ compactor:
 distributor:
   resources:
     limits:
-      memory: 1344Mi
+      # Steady peaks are ~1 GiB. Backlog bursts after an outage pushed it over 1344Mi and it was OOMKilled.
+      memory: 2048Mi
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"
