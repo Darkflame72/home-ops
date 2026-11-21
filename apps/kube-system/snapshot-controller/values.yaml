@@ -2,6 +2,11 @@
 # No yaml-language-server schema available: piraeusdatastore/helm-charts (no values.schema.json)
 controller:
   replicaCount: 2
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
   serviceMonitor:
     create: true
   resources:
