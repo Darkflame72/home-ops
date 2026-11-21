@@ -26,6 +26,12 @@ spec:
               memory: 128Mi
             limits:
               memory: 1Gi
+        pod:
+          annotations:
+            # The envoy-proxy PodMonitor already scrapes these proxies. Envoy Gateway's default
+            # prometheus.io/scrape annotation also made the daemon collector scrape them, so
+            # every envoy series was stored twice.
+            prometheus.io/scrape: "false"
       envoyService:
         externalTrafficPolicy: Cluster
   shutdown:
