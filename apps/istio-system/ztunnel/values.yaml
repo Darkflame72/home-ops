@@ -2,6 +2,10 @@
 # No yaml-language-server schema available: istio/ztunnel
 # Use the distroless image, the same as istiod and install-cni.
 variant: distroless
+# ztunnel is scraped by its PodMonitor (podmonitor.yaml). The chart's annotation also
+# makes the daemon collector scrape it, which doubled every ztunnel series. Turn it off here.
+podAnnotations:
+  prometheus.io/scrape: "false"
 resources:
   requests:
     memory: 128Mi

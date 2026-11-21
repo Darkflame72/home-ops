@@ -23,6 +23,14 @@ metadata:
   name: agentgateway-proxy
   namespace: agents
 spec:
+  # The proxy is scraped by its PodMonitor (agentgateway-proxy). The default
+  # prometheus.io/scrape annotation would have the daemon collector scrape it a second time.
+  deployment:
+    spec:
+      template:
+        metadata:
+          annotations:
+            prometheus.io/scrape: "false"
   resources:
     requests:
       cpu: 10m

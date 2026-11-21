@@ -1,6 +1,10 @@
 ---
 # No yaml-language-server schema available: istio/istiod
 profile: ambient
+# istiod is scraped by its PodMonitor (podmonitor.yaml). Without this override the
+# annotation also makes the daemon collector scrape it, doubling every istiod series.
+podAnnotations:
+  prometheus.io/scrape: "false"
 # Two istiod replicas, and the autoscaler's floor is also 2. istiod is the ambient control plane.
 replicaCount: 2
 autoscaleMin: 2
