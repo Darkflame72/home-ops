@@ -187,6 +187,8 @@ applicationSet:
       enabled: true
 
 dex:
+  # Disabled: SSO uses the Authentik OIDC config in configs.cm, so Dex has no connectors.
+  enabled: false
   resources:
     requests:
       cpu: 10m
