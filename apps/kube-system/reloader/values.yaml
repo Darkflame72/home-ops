@@ -6,6 +6,12 @@ reloader:
   podMonitor:
     enabled: true
   deployment:
+    # Container keys of the reloader chart. Reloader only watches ConfigMaps and Secrets through
+    # the API, so no capabilities or privilege escalation are needed.
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
     resources:
       requests:
         cpu: 10m
