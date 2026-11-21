@@ -113,6 +113,9 @@ alertmanager:
             message: *discord_message
 
 compactor:
+  # 2Gi filled up while merging multi-day blocks, so compactions failed with "no space left on device".
+  persistentVolume:
+    size: 20Gi
   resources:
     limits:
       memory: 2496Mi
