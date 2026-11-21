@@ -42,6 +42,7 @@ spec:
     epoch:
       # Index epochs advance at most every 6h, so the content-index blobs compact more often.
       minDuration: 6h
+      advanceOnCount: 10
   maintenance:
     # Force: with Never the lease is not re-taken from its current holder, and compaction stops.
     # Set Never again only after the index-blob health condition reports healthy for a full cycle.
@@ -56,3 +57,5 @@ spec:
   health:
     # Warn above 1000 index blobs. The lease test showed the lease does not wait on this condition.
     indexBlobWarnThreshold: 1000
+# Maintenance epochs advance after this many index blobs (default 20). Lower values compact sooner, which
+# keeps the index-blob count under the warning threshold.
