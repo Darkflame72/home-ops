@@ -145,6 +145,9 @@ ingester:
     size: 30Gi
   resources:
     requests:
+      # Peaks at about 1.9 cores under ~11k samples/s. The request was 100m, so the scheduler
+      # packed it onto k8s-6 with no CPU reserved, and the node went NotReady under load.
+      cpu: 2000m
       memory: 2560Mi
     limits:
       memory: 13120Mi
