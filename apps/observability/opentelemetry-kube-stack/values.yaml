@@ -373,12 +373,16 @@ collectors:
           protocols:
             grpc:
               endpoint: 0.0.0.0:4317
+              # Default is 4 MiB. The cluster collector's kube-state-metrics batches are larger,
+              # so the gateway rejected them with ResourceExhausted and they were dropped.
+              max_recv_msg_size_mib: 64
               keepalive:
                 enforcement_policy:
                   min_time: 10s
                   permit_without_stream: true
             http:
               endpoint: 0.0.0.0:4318
+              max_request_body_size: 67108864
       processors:
         memory_limiter:
           check_interval: 1s
