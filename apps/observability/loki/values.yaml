@@ -92,3 +92,6 @@ resultsCache:
 monitoring:
   dashboards:
     enabled: true
+    # Generated GrafanaDashboards land in this Grafana folder (GrafanaFolder uid in grafana/folders.yaml).
+    annotations:
+      grafana_folder: loki

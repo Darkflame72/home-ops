@@ -33,6 +33,13 @@ spec:
       expression: "object.metadata.namespace"
     - name: firstKey
       expression: "object.data.map(k, k)[0]"
+    # Grafana folder: the grafana_folder annotation on the ConfigMap is the folder uid
+    # (see grafana/folders.yaml). Without it, dashboards stay in the default observability folder.
+    - name: folderUID
+      expression: >-
+        has(object.metadata.annotations) && 'grafana_folder' in object.metadata.annotations
+          ? object.metadata.annotations['grafana_folder']
+          : 'dfqudt3k188w0c'
     - name: downstream
       expression: >-
         [
@@ -51,7 +58,8 @@ spec:
               "configMapRef": dyn({
                 "name": variables.cmName,
                 "key": variables.firstKey
-              })
+              }),
+              "folderUID": dyn(variables.folderUID)
             })
           }
         ]

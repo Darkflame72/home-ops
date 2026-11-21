@@ -6,6 +6,7 @@ metadata:
   name: cloudflare-tunnels
   namespace: network
 spec:
+  folderUID: networking
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:

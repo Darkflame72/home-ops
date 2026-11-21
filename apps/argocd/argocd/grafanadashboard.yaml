@@ -6,6 +6,7 @@ metadata:
   name: argocd
   namespace: argocd
 spec:
+  folderUID: platform
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:

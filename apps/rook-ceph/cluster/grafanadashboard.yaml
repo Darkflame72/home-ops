@@ -6,6 +6,7 @@ metadata:
   name: ceph-cluster
   namespace: rook-ceph
 spec:
+  folderUID: storage
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -24,6 +25,7 @@ metadata:
   name: ceph-osd
   namespace: rook-ceph
 spec:
+  folderUID: storage
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -42,6 +44,7 @@ metadata:
   name: ceph-pools
   namespace: rook-ceph
 spec:
+  folderUID: storage
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:

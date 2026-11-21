@@ -6,6 +6,7 @@ metadata:
   name: envoy-overview
   namespace: network
 spec:
+  folderUID: networking
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -24,6 +25,7 @@ metadata:
   name: envoy-upstream
   namespace: network
 spec:
+  folderUID: networking
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -42,6 +44,7 @@ metadata:
   name: envoy-downstream
   namespace: network
 spec:
+  folderUID: networking
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:

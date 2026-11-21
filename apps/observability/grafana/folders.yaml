@@ -1,0 +1,111 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/grafana.integreatly.org/grafanafolder_v1beta1.json
+# One GrafanaFolder per dashboard group. The uid is what dashboards reference:
+# GrafanaDashboard.spec.folderUID, and the grafana_folder annotation on dashboard ConfigMaps.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: mimir
+  namespace: observability
+spec:
+  uid: mimir
+  title: Mimir
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: loki
+  namespace: observability
+spec:
+  uid: loki
+  title: Loki
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: kubernetes
+  namespace: observability
+spec:
+  uid: kubernetes
+  title: Kubernetes
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: networking
+  namespace: observability
+spec:
+  uid: networking
+  title: Networking
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: storage
+  namespace: observability
+spec:
+  uid: storage
+  title: Storage
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: platform
+  namespace: observability
+spec:
+  uid: platform
+  title: Platform
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: databases
+  namespace: observability
+spec:
+  uid: databases
+  title: Databases
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: security
+  namespace: observability
+spec:
+  uid: security
+  title: Security
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: apps
+  namespace: observability
+spec:
+  uid: apps
+  title: Apps
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
