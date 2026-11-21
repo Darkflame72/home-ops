@@ -173,10 +173,11 @@ metadata:
 spec:
   evaluation:
     admission:
-      # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
-      # fail: "policy not evaluated" for every non-matching policy on
-      # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      # Re-enabled as a canary on Kyverno v1.20.0 (2026-11-21). The v1.18.2 bug
+      # reported "policy not evaluated" fails for non-matching images. This policy
+      # is the only one on, and it matches only quay.io/argoproj/argocd. If the
+      # reports show false fails for other workloads, disable it again.
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
