@@ -30,14 +30,14 @@ spec:
             - "sh"
             - "-c"
             - |
-              while [ ! -S /run/user/1000/docker.sock ]; do
+              while [ ! -S /var/run/docker.sock ]; do
                 echo 'waiting for docker daemon...';
                 sleep 5;
               done
               /bin/forgejo-runner --config /etc/runner/config.yaml daemon
           env:
             - name: DOCKER_HOST
-              value: unix:///run/user/1000/docker.sock
+              value: unix:///var/run/docker.sock
           resources:
             requests:
               cpu: 100m
@@ -48,32 +48,13 @@ spec:
             - name: runner-configfile
               mountPath: /etc/runner
             - name: docker-sock
-              mountPath: /run/user/1000
+              mountPath: /var/run
             - name: runner-data
               mountPath: /data
-        # Rootless Docker: the daemon runs as uid 1000 inside its own user namespace, so the
-        # container is not privileged. Rootless needs an unconfined seccomp profile to create
-        # user namespaces, and Talos already allows them (user.max_user_namespaces).
         - name: dind
-          image: docker:29.3.1-dind-rootless@sha256:5fd70e50e710078a3c8c3eaa96c0e788740ee71934f48efce17573a47db7cf4b
-          env:
-            # Rootless rootlesskit cannot create its tap0 device without privileges, so the
-            # daemon uses the pod's network namespace. Host networking has no port forwarding
-            # driver, so that is turned off too. The container is still not privileged.
-            - name: DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS
-              value: "--net=host --port-driver=none"
+          image: docker:29.3.1-dind@sha256:686d2c5464787b0ca42420e0aa03a94fc9781ff9bf8b5ff947614b9fa4c3c3e0
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-            seccompProfile:
-              type: Unconfined
-            # newuidmap is setuid root and must be able to set the user-namespace mapping, so
-            # escalation stays allowed and SETUID/SETGID are granted. Nothing else is.
-            allowPrivilegeEscalation: true
-            capabilities:
-              drop: ["ALL"]
-              add: ["SETUID", "SETGID"]
+            privileged: true
           resources:
             requests:
               cpu: 250m
@@ -82,7 +63,7 @@ spec:
               memory: 2Gi
           volumeMounts:
             - name: docker-sock
-              mountPath: /run/user/1000
+              mountPath: /var/run
       volumes:
         - name: docker-sock
           emptyDir: {}
