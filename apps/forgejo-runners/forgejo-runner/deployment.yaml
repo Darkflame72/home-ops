@@ -61,6 +61,9 @@ spec:
             # daemon uses the pod's network namespace. The container is still not privileged.
             - name: DOCKERD_ROOTLESS_ROOTLESSKIT_NET
               value: host
+            # Host networking has no port forwarding driver, so disable it.
+            - name: DOCKERD_ROOTLESS_ROOTLESSKIT_PORT_DRIVER
+              value: none
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
