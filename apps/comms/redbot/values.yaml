@@ -14,12 +14,20 @@ controllers:
         envFrom:
           - secretRef:
               name: redbot-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             cpu: 10m
             memory: 448Mi
           limits:
             memory: 512Mi
+defaultPodOptions:
+  automountServiceAccountToken: false
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
 persistence:
   config:
     existingClaim: redbot
