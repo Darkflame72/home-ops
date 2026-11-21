@@ -45,19 +45,6 @@ tempo:
   extraArgs:
     config.expand-env: "true"
 
-# Pod security: RuntimeDefault seccomp at pod level, and no ServiceAccount token. Tempo writes to
-# Mimir and object storage over HTTP and never calls the Kubernetes API.
-securityContext:
-  runAsUser: 10001
-  runAsGroup: 10001
-  fsGroup: 10001
-  runAsNonRoot: true
-  seccompProfile:
-    type: RuntimeDefault
-serviceAccount:
-  create: true
-  automountServiceAccountToken: false
-
   extraEnvFrom:
     - secretRef:
         name: tempo-bucket
@@ -73,3 +60,16 @@ serviceAccount:
 
 persistence:
   enabled: true
+
+# Pod security: RuntimeDefault seccomp at pod level, and no ServiceAccount token. Tempo writes to
+# Mimir and object storage over HTTP and never calls the Kubernetes API.
+securityContext:
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+serviceAccount:
+  create: true
+  automountServiceAccountToken: false
