@@ -1,0 +1,54 @@
+---
+# Copy of the shared EnvoyProxy for the public gateway, with a read-only root filesystem.
+# Tested first on envoy-internal.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoyproxy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy-external
+spec:
+  logging:
+    level:
+      default: info
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        container:
+          imageRepository: mirror.gcr.io/envoyproxy/envoy
+          # Read-only root filesystem, as tested on the internal gateway.
+          securityContext:
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 1Gi
+      envoyService:
+        externalTrafficPolicy: Cluster
+  shutdown:
+    drainTimeout: 180s
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Gzip
+      sinks:
+        - type: OpenTelemetry
+          openTelemetry:
+            host: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local
+            port: 4317
+    tracing:
+      samplingRate: 100
+      provider:
+        type: OpenTelemetry
+        port: 4317
+        backendRefs:
+          - group: ""
+            kind: Service
+            name: opentelemetry-kube-stack-daemon-collector
+            namespace: observability
+            port: 4317
+            weight: 1
