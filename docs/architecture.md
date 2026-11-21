@@ -13,7 +13,7 @@ once. For the bootstrap steps, see the [Setup Guide](setup.md).
 | Databases        | CloudNativePG PostgreSQL clusters                                    | [Databases](databases.md)              |
 | Backups          | Kopiur, CNPG Barman Cloud, etcd snapshots, NAS snapshots and B2       | [Backups](backups.md)                  |
 | Secrets          | Infisical through External Secrets, SOPS for files in Git           | [Secrets Management](secrets.md)       |
-| Security         | Kyverno admission, Istio ambient, Falco, Authentik SSO               | [Security](security.md)                |
+| Security         | Kyverno (audit mode), Istio ambient, Falco, Authentik SSO               | [Security](security.md)                |
 | Observability    | OpenTelemetry collectors into Mimir, Loki, Tempo and Grafana         | [Observability](observability.md)      |
 | Delivery         | ArgoCD reconciles this repository, Renovate opens update PRs         | This page (below)                      |
 

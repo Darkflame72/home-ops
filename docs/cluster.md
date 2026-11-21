@@ -80,7 +80,8 @@ These run in `kube-system` and support everything else:
 
 ## Cluster-wide Policy
 
-Kyverno enforces cluster policy at admission. See [Security](security.md) for the list of policies.
+Kyverno runs its policies in audit mode, so violations are reported rather than blocked. See
+[Security](security.md) for the policies and how to enforce one.
 
 ## Where Things Live
 

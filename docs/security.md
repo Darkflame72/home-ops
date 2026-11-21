@@ -7,7 +7,7 @@ Each layer is a separate control, so a failure in one does not expose everything
 
 ```mermaid
 flowchart TB
-    NET["Network<br/>Cilium policies, only the Cloudflare Tunnel ingresses"] --> ADM["Admission<br/>Kyverno policies, cosign verification"]
+    NET["Network<br/>Cilium policies, only the Cloudflare Tunnel ingresses"] --> ADM["Admission<br/>Kyverno policies (audit mode), cosign checks"]
     ADM --> MESH["Mesh<br/>Istio ambient waypoint in security"]
     MESH --> ID["Identity<br/>Authentik SSO with MFA for admins"]
     ID --> RUN["Runtime<br/>Falco eBPF detection"]
@@ -29,24 +29,34 @@ flowchart TB
 
 ## Admission Policy: Kyverno
 
-[Kyverno](https://kyverno.io) validates and mutates resources at admission. Policies live in
-`apps/policy/kyverno/policies/`:
+[Kyverno](https://kyverno.io) runs in **audit mode**. Its validating and image-verification policies
+record violations but do not reject resources, so nothing is blocked at admission today. Results are
+shown in [Policy Reporter](https://github.com/kyverno/policy-reporter).
 
-| Policy                                | Effect                                             |
-|---------------------------------------|----------------------------------------------------|
-| `disallow-latest-tag`                 | Images must use a pinned tag, not `latest`         |
-| `disallow-privileged-containers`      | Blocks privileged containers                       |
-| `require-run-as-nonroot`              | Containers must run as a non-root user             |
-| `require-requests-limits`             | Containers must declare resource requests and limits |
-| `require-image-registry-allowlist`    | Images may only come from approved registries      |
-| `verify-image-signatures`             | Images must carry a valid cosign signature         |
-| `istio-*`                             | Ambient mesh namespace labels and waypoint setup   |
+The policies use Kyverno's CEL-based types (`policies.kyverno.io`) and are defined in
+`apps/policy/kyverno/policies/`. The live cluster has:
 
-Exceptions for infrastructure namespaces are kept in `infra-exceptions.yaml`. Violations are shown in
-[Policy Reporter](https://github.com/kyverno/policy-reporter).
+| Type                    | Count | What it does                                                             | Mode  |
+|-------------------------|-------|--------------------------------------------------------------------------|-------|
+| `ValidatingPolicy`      | 5     | Pinned image tags, no privileged containers, run as non-root, resource requests and limits, registry allowlist | Audit |
+| `ImageValidatingPolicy` | 22    | Cosign signature checks, one per workload                                | Audit |
+| `MutatingPolicy`       | 3     | Istio ambient namespace labels, OpenTelemetry collector exclusion, waypoint resources | n/a |
+| `GeneratingPolicy`      | 23    | Default Istio authorization policies per namespace, Grafana dashboards   | n/a   |
+| `PolicyException`       | 24    | Exemptions for infrastructure workloads, all in the `policy` namespace   | n/a   |
 
-Be careful with new policies. A Kyverno policy that blocks all pod creation can stop the whole cluster
-from recovering, so test changes on one namespace first.
+Policy Reporter filters out Pods, ReplicaSets and Jobs, so a violation is reported once, against the
+resource that owns it.
+
+### Moving a policy to enforce
+
+Switching a policy to enforcement changes what the cluster rejects, so do it in this order:
+
+1. Check Policy Reporter for every current violation of that policy.
+2. Fix the workloads, or add a `PolicyException` for the ones that must stay as they are.
+3. Change `validationActions` from `Audit` to `Deny` in the policy file, then commit.
+
+Test on one namespace first. A past policy change blocked all pod creation during a rollout and slowed
+recovery, so don't enforce a policy cluster-wide in one step.
 
 ## Identity and SSO: Authentik
 
