@@ -9,10 +9,23 @@ certExtraSANs:
   - 127.0.0.1
   - 10.0.60.10
 ---
+# PodSecurity with a privileged enforce floor. The privileged floor is needed because the
+# cluster runs privileged pods (Ceph, Falco). warn and audit report restricted violations
+# without blocking. Talos merges lists with its default, which already exempts kube-system,
+# so do not repeat it here: a duplicate exemption stops the apiserver from starting.
 apiVersion: v1alpha1
 kind: KubeAdmissionControlConfig
 name: PodSecurity
-$patch: delete
+configuration:
+  apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+  kind: PodSecurityConfiguration
+  defaults:
+    enforce: privileged
+    enforce-version: latest
+    audit: restricted
+    audit-version: latest
+    warn: restricted
+    warn-version: latest
 ---
 apiVersion: v1alpha1
 kind: KubeControllerManagerConfig
@@ -41,6 +54,7 @@ taints:
 cluster:
   etcd:
     extraArgs:
-      listen-metrics-urls: http://0.0.0.0:2381
+      # Localhost only. The control-plane OTel collector scrapes it from the node.
+      listen-metrics-urls: http://127.0.0.1:2381
     advertisedSubnets:
       - 10.0.60.0/24
