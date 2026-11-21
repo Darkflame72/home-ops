@@ -3,6 +3,10 @@
 driver:
   # Talos is immutable with no kernel headers, so no kernel module build or driver loader.
   kind: modern_ebpf
+  modernEbpf:
+    # Run the eBPF probe with four capabilities (BPF, PERFMON, SYS_RESOURCE, SYS_PTRACE)
+    # instead of a privileged container. The kernel is 6.x on every node.
+    leastPrivileged: true
   loader:
     enabled: false
 
