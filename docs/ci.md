@@ -12,7 +12,6 @@ live in `.github/workflows/`. Read a failing check before merging.
 | **Dead Values** | PRs and pushes to `main` | Helm values that the chart does not read, and breaking changes to them |
 | **drydock** | PRs only | Posts a diff of rendered manifests to the PR, so a reviewer sees the effect of the change |
 | **Docs** | PRs and pushes that touch docs | Strict Zensical build; pushes to `main` also deploy the site |
-| **Build Alert Relay** | Pushes to `main` that change the relay, or manually | Builds and pushes the alert relay image to GHCR |
 
 ```mermaid
 flowchart LR
@@ -26,7 +25,6 @@ flowchart LR
     MAIN --> DEAD
     MAIN --> DOCS
     DOCS -->|deploy| CF["Cloudflare Pages"]
-    MAIN -->|relay changes| GHCR["Alert relay image"]
 ```
 
 ## Pre-commit Hooks
@@ -94,8 +92,3 @@ The **Docs** workflow runs `zensical build --strict` on every change to the docs
 build on any warning, such as a broken internal link. Pushes to `main` then publish the site to Cloudflare
 Pages. Pull requests never deploy. Deploys need the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
 repository secrets.
-
-## Build Alert Relay
-
-Pushes to `main` that change the alert relay source, its `go.mod` or its Dockerfile build and push the
-image to `ghcr.io/darkflame72/alert-relay`. Each image is tagged with the commit SHA and with `latest`.
