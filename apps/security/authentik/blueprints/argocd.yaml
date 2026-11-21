@@ -27,6 +27,10 @@ entries:
       client_type: confidential
       client_id: PMqqSnEB2bgza0nhW9n2MvcD8ys2Oz0yniOKyyGr
       client_secret: !Env ARGOCD_CLIENT_SECRET
+      # Without grant types Authentik rejects every authorize request as malformed.
+      grant_types:
+        - authorization_code
+        - refresh_token
       redirect_uris:
         - matching_mode: strict
           redirect_uri_type: authorization
