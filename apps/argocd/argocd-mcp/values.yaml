@@ -27,7 +27,7 @@ controllers:
                 key: mcp_auth_token
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
+          readOnlyRootFilesystem: true
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
@@ -59,6 +59,8 @@ controllers:
               timeoutSeconds: 1
               failureThreshold: 3
 defaultPodOptions:
+  # Talks to ArgoCD over HTTP with its own token, never to the Kubernetes API.
+  automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
@@ -73,3 +75,8 @@ service:
       http:
         port: 3001
         appProtocol: agentgateway.dev/mcp
+persistence:
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
