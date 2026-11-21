@@ -1,6 +1,9 @@
 ---
 # No yaml-language-server schema available: istio/istiod
 profile: ambient
+# Two istiod replicas, and the autoscaler's floor is also 2. istiod is the ambient control plane.
+replicaCount: 2
+autoscaleMin: 2
 pilot:
   env:
     # Required for agentgateway (agents/agentgateway-proxy) to receive xDS

@@ -47,6 +47,8 @@ prometheus:
   rules:
     enabled: true
 server:
+  # Two replicas so SSO for every app survives a pod restart or node drain.
+  replicas: 2
   securityContext:
     runAsNonRoot: true
   resources:
