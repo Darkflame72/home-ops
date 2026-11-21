@@ -22,7 +22,6 @@ entries:
   - model: authentik_providers_oauth2.oauth2provider
     id: argocd-provider
     identifiers:
-      pk: 5e8482d0-f9cd-4e2c-8321-c28cfc869ac4
       name: "Provider for ArgoCD"
     attrs:
       client_type: confidential
