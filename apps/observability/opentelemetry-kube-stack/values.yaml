@@ -214,6 +214,11 @@ collectors:
             processors: [memory_limiter, batch]
             exporters: [otlp_http/loki]
   daemon:
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
     # Presets replace the chart's default daemon_scrape_configs.yaml (they are
     # mutually exclusive with it). They cover the same three jobs: node-exporter,
     # cAdvisor on the kubelet, and annotation-based pod scraping.
