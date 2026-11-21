@@ -15,6 +15,7 @@ best source of truth for how things are wired together.
 - **[Databases](databases.md)**, **[Backups](backups.md)**, **[Secrets Management](secrets.md)**,
   **[Security](security.md)** and **[Observability](observability.md)** cover the services that run on
   top.
+- **[CI Checks](ci.md)** lists what runs on pull requests and pushes, and what each check enforces.
 
 ## Repository layout
 

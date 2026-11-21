@@ -24,6 +24,9 @@ nav = [
     { "Security" = "security.md" },
     { "Observability" = "observability.md" },
   ] },
+  { "Delivery" = [
+    { "CI Checks" = "ci.md" },
+  ] },
 ]
 
 [project.theme]
