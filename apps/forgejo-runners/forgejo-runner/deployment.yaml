@@ -56,6 +56,11 @@ spec:
         # user namespaces, and Talos already allows them (user.max_user_namespaces).
         - name: dind
           image: docker:29.3.1-dind-rootless@sha256:5fd70e50e710078a3c8c3eaa96c0e788740ee71934f48efce17573a47db7cf4b
+          env:
+            # Rootless rootlesskit cannot create its tap0 device without privileges, so the
+            # daemon uses the pod's network namespace. The container is still not privileged.
+            - name: DOCKERD_ROOTLESS_ROOTLESSKIT_NET
+              value: host
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
