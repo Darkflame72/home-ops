@@ -32,6 +32,9 @@ nextcloud:
     fsGroup: 33
     seccompProfile:
       type: RuntimeDefault
+  # Container-level key of the nextcloud chart. Verified to change the render.
+  securityContext:
+    allowPrivilegeEscalation: false
   host: cloud.darkflame.dev
   existingSecret:
     enabled: true
