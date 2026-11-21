@@ -72,8 +72,6 @@ localRedirectPolicy: true
 operator:
   dashboards:
     enabled: true
-  securityContext:
-    readOnlyRootFilesystem: true
   prometheus:
     serviceMonitor:
       enabled: true
