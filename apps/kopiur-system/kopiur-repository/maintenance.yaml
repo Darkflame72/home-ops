@@ -1,0 +1,26 @@
+---
+# Maintenance for kopia-primary, declared here so the schedule lives in Git. Kopiur
+# creates this object by default with a daily full run. The repository has about 2700
+# index blobs, which grow with the hourly snapshot policies, and the kopia repository
+# warns about "too many index blobs". The full run now compacts indexes four times a day.
+# Ownership stays with the ClusterRepository, as the controller sets it.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kopiur.home-operations.com/maintenance_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: Maintenance
+metadata:
+  name: kopia-primary
+  namespace: kopiur-system
+spec:
+  ownership:
+    owner: kopiur/clusterrepository/kopia-primary
+    takeoverPolicy: Never
+  repository:
+    kind: ClusterRepository
+    name: kopia-primary
+  schedule:
+    full:
+      cron: 0 */6 * * *
+      jitter: 1h
+    quick:
+      cron: 0 */6 * * *
+      jitter: 30m
