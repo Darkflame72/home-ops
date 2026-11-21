@@ -8,7 +8,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '0'
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/falco/falco
@@ -26,7 +26,7 @@ spec:
     namespace: falco
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:

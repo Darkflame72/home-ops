@@ -1,0 +1,64 @@
+---
+# Dedicated AppProject for the apps in argocd/apps. Replaces the built-in `default`
+# project, which allows every source repo and destination. Sources and destinations
+# are listed explicitly so a new Application cannot pull from an unreviewed repo.
+# Cluster-scoped resources stay allowed: apps create CRDs, Namespaces and ClusterIssuers.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: home-ops
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  description: Applications reconciled from home-ops (and home-ops-private)
+  sourceRepos:
+    - code.forgejo.org/forgejo-helm
+    - cr.agentgateway.dev/charts
+    - gcr.io/istio-release/charts
+    - ghcr.io/actions/actions-runner-controller-charts
+    - ghcr.io/argoproj/argo-helm
+    - ghcr.io/bjw-s-labs/helm
+    - ghcr.io/cloudnative-pg/charts
+    - ghcr.io/coredns/charts
+    - ghcr.io/external-secrets/charts
+    - ghcr.io/falcosecurity/charts
+    - ghcr.io/fluent/helm-charts
+    - ghcr.io/goauthentik/helm-charts
+    - ghcr.io/grafana-community/helm-charts
+    - ghcr.io/grafana/helm-charts
+    - ghcr.io/home-operations/charts
+    - ghcr.io/home-operations/charts-mirror
+    - ghcr.io/immich-app/immich-charts
+    - ghcr.io/itzg/minecraft-server-charts
+    - ghcr.io/kyverno/charts
+    - ghcr.io/mogenius/helm-charts
+    - ghcr.io/nextcloud/helm
+    - ghcr.io/open-telemetry/opentelemetry-helm-charts
+    - ghcr.io/openebs/charts
+    - ghcr.io/piraeusdatastore/helm-charts
+    - ghcr.io/prometheus-community/charts
+    - ghcr.io/rook
+    - ghcr.io/spegel-org/helm-charts
+    - ghcr.io/stakater/charts
+    - harbor.darkflame.dev/crosscut/charts
+    - https://cloudnative-pg.github.io/charts
+    - https://github.com/Darkflame72/home-ops-private.git
+    - https://github.com/Darkflame72/home-ops.git
+    - https://helm.goharbor.io
+    - https://itzg.github.io/minecraft-server-charts/
+    - https://kedacore.github.io/charts
+    - https://kiali.org/helm-charts
+    - https://kubernetes-sigs.github.io/descheduler
+    - https://kubernetes-sigs.github.io/external-dns
+    - https://kubernetes-sigs.github.io/metrics-server
+    - mirror.gcr.io/envoyproxy
+    - quay.io/cilium/charts
+    - quay.io/jetstack/charts
+    - registry-1.docker.io/arizephoenix
+  destinations:
+    - name: in-cluster
+      namespace: '*'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

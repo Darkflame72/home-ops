@@ -10,7 +10,7 @@ metadata:
   labels:
     argocd.argoproj.io/instance: argo
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/argocd/argocd
@@ -31,7 +31,7 @@ spec:
     namespace: argocd
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:

@@ -10,7 +10,7 @@ metadata:
     # After the CNPG operator (-2), before any Cluster/ObjectStore/ScheduledBackup (0).
     argocd.argoproj.io/sync-wave: '-1'
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: https://cloudnative-pg.github.io/charts
       chart: plugin-barman-cloud
@@ -29,7 +29,7 @@ spec:
     namespace: database
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:

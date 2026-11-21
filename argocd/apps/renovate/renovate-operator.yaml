@@ -9,7 +9,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '4'
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/renovate/renovate-operator
@@ -27,7 +27,7 @@ spec:
     namespace: renovate
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:

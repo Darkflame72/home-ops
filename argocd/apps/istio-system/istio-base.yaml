@@ -10,7 +10,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '-3'
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: gcr.io/istio-release/charts
       chart: base
@@ -22,7 +22,7 @@ spec:
     namespace: istio-system
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:

@@ -10,7 +10,7 @@ metadata:
     link.argocd.argoproj.io/external-link: https://harbor.darkflame.dev
     argocd.argoproj.io/sync-wave: '3'
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/default/harbor
@@ -28,7 +28,7 @@ spec:
     namespace: default
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:

@@ -10,7 +10,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: cr.agentgateway.dev/charts
       chart: agentgateway-crds
@@ -22,7 +22,7 @@ spec:
     namespace: agents
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:

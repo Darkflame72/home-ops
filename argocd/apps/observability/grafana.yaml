@@ -11,7 +11,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
     link.argocd.argoproj.io/external-link: https://grafana.darkflame.dev
 spec:
-  project: default
+  project: home-ops
   sources:
     - repoURL: "https://github.com/Darkflame72/home-ops.git"
       path: apps/observability/grafana
@@ -21,7 +21,7 @@ spec:
     namespace: observability
   syncPolicy:
     automated:
-      allowEmpty: true
+      allowEmpty: false
       prune: true
       selfHeal: true
     retry:
