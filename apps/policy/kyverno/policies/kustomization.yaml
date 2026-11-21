@@ -23,4 +23,7 @@ resources:
   - ./require-image-registry-allowlist.yaml
   - ./require-requests-limits.yaml
   - ./require-run-as-nonroot.yaml
+  - ./require-seccomp-runtimedefault.yaml
+  - ./disallow-privilege-escalation.yaml
+  - ./require-drop-all-capabilities.yaml
   - ./verify-image-signatures.yaml
