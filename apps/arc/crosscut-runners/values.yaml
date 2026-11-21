@@ -11,6 +11,15 @@ template:
         # renovate: datasource=docker depName=ghcr.io/actions/actions-runner
         image: ghcr.io/actions/actions-runner:2.338.2@sha256:6d0b2d80d80f143f77dcb676e50920100bbb547e39e883454d57f45ab8c31300
         command: ["/home/runner/run.sh"]
+        # The runner already runs as uid 1001, so dropping capabilities and blocking
+        # escalation only narrows what the process could do if it were compromised.
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
         resources:
           requests:
             cpu: 250m
