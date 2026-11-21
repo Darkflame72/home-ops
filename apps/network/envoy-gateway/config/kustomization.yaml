@@ -6,4 +6,5 @@ kind: Kustomization
 resources:
   - ./certificate.yaml
   - ./envoy.yaml
+  - ./envoy-internal-proxy.yaml
   - ./podmonitor.yaml
