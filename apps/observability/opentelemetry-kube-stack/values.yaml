@@ -78,15 +78,6 @@ defaultCRConfig:
         endpoint: opentelemetry-kube-stack-gateway-collector.observability.svc.cluster.local:4317
         tls:
           insecure: true
-      # AI/LLM traces only, fanned out by the gateway (traces/phoenix). Phoenix runs
-      # with auth on; PHOENIX_ADMIN_SECRET from phoenix-secret works as a bearer token.
-      # Only the gateway mounts that secret.
-      otlp_http/phoenix:
-        endpoint: http://phoenix-svc.observability.svc.cluster.local:6006
-        headers:
-          authorization: Bearer ${env:PHOENIX_ADMIN_SECRET}
-        tls:
-          insecure: true
 
 # Single daemonset collector handles all signals.
 # clusterMetrics and kubernetesEvents use the leader election extension to run only on one node.
@@ -311,6 +302,12 @@ collectors:
             processors: [resource/audit, resource_detection/env, resource/hostname, batch]
             exporters: [otlp/gateway]
     presets:
+      # host_metrics (system_*) and kubelet_stats (k8s_*) duplicate node-exporter
+      # and cAdvisor. No dashboard or rule in this repo reads their families.
+      hostMetrics:
+        enabled: false
+      kubeletMetrics:
+        enabled: false
       prometheus:
         nodeExporter:
           enabled: true
@@ -361,10 +358,10 @@ collectors:
     resources:
       requests:
         cpu: 100m
-        memory: 768Mi
+        memory: 256Mi
       limits:
         cpu: 1000m
-        memory: 2048Mi
+        memory: 1536Mi
     config:
       receivers:
         otlp:
@@ -409,6 +406,15 @@ collectors:
         batch:
           send_batch_size: 1000
           timeout: 1s
+      exporters:
+        # Phoenix is only reachable from the gateway, which is the only collector
+        # that mounts PHOENIX_ADMIN_SECRET. AI/LLM traces only, fanned out in traces/phoenix.
+        otlp_http/phoenix:
+          endpoint: http://phoenix-svc.observability.svc.cluster.local:6006
+          headers:
+            authorization: Bearer ${env:PHOENIX_ADMIN_SECRET}
+          tls:
+            insecure: true
       service:
         pipelines:
           traces:
