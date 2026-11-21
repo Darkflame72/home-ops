@@ -21,6 +21,18 @@ spec:
       valueFrom:
         fieldRef:
           fieldPath: spec.nodeName
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+  podAnnotations:
+    # Self-telemetry on :8888, picked up by the daemon's annotation scrape.
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8888"
   resources:
     requests:
       cpu: 10m
@@ -48,8 +60,9 @@ spec:
         spike_limit_percentage: 15
       batch: {}
     exporters:
-      otlp_http/mimir:
-        endpoint: http://mimir-gateway.observability.svc.cluster.local/otlp
+      # Every collector sends through the gateway, which is the only path to Mimir.
+      otlp/gateway:
+        endpoint: opentelemetry-kube-stack-gateway-collector.observability.svc.cluster.local:4317
         tls:
           insecure: true
     extensions:
@@ -60,4 +73,4 @@ spec:
         metrics:
           receivers: [prometheus]
           processors: [memory_limiter, batch]
-          exporters: [otlp_http/mimir]
+          exporters: [otlp/gateway]

@@ -71,15 +71,16 @@ defaultCRConfig:
         endpoint: tempo.observability.svc.cluster.local:4317
         tls:
           insecure: true
-      # Only the gateway collector (below) uses this - everything else
-      # sends traces here first so tail_sampling can see whole traces
+      # Every collector sends its signals here. The gateway is the only
+      # component that talks to storage: tail_sampling sees whole traces
       # before anything reaches Tempo.
       otlp/gateway:
         endpoint: opentelemetry-kube-stack-gateway-collector.observability.svc.cluster.local:4317
         tls:
           insecure: true
-      # AI/LLM traces only (see traces/phoenix in the daemon). Phoenix runs with
-      # auth on; PHOENIX_ADMIN_SECRET from phoenix-secret works as a bearer token.
+      # AI/LLM traces only, fanned out by the gateway (traces/phoenix). Phoenix runs
+      # with auth on; PHOENIX_ADMIN_SECRET from phoenix-secret works as a bearer token.
+      # Only the gateway mounts that secret.
       otlp_http/phoenix:
         endpoint: http://phoenix-svc.observability.svc.cluster.local:6006
         headers:
@@ -101,6 +102,17 @@ collectors:
         enabled: true
     podSecurityContext:
       runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+    podAnnotations:
+      # Self-telemetry on :8888, picked up by the daemon's annotation scrape.
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8888"
     # Was 1Gi: the memory limiter (75% of the limit) started refusing scrape
     # data at ~715Mi of steady use, so raise the ceiling above that.
     resources:
@@ -206,13 +218,13 @@ collectors:
         pipelines:
           metrics:
             processors: [memory_limiter, transform/cluster_label, batch]
-            exporters: [otlp_http/mimir]
+            exporters: [otlp/gateway]
           # kubernetesEvents preset receiver. Without this pipeline the events
           # are read and then dropped. Its leader-election extension must be
           # listed too, or the collector fails to start.
           logs:
             processors: [memory_limiter, batch]
-            exporters: [otlp_http/loki]
+            exporters: [otlp/gateway]
   daemon:
     securityContext:
       allowPrivilegeEscalation: false
@@ -230,14 +242,10 @@ collectors:
         memory: 128Mi
       limits:
         memory: 320Mi
-    env:
-      - name: PHOENIX_ADMIN_SECRET
-        valueFrom:
-          secretKeyRef:
-            name: phoenix-secret
-            key: PHOENIX_ADMIN_SECRET
     podAnnotations:
       reloader.stakater.com/auto: "true"
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8888"
     config:
       receivers:
         otlp:
@@ -264,13 +272,6 @@ collectors:
           check_interval: 1s
           limit_percentage: 75
           spike_limit_percentage: 15
-        # Drop everything that isn't an LLM span (OpenInference or OTel GenAI
-        # semconv attributes) before it goes to Phoenix.
-        filter/ai:
-          error_mode: ignore
-          traces:
-            span:
-              - 'attributes["openinference.span.kind"] == nil and attributes["gen_ai.operation.name"] == nil and attributes["gen_ai.system"] == nil and attributes["gen_ai.provider.name"] == nil and attributes["gen_ai.request.model"] == nil'
         # Kubelet volume metrics collapse into one series per pod, because the
         # volume name never reaches Mimir as a label. Mimir rejects the
         # conflicting samples, and the value it keeps is arbitrary. Drop them.
@@ -294,26 +295,21 @@ collectors:
       service:
         pipelines:
           traces:
-            # Sampling now happens tail-side in the gateway collector, not
-            # here - see collectors.gateway.
+            # Sampling happens tail-side in the gateway, not here.
+            processors: [memory_limiter, batch]
             exporters: [otlp/gateway]
-          # Fan-out of the same OTLP receiver, taken before tail sampling so
-          # every AI span reaches Phoenix (not just the sampled ones).
-          traces/phoenix:
-            receivers: [otlp]
-            processors: [filter/ai, batch]
-            exporters: [otlp_http/phoenix]
           metrics:
             # Presets' processors listed explicitly so the volume filter runs
             # first; keep this list in sync with the enabled presets.
             processors: [memory_limiter, filter/volume_inodes, transform/cluster_label, k8s_attributes, resource_detection/env, resource/hostname, batch]
-            exporters: [otlp_http/mimir]
+            exporters: [otlp/gateway]
           logs:
-            exporters: [otlp_http/loki]
+            processors: [memory_limiter, batch]
+            exporters: [otlp/gateway]
           logs/audit:
             receivers: [filelog/audit]
             processors: [resource/audit, resource_detection/env, resource/hostname, batch]
-            exporters: [otlp_http/loki]
+            exporters: [otlp/gateway]
     presets:
       prometheus:
         nodeExporter:
@@ -344,12 +340,31 @@ collectors:
     replicas: 1
     podSecurityContext:
       runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8888"
+    # Now the single path to storage for every signal from every collector, so it
+    # is sized for the combined load. Re-check against its self-telemetry after rollout.
+    env:
+      - name: PHOENIX_ADMIN_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: phoenix-secret
+            key: PHOENIX_ADMIN_SECRET
     resources:
       requests:
-        cpu: 50m
-        memory: 128Mi
+        cpu: 100m
+        memory: 768Mi
       limits:
-        memory: 512Mi
+        cpu: 1000m
+        memory: 2048Mi
     config:
       receivers:
         otlp:
@@ -367,6 +382,13 @@ collectors:
           check_interval: 1s
           limit_percentage: 75
           spike_limit_percentage: 15
+        # Fan-out for AI/LLM spans, taken before tail sampling so every AI span
+        # reaches Phoenix, not just the sampled ones.
+        filter/ai:
+          error_mode: ignore
+          traces:
+            span:
+              - 'attributes["openinference.span.kind"] == nil and attributes["gen_ai.operation.name"] == nil and attributes["gen_ai.system"] == nil and attributes["gen_ai.provider.name"] == nil and attributes["gen_ai.request.model"] == nil'
         tail_sampling:
           # How long to buffer a trace's spans before deciding - long enough
           # for most homelab request chains to finish.
@@ -393,6 +415,19 @@ collectors:
             receivers: [otlp]
             processors: [memory_limiter, tail_sampling, batch]
             exporters: [otlp/tempo]
+          # Fan-out from the same OTLP receiver: Phoenix sees every AI span before sampling.
+          traces/phoenix:
+            receivers: [otlp]
+            processors: [filter/ai, batch]
+            exporters: [otlp_http/phoenix]
+          metrics:
+            receivers: [otlp]
+            processors: [memory_limiter, batch]
+            exporters: [otlp_http/mimir]
+          logs:
+            receivers: [otlp]
+            processors: [memory_limiter, batch]
+            exporters: [otlp_http/loki]
 
   # Only collector reachable from outside the cluster: terminates OTLP/HTTP
   # from remote clusters/services behind otlp.darkflame.dev (httproute.yaml,
@@ -406,6 +441,13 @@ collectors:
     replicas: 2
     podSecurityContext:
       runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
     resources:
       requests:
         cpu: 50m
@@ -458,8 +500,8 @@ collectors:
           metrics:
             receivers: [otlp]
             processors: [memory_limiter, resource/remote, batch]
-            exporters: [otlp_http/mimir]
+            exporters: [otlp/gateway]
           logs:
             receivers: [otlp]
             processors: [memory_limiter, resource/remote, batch]
-            exporters: [otlp_http/loki]
+            exporters: [otlp/gateway]
