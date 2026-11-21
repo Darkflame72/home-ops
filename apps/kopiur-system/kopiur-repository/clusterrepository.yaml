@@ -53,3 +53,7 @@ spec:
       quick:
         cron: 0 */6 * * *
         jitter: 30m
+  health:
+    # TEMPORARY, to test whether the maintenance lease waits on the index-blob health condition.
+    # Compaction only runs once the lease is held. Restore 1000 after the lease is re-taken and the count drops.
+    indexBlobWarnThreshold: 5000
