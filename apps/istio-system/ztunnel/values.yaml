@@ -1,5 +1,7 @@
 ---
 # No yaml-language-server schema available: istio/ztunnel
+# Use the distroless image, the same as istiod and install-cni.
+variant: distroless
 resources:
   requests:
     memory: 128Mi
