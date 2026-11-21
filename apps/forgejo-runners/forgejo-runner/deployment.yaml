@@ -58,12 +58,10 @@ spec:
           image: docker:29.3.1-dind-rootless@sha256:5fd70e50e710078a3c8c3eaa96c0e788740ee71934f48efce17573a47db7cf4b
           env:
             # Rootless rootlesskit cannot create its tap0 device without privileges, so the
-            # daemon uses the pod's network namespace. The container is still not privileged.
-            - name: DOCKERD_ROOTLESS_ROOTLESSKIT_NET
-              value: host
-            # Host networking has no port forwarding driver, so disable it.
-            - name: DOCKERD_ROOTLESS_ROOTLESSKIT_PORT_DRIVER
-              value: none
+            # daemon uses the pod's network namespace. Host networking has no port forwarding
+            # driver, so that is turned off too. The container is still not privileged.
+            - name: DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS
+              value: "--net=host --port-driver=none"
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
