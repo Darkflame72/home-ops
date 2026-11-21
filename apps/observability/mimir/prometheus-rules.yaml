@@ -124,6 +124,45 @@ spec:
             summary: "Kyverno policy {{ $labels.policy }} still failing on {{ $labels.exported_namespace }}/{{ $labels.kind }}/{{ $labels.name }}"
             description: "{{ $labels.policy }} ({{ $labels.category }}) has failed continuously for over 75 minutes on {{ $labels.exported_namespace }}/{{ $labels.kind }}/{{ $labels.name }} — this survived at least one full Kyverno background-scan cycle, so it's unlikely to be transient scan noise."
 
+    - name: observability-pipeline
+      rules:
+        # Heartbeat for an external dead-man's-switch. Alertmanager routes it to
+        # "null" (see mimir/values.yaml fallbackConfig); the external watcher
+        # must alert when this stops arriving. Without that watcher this rule does nothing.
+        - alert: Watchdog
+          expr: vector(1)
+          labels:
+            severity: none
+          annotations:
+            summary: "Watchdog heartbeat"
+            description: "Always firing. If an external monitor stops receiving this, the alerting path is broken."
+        # Collector self-telemetry (:8888, scraped via the pod annotation). A
+        # failing exporter means data is being dropped on the way to storage.
+        - alert: OtelExporterSendFailing
+          expr: sum by (cluster, exporter) (rate(otelcol_exporter_send_failed_spans[10m]) + rate(otelcol_exporter_send_failed_metric_points[10m]) + rate(otelcol_exporter_send_failed_log_records[10m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "OTel exporter {{ $labels.exporter }} is failing to send"
+            description: "Exporter {{ $labels.exporter }} on cluster {{ $labels.cluster }} has failed sends for 10 minutes. Telemetry is being dropped."
+        - alert: OtelReceiverRefusing
+          expr: sum by (cluster, receiver) (rate(otelcol_receiver_refused_spans[10m]) + rate(otelcol_receiver_refused_metric_points[10m]) + rate(otelcol_receiver_refused_log_records[10m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "OTel receiver {{ $labels.receiver }} is refusing data"
+            description: "Receiver {{ $labels.receiver }} on cluster {{ $labels.cluster }} has refused data for 10 minutes, usually memory_limiter back-pressure. Check collector resources."
+        - alert: ObservabilityTargetDown
+          expr: up{job=~"observability/.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Observability component {{ $labels.job }} is down"
+            description: "Scrape target for {{ $labels.job }} ({{ $labels.instance }}) has been down for 5 minutes. Mimir, Loki, Tempo, or Kiali may be unavailable."
+
     - name: certificates
       rules:
         - alert: CertManagerCertExpiringSoon

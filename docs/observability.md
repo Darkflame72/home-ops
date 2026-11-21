@@ -81,7 +81,9 @@ to `opentelemetry-kube-stack-gateway-collector` on port 4317.
   are defined as `GrafanaDashboard` resources in Git.
 - Each app that exposes metrics ships a `PodMonitor`, `ServiceMonitor` or dashboard next to its values.
 - **Collector self-telemetry** is scraped from port 8888 on every collector. The `OtelExporterSendFailing`
-  and `OtelReceiverRefusing` alerts fire when a collector drops data.
+  and `OtelReceiverRefusing` alerts fire when a collector drops data. They do not cover samples that
+  Mimir rejects with a partial success (out-of-order or duplicate timestamps). Those show up in Mimir's
+  `cortex_discarded_samples_total`.
 - **Observability targets** are watched by `ObservabilityTargetDown`, which fires when a Mimir, Loki,
   Tempo, or Kiali scrape target stays down for 5 minutes.
 - **Watchdog** is an always-firing heartbeat. An external monitor should alert when it stops arriving.
