@@ -77,6 +77,8 @@ defaultPodOptions:
     runAsGroup: 1000
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
 service:
   app:
     ports:
