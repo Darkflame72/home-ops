@@ -68,12 +68,10 @@ CoreDNS serves in-cluster names. Its upstream forwarders are configured in `apps
 
 ## Network Policy
 
-Cilium network policies are only used in a few places. Six apps ship a `ciliumnetworkpolicy.yaml` next to
-their values (agentgateway, falco-k8saudit, fluent-bit, forgejo-runner, gatus, authentik), and the cluster
-has one CiliumClusterwideNetworkPolicy (`allow-ambient-hostprobes`). There is no default-deny policy in most
-namespaces, so east-west traffic is open except where Istio ambient authorization policies apply. A gap in
-these policies caused a past outage, so check the backup and app traffic path after any network change.
-A default-deny rollout has not been done yet.
+Cilium network policies are used only for some workloads. Where they exist, they sit next to the workload's
+values, and the cluster also has one cluster-wide policy for ambient host probes. Most namespaces have no
+default-deny policy, so east-west traffic is open except where Istio ambient authorization applies. A gap in
+these policies caused a past outage, so check the backup and application traffic path after any network change.
 
 ## Off-cluster Network
 

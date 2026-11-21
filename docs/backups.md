@@ -36,7 +36,9 @@ encrypted backup tool.
 - A Kopia server runs in `kopiur-system` for the Kopia UI. The Kopia UI is enabled.
 - Each protected volume has a `SnapshotPolicy` and a `SnapshotSchedule`. Schedules keep 7 daily snapshots.
 
-Some apps still use VolSync-style PVC definitions while they are migrated to Kopiur.
+Some volumes still use VolSync-style PVC definitions while they are migrated to Kopiur.
+
+Volumes on NFS storage are not Kopiur-managed. The NAS protects them with its own snapshots and offsite sync. Block volumes that hold configuration or secrets should always have a Kopiur policy.
 
 ## Database Backups: CloudNativePG
 
