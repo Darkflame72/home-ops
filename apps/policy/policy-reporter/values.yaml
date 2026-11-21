@@ -13,6 +13,11 @@ sourceFilters:
     kinds:
       exclude: [ReplicaSet, Job, Pod]
 
+podSecurityContext:
+  fsGroup: 1234
+  seccompProfile:
+    type: RuntimeDefault
+
 resources:
   requests:
     cpu: 15m
@@ -22,6 +27,9 @@ resources:
 
 ui:
   enabled: true
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
   resources:
     requests:
       cpu: 10m
