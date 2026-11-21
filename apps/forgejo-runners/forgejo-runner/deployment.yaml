@@ -62,8 +62,12 @@ spec:
             runAsGroup: 1000
             seccompProfile:
               type: Unconfined
+            # newuidmap is setuid root and must be able to set the user-namespace mapping, so
+            # escalation stays allowed and SETUID/SETGID are granted. Nothing else is.
+            allowPrivilegeEscalation: true
             capabilities:
               drop: ["ALL"]
+              add: ["SETUID", "SETGID"]
           resources:
             requests:
               cpu: 250m
