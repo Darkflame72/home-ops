@@ -51,5 +51,5 @@ then commit. See `apps/README.md` in the repository for the full checklist.
 
 ## Checks
 
-GitHub Actions runs pre-commit checks, schema validation, a dead Helm values scan and the docs build on
+GitHub Actions runs prek (pre-commit hooks), schema validation, a dead Helm values scan and the docs build on
 every pull request.

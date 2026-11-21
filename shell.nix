@@ -115,7 +115,7 @@ pkgs.mkShell {
     pkgs.kubectl-view-secret
     pkgs.infisical
     pkgs.yq-go
-    pkgs.pre-commit
+    pkgs.prek
     pkgs.yamllint
     pkgs.cosign
     pkgs.kopia

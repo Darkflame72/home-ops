@@ -7,7 +7,7 @@ live in `.github/workflows/`. Read a failing check before merging.
 
 | Workflow | Runs on | What it checks |
 |----------|---------|----------------|
-| **Lint** | PRs and pushes to `main` | Runs every pre-commit hook (below) on the whole repository |
+| **Lint** | PRs and pushes to `main` | Runs every prek (pre-commit) hook (below) on the whole repository |
 | **Validate Schemas** | PRs and pushes to `main` | Kubernetes manifests under `apps/`, and Helm values against their schemas |
 | **Dead Values** | PRs and pushes to `main` | Helm values that the chart does not read, and breaking changes to them |
 | **drydock** | PRs only | Posts a diff of rendered manifests to the PR, so a reviewer sees the effect of the change |
@@ -15,7 +15,7 @@ live in `.github/workflows/`. Read a failing check before merging.
 
 ```mermaid
 flowchart LR
-    PR["Pull request"] --> LINT["Lint<br/>pre-commit"]
+    PR["Pull request"] --> LINT["Lint<br/>prek"]
     PR --> SCHEMA["Validate Schemas<br/>kubeconform + values schemas"]
     PR --> DEAD["Dead Values"]
     PR --> DRY["drydock<br/>diff comment"]
@@ -29,10 +29,10 @@ flowchart LR
 
 ## Pre-commit Hooks
 
-Lint runs the hooks in `.pre-commit-config.yaml`. Run them locally before pushing:
+Lint runs the hooks in `prek.toml` with [prek](https://github.com/j178/prek), a single-binary git hook framework that replaces pre-commit. Run them locally before pushing:
 
 ```bash
-pre-commit run --all-files
+prek run --all-files
 ```
 
 | Hook | Purpose |

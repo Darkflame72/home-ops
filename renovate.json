@@ -163,6 +163,13 @@
   ],
   "customManagers": [
     {
+      "description": "prek.toml hook revisions (Renovate's built-in pre-commit manager only reads .pre-commit-config.yaml)",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)prek\\.toml$/"],
+      "matchStrings": ["repo = \"https://github\\.com/(?<depName>[^\"]+)\"\\s+rev = \"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "github-tags"
+    },
+    {
       "description": "Process annotated dependencies",
       "customType": "regex",
       "managerFilePatterns": [
