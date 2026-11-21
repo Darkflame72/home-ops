@@ -8,6 +8,7 @@ kubeconfig
 talosconfig
 # Misc.
 .private/
+/site/
 .task/
 .venv/
 .DS_Store
