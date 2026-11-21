@@ -32,6 +32,12 @@ listenerTemplate:
   spec:
     containers:
       - name: listener
+        # The listener only watches the scale set through the API and sends no files to disk.
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
         resources:
           requests:
             cpu: 10m
