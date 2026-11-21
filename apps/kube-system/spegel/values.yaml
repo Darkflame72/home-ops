@@ -2,6 +2,15 @@
 # No yaml-language-server schema available: spegel-org/spegel (no values.schema.json)
 spegel:
   containerdRegistryConfigPath: /etc/cri/conf.d/hosts
+# Spegel serves image layers to the node's containerd through host-mounted paths. It needs no
+# capabilities and no privilege escalation. Its read-only root filesystem is the chart default.
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
 resources:
   requests:
     cpu: 20m
