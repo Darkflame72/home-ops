@@ -7,7 +7,8 @@ Backups run at four layers. Each layer protects a different kind of data.
 | Persistent volumes            | Kopiur (Kopia)                      | Kopia repository in S3 (Garage)      |
 | PostgreSQL databases          | CloudNativePG + Barman Cloud plugin | S3 (Garage), base backups and WAL    |
 | etcd (control plane state)    | talos-backup CronJob                | S3 (Garage), age-encrypted           |
-| Offsite copy                  | Backblaze B2                        | Backblaze B2                         |
+| NAS datasets                  | TrueNAS ZFS replication, hourly     | Second ZFS target (see Offsite)      |
+| Offsite copy                  | TrueNAS Cloud Sync                  | Backblaze B2                         |
 
 The S3 endpoint is Garage on the LAN (`10.0.60.15`, on the NAS). It has three buckets: `kopia` for volume
 snapshots, `etcd-backup` for etcd snapshots, and `cnpg` for database backups. Credentials for each backup come from ExternalSecrets (see
@@ -18,8 +19,9 @@ flowchart LR
     PVC["App volumes"] -->|Kopiur| KREPO["kopia-primary repository"]
     PG["CNPG clusters"] -->|Barman Cloud<br/>base backups + WAL| S3
     ETCD["etcd"] -->|talos-backup<br/>age-encrypted| S3
-    KREPO --> S3[("Garage S3 on LAN")]
-    S3 -->|offsite copy| B2[("Backblaze B2")]
+    KREPO --> S3[("Garage S3 on the NAS")]
+    S3 -->|NAS hourly ZFS replication| ZFS[("Second ZFS target")]
+    S3 -->|TrueNAS Cloud Sync| B2[("Backblaze B2")]
 ```
 
 ## Volume Backups: Kopiur
@@ -45,7 +47,7 @@ Every CNPG database has:
   (`retentionPolicy: 30d`).
 - Continuous WAL archiving to the same object store, so a database can be restored to a point in time.
 
-See [Databases](databases.md) for the list of clusters.
+See [Databases](databases.md) for how clusters are configured.
 
 ## Control Plane Backups: etcd
 
@@ -64,7 +66,13 @@ Test restores before you need them. A backup that has never been restored is an 
 
 ## Offsite
 
-Backblaze B2 holds an offsite copy of backup data. It protects against losing the NAS.
+The NAS hosts Garage, so its datasets are protected in two ways:
+
+- **ZFS replication** runs hourly on TrueNAS and copies its datasets to a second ZFS target.
+- **Cloud Sync** runs on TrueNAS and pushes data to Backblaze B2. This is the copy that survives losing
+  the site.
+
+These are two separate paths. Test restores from both.
 
 ## Failure History
 
