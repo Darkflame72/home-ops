@@ -40,7 +40,6 @@ minecraftServer:
       - chunky
       - chunkyborder
       - discordsrv
-    downloadDependencies: none
 
   extraPorts:
     - name: map

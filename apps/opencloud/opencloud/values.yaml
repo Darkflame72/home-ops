@@ -116,7 +116,6 @@ controllers:
           requests: {cpu: 100m, memory: 256Mi}
           limits: {memory: 1Gi}
 defaultPodOptions:
-  automountServiceAccountToken: false
   securityContext:
     fsGroup: 1000
     seccompProfile:

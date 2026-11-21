@@ -32,10 +32,6 @@ nextcloud:
     fsGroup: 33
     seccompProfile:
       type: RuntimeDefault
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    seccompProfile:
-      type: RuntimeDefault
   host: cloud.darkflame.dev
   existingSecret:
     enabled: true

@@ -32,14 +32,6 @@ kubeControllerManager:
   enabled: true
 kubeScheduler:
   enabled: true
-kubeEtcd:
-  enabled: false
-kubelet:
-  enabled: true
-kubeDns:
-  enabled: false
-kubeProxy:
-  enabled: false
 
 kube-state-metrics:
   # Kept out of ambient: the cluster collector scrapes it through the mesh, and

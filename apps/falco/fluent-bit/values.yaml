@@ -136,7 +136,6 @@ serviceMonitor:
 readinessProbe:
   httpGet:
     path: /
-    port: http
 
 resources:
   requests:

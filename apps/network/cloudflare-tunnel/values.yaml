@@ -55,7 +55,6 @@ controllers:
           limits:
             memory: 256Mi
 defaultPodOptions:
-  automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 65534

@@ -28,8 +28,6 @@ admissionController:
   # vpol.validate.kyverno.svc-fail) blocks pod creation cluster-wide while the single
   # admission pod is down. Its restarts caused cascading pending pods before.
   replicas: 2
-  podDisruptionBudget:
-    minAvailable: 1
   tracing:
     enabled: true
     address: opentelemetry-kube-stack-daemon-collector.observability.svc.cluster.local

@@ -237,7 +237,6 @@ persistence:
         activitypub:
           - path: /opt/activitypub/content
 defaultPodOptions:
-  automountServiceAccountToken: false
   securityContext:
     seccompProfile:
       type: RuntimeDefault

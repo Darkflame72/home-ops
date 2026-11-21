@@ -21,7 +21,6 @@ controllers:
           limits:
             memory: 512Mi
 defaultPodOptions:
-  automountServiceAccountToken: false
   securityContext:
     seccompProfile:
       type: RuntimeDefault

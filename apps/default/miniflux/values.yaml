@@ -69,7 +69,6 @@ controllers:
           limits:
             memory: 256Mi
     pod:
-      automountServiceAccountToken: false
       securityContext:
         runAsUser: 1022
         runAsGroup: 1022

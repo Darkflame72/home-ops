@@ -14,7 +14,6 @@ sourceFilters:
       exclude: [ReplicaSet, Job, Pod]
 
 podSecurityContext:
-  fsGroup: 1234
   seccompProfile:
     type: RuntimeDefault
 

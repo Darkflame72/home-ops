@@ -159,7 +159,6 @@ persistence:
         search:
           - path: /meili_data
 defaultPodOptions:
-  automountServiceAccountToken: false
   securityContext:
     fsGroup: 33
     seccompProfile:
