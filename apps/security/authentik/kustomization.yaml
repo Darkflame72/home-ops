@@ -32,5 +32,6 @@ configMapGenerator:
       - blueprints/mailcow.yaml
       - blueprints/opencloud.yaml
       - blueprints/kiali.yaml
+      - blueprints/argocd.yaml
 generatorOptions:
   disableNameSuffixHash: true

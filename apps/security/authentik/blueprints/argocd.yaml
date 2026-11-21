@@ -1,0 +1,68 @@
+version: 1
+metadata:
+  name: argocd
+entries:
+  # Maps Authentik groups to the groups claim ArgoCD reads for RBAC. Only members of
+  # "authentik Admins" get the argocd-admins group, which maps to role:admin in ArgoCD.
+  - model: authentik_providers_oauth2.scopemapping
+    id: argocd-scope-mapping
+    identifiers:
+      pk: c8e967f2-0101-47a9-ada4-e499ee628b5b
+      name: "authentik ArgoCD OAuth Mapping: groups"
+    attrs:
+      scope_name: argocd-groups
+      expression: |
+        groups = [group.name for group in user.ak_groups.all()]
+        if user.is_superuser or "authentik Admins" in groups:
+            groups = ["argocd-admins"]
+        else:
+            groups = []
+        return {"groups": groups}
+
+  - model: authentik_providers_oauth2.oauth2provider
+    id: argocd-provider
+    identifiers:
+      pk: 5e8482d0-f9cd-4e2c-8321-c28cfc869ac4
+      name: "Provider for ArgoCD"
+    attrs:
+      client_type: confidential
+      client_id: PMqqSnEB2bgza0nhW9n2MvcD8ys2Oz0yniOKyyGr
+      client_secret: !Env ARGOCD_CLIENT_SECRET
+      redirect_uris:
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://cd.darkflame.dev/auth/callback"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !KeyOf argocd-scope-mapping
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: argocd-application
+    identifiers:
+      pk: 2db85778-1727-4009-bba9-2782c3128104
+      slug: argocd
+    attrs:
+      name: ArgoCD
+      provider: !KeyOf argocd-provider
+      policy_engine_mode: any
+
+  # Only administrators can sign in to ArgoCD. Everyone else is refused at the provider.
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 2db85778-1727-4009-bba9-2782c3128105
+    attrs:
+      target: !KeyOf argocd-application
+      group: !Find [authentik_core.group, [name, "authentik Admins"]]
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30
