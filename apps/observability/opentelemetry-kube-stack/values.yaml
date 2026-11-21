@@ -22,6 +22,25 @@ opentelemetry-operator:
 kubeStateMetrics:
   enabled: true
 
+# Control-plane scrapers. etcd is scraped by the control-plane collector (it listens on loopback),
+# CoreDNS by the coredns job above, kube-proxy is off because Cilium replaces it.
+kubernetesServiceMonitors:
+  enabled: true
+kubeApiServer:
+  enabled: true
+kubeControllerManager:
+  enabled: true
+kubeScheduler:
+  enabled: true
+kubeEtcd:
+  enabled: false
+kubelet:
+  enabled: true
+kubeDns:
+  enabled: false
+kubeProxy:
+  enabled: false
+
 kube-state-metrics:
   # Kept out of ambient: the cluster collector scrapes it through the mesh, and
   # HBONE delivery to this pod is refused. Plaintext scrapes reach it.
