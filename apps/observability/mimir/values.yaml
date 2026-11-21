@@ -16,6 +16,9 @@ mimir:
     multitenancy_enabled: false
     ingester:
       push_grpc_method_enabled: true
+      # Accept samples that arrive up to 5m behind the newest sample of a series. Concurrent
+      # exporter requests from the gateway can reorder samples, which Mimir otherwise rejects.
+      out_of_order_time_window: 5m
       ring:
         replication_factor: 1
     common:
