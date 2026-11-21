@@ -116,8 +116,13 @@ collectors:
     targetAllocator:
       enabled: true
       allocationStrategy: consistent-hashing
+      # The target allocator only reads ScrapeConfigs and Services through the API, and writes nothing to disk.
       securityContext:
         runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
       resources:
         requests:
           cpu: 25m
