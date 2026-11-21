@@ -16,9 +16,6 @@ mimir:
     multitenancy_enabled: false
     ingester:
       push_grpc_method_enabled: true
-      # Accept samples that arrive up to 5m behind the newest sample of a series. Concurrent
-      # exporter requests from the gateway can reorder samples, which Mimir otherwise rejects.
-      out_of_order_time_window: 5m
       ring:
         replication_factor: 1
     common:
@@ -46,6 +43,9 @@ mimir:
       max_global_series_per_user: 10000000
       compactor_blocks_retention_period: 90d
       max_label_names_per_series: 50
+      # Accept samples up to 5m behind the newest sample of a series (per-tenant limit). Concurrent
+      # exporter requests from the gateway can reorder samples, which Mimir otherwise rejects.
+      out_of_order_time_window: 5m
       # kubeletstats and k8s_attributes put pod identity on the resource, not on
       # datapoints. Without promotion every pod's series collapses into one
       # label-less series and Mimir rejects the conflicting samples.
