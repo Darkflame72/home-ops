@@ -5,11 +5,6 @@ entries:
   # Authentik does not delete objects when their blueprint entries are removed,
   # so these absent entries delete the Jellyfin SSO objects. Idempotent: once
   # applied they are no-ops and this file can be deleted from the kustomization.
-  - model: authentik_policies.policybinding
-    state: absent
-    identifiers:
-      pk: 64100d42-99e2-4932-a5dc-b078c94b88d9
-
   - model: authentik_core.application
     state: absent
     identifiers:
