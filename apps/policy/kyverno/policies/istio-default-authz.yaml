@@ -102,7 +102,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80", "15020"]}}
+                  {"operation": {"ports": ["15020"]}}
                 ]
               })])
             })
@@ -198,59 +198,6 @@ spec:
               "rules": dyn([dyn({
                 "to": [
                   {"operation": {"ports": ["8000"]}}
-                ]
-              })])
-            })
-          }
-        ]
-  generate:
-    - expression: "generator.Apply('comms', variables.downstream)"
-
----
-apiVersion: policies.kyverno.io/v1
-kind: GeneratingPolicy
-metadata:
-  name: istio-authz-comms-allow-ingress
-  annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — comms ingress exception
-    policies.kyverno.io/category: Istio
-    policies.kyverno.io/description: >-
-      Namespace-wide exception for envoy-external/envoy-internal (both
-      unmeshed, network namespace — see istio-authz-media-allow-ingress for
-      why this is needed). Ports: ghost-app 2368 and ghost-activitypub 8080
-      (both envoy-external), gotosocial 8080 (envoy-external), phanpy 80
-      (envoy-external), thelounge 9000 (envoy-internal). redbot has no
-      HTTPRoute. Metrics for phanpy/gotosocial are scraped on the same
-      ports as their http traffic, already covered here — no separate
-      metrics exception needed for comms.
-spec:
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["namespaces"]
-        resourceNames: ["comms"]
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: false
-  variables:
-    - name: downstream
-      expression: >-
-        [
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-unmeshed-network-ingress",
-              "namespace": "comms"
-            }),
-            "spec": dyn({
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["2368", "8080", "80", "9000"]}}
                 ]
               })])
             })
@@ -404,60 +351,6 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
-  name: istio-authz-default-allow-ingress
-  annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — default ingress exception
-    policies.kyverno.io/category: Istio
-    policies.kyverno.io/description: >-
-      Namespace-wide exception for envoy-external/envoy-internal (both
-      unmeshed, network namespace — see istio-authz-media-allow-ingress for
-      why this is needed). envoy-external: bentopdf 8080, echo-server 80,
-      excalidraw 80, anubis-forgejo 80, nextcloud 80. envoy-internal: atuin
-      80, bar-assistant-backend 8080+7700, bar-assistant-frontend 8080,
-      forgejo-http 3000, miniflux 80. forgejo-ssh (2222) has no HTTPRoute
-      or TCPRoute — not routed through envoy, so not included; revisit if
-      that changes. All ServiceMonitor metrics here scrape the same ports
-      as http traffic — no separate metrics exception needed for default.
-spec:
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["namespaces"]
-        resourceNames: ["default"]
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: false
-  variables:
-    - name: downstream
-      expression: >-
-        [
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-unmeshed-network-ingress",
-              "namespace": "default"
-            }),
-            "spec": dyn({
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["8080", "80", "3000", "7700"]}}
-                ]
-              })])
-            })
-          }
-        ]
-  generate:
-    - expression: "generator.Apply('default', variables.downstream)"
-
----
-apiVersion: policies.kyverno.io/v1
-kind: GeneratingPolicy
-metadata:
   name: istio-authz-games-default-allow
   annotations:
     policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — games
@@ -594,72 +487,6 @@ spec:
         ]
   generate:
     - expression: "generator.Apply('media', variables.downstream)"
-
----
-apiVersion: policies.kyverno.io/v1
-kind: GeneratingPolicy
-metadata:
-  name: istio-authz-media-allow-ingress
-  annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — media ingress exception
-    policies.kyverno.io/category: Istio
-    policies.kyverno.io/description: >-
-      Namespace-wide (not workload-scoped — see below) exception for
-      envoy-external and envoy-internal (both unmeshed, network namespace —
-      network stays out of the mesh indefinitely, see
-      istio-ambient-namespace-labels.yaml) reaching media's HTTP ports.
-      Being listed in default-allow's source.namespaces is not enough: an
-      unmeshed caller is denied even if listed by name. Missing this caused
-      two live outages on 2026-07-20: photos.darkflame.dev (immich-server,
-      Cloudflare-tunnel path via envoy-external) and a LAN route via
-      envoy-internal (since-removed media app; Gatus caught it, see
-      apps/observability/gatus/config/config.yaml). Namespace-wide by ports
-      rather than per-workload selector, because both ingress gateways can
-      reach any HTTP-exposed workload in the namespace and enumerating
-      every workload+port here is the same maintenance burden as just
-      listing the ports; add new ports here as new workloads in media gain
-      an envoy-internal/envoy-external route.
-spec:
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["namespaces"]
-        resourceNames: ["media"]
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: false
-  variables:
-    - name: downstream
-      expression: >-
-        [
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-unmeshed-network-ingress",
-              "namespace": "media"
-            }),
-            "spec": dyn({
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["2283"]}}
-                ]
-              })])
-            })
-          }
-        ]
-  generate:
-    - expression: "generator.Apply('media', variables.downstream)"
-
-# istio-authz-media-allow-metrics-scrape (immich-server + its
-# postgres-exporter) removed 2026-07-20 — it was a port-blanket workaround
-# for observability scraping before observability was enrolled. media's
-# default-allow already lists "observability" in source.namespaces, so
-# that's now handled by real mesh-identity matching instead.
 
 ---
 apiVersion: policies.kyverno.io/v1
@@ -965,62 +792,6 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
-  name: istio-authz-security-allow-ingress
-  annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — security ingress exception
-    policies.kyverno.io/category: Istio
-    policies.kyverno.io/description: >-
-      Namespace-wide exception for envoy-external/envoy-internal (both
-      unmeshed, network namespace — see istio-authz-media-allow-ingress for
-      why this is needed and why it's namespace-wide-by-port rather than
-      workload-scoped). envoy-external: authentik-server 9000 (http) and
-      9443 (https, the Gateway backend port per its HTTPRoute); vaultwarden
-      80 (http) and 3012 (websocket).
-spec:
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["namespaces"]
-        resourceNames: ["security"]
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: false
-  variables:
-    - name: downstream
-      expression: >-
-        [
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-unmeshed-network-ingress",
-              "namespace": "security"
-            }),
-            "spec": dyn({
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["9000", "9443", "80", "3012"]}}
-                ]
-              })])
-            })
-          }
-        ]
-  generate:
-    - expression: "generator.Apply('security', variables.downstream)"
-
-# istio-authz-security-allow-metrics-scrape (authentik-server metrics +
-# both CNPG clusters' postgres-exporters) removed 2026-07-20 — same reason
-# as media's equivalent above: security's default-allow already lists
-# "observability", so mesh-identity matching covers this now.
-
----
-apiVersion: policies.kyverno.io/v1
-kind: GeneratingPolicy
-metadata:
   name: istio-authz-renovate-default-allow
   annotations:
     policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — renovate
@@ -1063,61 +834,6 @@ spec:
                   ]
                 }
               ]
-            })
-          }
-        ]
-  generate:
-    - expression: "generator.Apply('renovate', variables.downstream)"
-
----
-apiVersion: policies.kyverno.io/v1
-kind: GeneratingPolicy
-metadata:
-  name: istio-authz-renovate-allow-ingress
-  annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — renovate ingress exception
-    policies.kyverno.io/category: Istio
-    policies.kyverno.io/description: >-
-      Namespace-wide exception for envoy-internal (unmeshed, network
-      namespace — see istio-authz-media-allow-ingress for why this is
-      needed). renovate.darkflame.dev serves both the UI/API (8081) and the
-      forgejo webhook receiver (8082, unifiedWebhookHost: true — same
-      hostname, no dedicated route) via envoy-internal. Renovate itself
-      reaches forgejo via the public git.darkflame.dev through
-      envoy-external, not a cluster-internal path — that direction needs
-      no exception since the destination (envoy-external) is unmeshed and
-      ztunnel doesn't enforce policy for a meshed caller reaching an
-      unmeshed target.
-spec:
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["namespaces"]
-        resourceNames: ["renovate"]
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: false
-  variables:
-    - name: downstream
-      expression: >-
-        [
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-unmeshed-network-ingress",
-              "namespace": "renovate"
-            }),
-            "spec": dyn({
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["8081", "8082"]}}
-                ]
-              })])
             })
           }
         ]

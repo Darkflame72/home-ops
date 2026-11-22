@@ -83,8 +83,10 @@ is not labeled. The Envoy gateway pods are enrolled per pod, and
 top of mTLS. Mesh-wide telemetry is set in istiod.
 
 Unmeshed workloads that still reach meshed pods include the observability OpenTelemetry collectors,
-which scrape metrics ports. The `allow-unmeshed-*` AuthorizationPolicies in each namespace keep those
-ports open. Remove them only after the scrape path has a mesh identity or a narrower rule.
+which scrape metrics ports. Only `agents` and `observability` still have an `allow-unmeshed-network-ingress`
+AuthorizationPolicy, and it keeps those scrape ports open. Envoy's traffic to application ports is covered
+by each namespace's `default-allow`, because Envoy has a mesh identity. The collector's scrape paths are
+the only unmeshed callers. Check the ztunnel `none allowed` rejections before removing the last exceptions.
 
 ## Runtime Detection: Falco
 
