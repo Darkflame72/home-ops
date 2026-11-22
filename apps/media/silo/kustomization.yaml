@@ -10,3 +10,4 @@ resources:
   - ./scheduled-backup.yaml
   - ./scaledobject.yaml
   - ./kopiur.yaml
+  - ./authorizationpolicy.yaml
