@@ -340,14 +340,6 @@ collectors:
     enabled: true
     suffix: gateway
     replicas: 1
-    # TEMPORARY capture volume for the duplicate hunt.
-    volumes:
-      - name: capture
-        emptyDir:
-          sizeLimit: 4Gi
-    volumeMounts:
-      - name: capture
-        mountPath: /capture
     podSecurityContext:
       runAsNonRoot: true
       seccompProfile:
@@ -428,9 +420,6 @@ collectors:
       exporters:
         # Phoenix is only reachable from the gateway, which is the only collector
         # that mounts PHOENIX_ADMIN_SECRET. AI/LLM traces only, fanned out in traces/phoenix.
-        # TEMPORARY lossless capture of everything the gateway receives, as OTLP JSON.
-        file/capture:
-          path: /capture/metrics.jsonl
         otlp_http/phoenix:
           endpoint: http://phoenix-svc.observability.svc.cluster.local:6006
           headers:
@@ -439,11 +428,6 @@ collectors:
             insecure: true
       service:
         pipelines:
-          # TEMPORARY: every metric point the gateway receives, written to the capture volume.
-          metrics/capture:
-            receivers: [otlp]
-            processors: []
-            exporters: [file/capture]
           traces:
             receivers: [otlp]
             processors: [memory_limiter, tail_sampling, batch]
