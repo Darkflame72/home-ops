@@ -159,12 +159,25 @@ collectors:
           watch_observers: [k8s_observer]
           receivers:
             postgresql:
-              rule: type == "pod" && labels["cnpg.io/podRole"] == "instance" && labels["cnpg.io/instanceRole"] == "primary"
+              rule: type == "pod" && labels["cnpg.io/podRole"] == "instance" && labels["cnpg.io/instanceRole"] == "primary" && labels["cnpg.io/cluster"] != "nextcloud-postgres"
               config:
                 endpoint: '`labels["cnpg.io/cluster"]`-rw.`namespace`.svc.cluster.local:5432'
                 username: otel_monitor
                 password: ${env:PG_MONITOR_PASSWORD}
                 collection_interval: 30s
+                tls:
+                  insecure_skip_verify: true
+            # nextcloud-postgres revoked PUBLIC CONNECT on its app database (datacl app=CTc/app), so the
+            # monitor role cannot connect to it. Exclude that database for this cluster only; the rest of
+            # its metrics are collected. Every other cluster keeps the default of all databases.
+            postgresql/nextcloud:
+              rule: type == "pod" && labels["cnpg.io/podRole"] == "instance" && labels["cnpg.io/instanceRole"] == "primary" && labels["cnpg.io/cluster"] == "nextcloud-postgres"
+              config:
+                endpoint: 'nextcloud-postgres-rw.default.svc.cluster.local:5432'
+                username: otel_monitor
+                password: ${env:PG_MONITOR_PASSWORD}
+                collection_interval: 30s
+                exclude_databases: [app]
                 tls:
                   insecure_skip_verify: true
         prometheus:
