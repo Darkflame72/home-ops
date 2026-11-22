@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/refs/heads/master/v1.34.0/persistentvolumeclaim-v1.json
+# Meilisearch's index. Silo rebuilds it from PostgreSQL, so it is not backed up.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: silo-meilisearch-data
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: ceph-block

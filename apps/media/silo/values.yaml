@@ -1,0 +1,195 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
+# Two pods. silo runs the server with PostgreSQL in the silo-pg CNPG cluster
+# (DATABASE_URL) and Redis bundled in its container. meilisearch is the upstream
+# image, its own pod, which silo reaches through the silo-meilisearch Service.
+controllers:
+  silo:
+    containers:
+      app:
+        image:
+          repository: ghcr.io/silo-server/silo-server
+          tag: build-2955@sha256:f3605bc31b29a3f4271a5ad4e974206a745557eecb59dbf9bf26aa54752b45ba
+        env:
+          PUID: "1000"
+          PGID: "1000"
+          TZ: Pacific/Auckland
+          SILO_PUBLIC_URL: https://silo.darkflame.dev
+          # The external cluster is managed by CNPG, so Silo does not tune it.
+          POSTGRES_TUNE: "off"
+          # Use the Meilisearch pod below instead of the bundled one. ENABLE_MEILISEARCH
+          # stays unset, so the image starts no search service of its own.
+          SILO_SEARCH_PROVIDER: meilisearch
+          SILO_MEILISEARCH_URL: http://silo-meilisearch.media.svc.cluster.local:7700
+          SILO_MEILISEARCH_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: silo-secret
+                key: MEILI_MASTER_KEY
+          SECRET_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: silo-secret
+                key: SECRET_KEY
+          DATABASE_URL:
+            valueFrom:
+              secretKeyRef:
+                name: silo-pg-app
+                key: uri
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1Gi
+          limits:
+            memory: 8Gi
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/health
+                port: &port 8080
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/ready
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            spec:
+              httpGet:
+                path: /api/v1/health
+                port: *port
+              failureThreshold: 60
+              periodSeconds: 5
+        # The omnibus image starts an s6 supervisor as root and drops to PUID/PGID,
+        # so it cannot run as non-root or with a read-only root filesystem.
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"], add: ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID"] }
+  meilisearch:
+    containers:
+      app:
+        image:
+          repository: docker.io/getmeili/meilisearch
+          tag: v1.57.0@sha256:91bf09897482c17205c8faeca8daa8d57999fb9de20d862763cdfa92ba4ec790
+        env:
+          MEILI_ENV: production
+          MEILI_NO_ANALYTICS: "true"
+          MEILI_MASTER_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: silo-secret
+                key: MEILI_MASTER_KEY
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: &meiliPort 7700
+              periodSeconds: 10
+              timeoutSeconds: 2
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *meiliPort
+              periodSeconds: 10
+              timeoutSeconds: 2
+              failureThreshold: 3
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+    # Meilisearch's index can be rebuilt from PostgreSQL, so its volume is not backed up.
+    pod:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+defaultPodOptions:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+service:
+  app:
+    controller: silo
+    ports:
+      http:
+        port: *port
+  meilisearch:
+    controller: meilisearch
+    ports:
+      http:
+        port: 7700
+route:
+  app:
+    annotations:
+      gatus.home-operations.com/enabled: "false"
+    hostnames: ["silo.darkflame.dev"]
+    parentRefs:
+      - name: envoy-internal
+        namespace: network
+        sectionName: https
+    rules:
+      - backendRefs:
+          - name: silo-app
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  config:
+    existingClaim: silo-config
+    advancedMounts:
+      silo:
+        app:
+          - path: /config
+  transcode:
+    type: emptyDir
+    advancedMounts:
+      silo:
+        app:
+          - path: /tmp/silo-transcode
+  download-artifacts:
+    type: emptyDir
+    advancedMounts:
+      silo:
+        app:
+          - path: /tmp/silo-download-artifacts
+  media:
+    type: nfs
+    server: 10.0.60.15
+    path: /mnt/Main/Media
+    advancedMounts:
+      silo:
+        app:
+          - path: /mnt/media
+            readOnly: true
+  meilisearch-data:
+    existingClaim: silo-meilisearch-data
+    advancedMounts:
+      meilisearch:
+        app:
+          - path: /meili_data

@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/cluster_v1.json
+# PostgreSQL for Silo. Silo's omnibus image would bundle its own PostgreSQL;
+# DATABASE_URL (set in values.yaml) points the server at this cluster instead.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: silo-pg
+  namespace: media
+spec:
+  instances: 3
+  primaryUpdateStrategy: unsupervised
+
+  # media is enrolled in the Istio ambient mesh, which breaks CNPG's TLS and
+  # streaming replication on 5432. Opt out, as the other CNPG clusters do.
+  inheritedMetadata:
+    labels:
+      istio.io/dataplane-mode: none
+
+  affinity:
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6
+
+  # Silo's migrations need the vector extension (pgvector). It is not in the
+  # base image, so it comes from CNPG's extension image volume.
+  extensions:
+    - name: pgvector
+      image:
+        reference: ghcr.io/cloudnative-pg/pgvector:0.8.1-202512091243-18-trixie
+
+  resources:
+    requests:
+      cpu: 75m
+      memory: 256Mi
+    limits:
+      memory: 4Gi
+
+  storage:
+    size: 25Gi
+    storageClass: openebs-hostpath
+
+  bootstrap:
+    initdb:
+      database: silo
+      owner: silo
+      # vector is not a trusted extension, so the owner cannot create it.
+      # Create it here as superuser; Silo's migrations can then use it.
+      postInitApplicationSQL:
+        - CREATE EXTENSION IF NOT EXISTS vector;
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: silo-pg
