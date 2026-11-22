@@ -152,84 +152,21 @@ collectors:
         podMonitorSelector: {}
     config:
       receivers:
-        # PostgreSQL inside CNPG, read through the -rw (primary) service as the otel_monitor role.
-        postgresql/authentik-postgres:
-          endpoint: authentik-postgres-rw.security.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/vaultwarden-postgres:
-          endpoint: vaultwarden-postgres-rw.security.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/phoenix-postgres:
-          endpoint: phoenix-postgres-rw.observability.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/gatus-postgres:
-          endpoint: gatus-postgres-rw.observability.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/forgejo-postgres:
-          endpoint: forgejo-postgres-rw.default.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/nextcloud-postgres:
-          endpoint: nextcloud-postgres-rw.default.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/harbor-postgres:
-          endpoint: harbor-postgres-rw.default.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/gotosocial-postgres:
-          endpoint: gotosocial-postgres-rw.comms.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/silo-pg:
-          endpoint: silo-pg-rw.media.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/immich-pg18:
-          endpoint: immich-pg18-rw.media.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
-        postgresql/miniflux-postgres:
-          endpoint: miniflux-postgres-rw.default.svc.cluster.local:5432
-          username: otel_monitor
-          password: ${env:PG_MONITOR_PASSWORD}
-          collection_interval: 30s
-          tls:
-            insecure_skip_verify: true
+        # Every CNPG cluster, found by label. The rule matches only the primary pod of each cluster, and the
+        # receiver reads through the -rw service, so the host name still carries the cluster name for
+        # the cnpg_cluster label. New clusters are picked up with no edit here.
+        receiver_creator/cnpg:
+          watch_observers: [k8s_observer]
+          receivers:
+            postgresql:
+              rule: type == "pod" && labels["cnpg.io/podRole"] == "instance" && labels["cnpg.io/instanceRole"] == "primary"
+              config:
+                endpoint: '`labels["cnpg.io/cluster"]`-rw.`namespace`.svc.cluster.local:5432'
+                username: otel_monitor
+                password: ${env:PG_MONITOR_PASSWORD}
+                collection_interval: 30s
+                tls:
+                  insecure_skip_verify: true
         prometheus:
           config:
             scrape_configs:
@@ -302,10 +239,14 @@ collectors:
               statements:
                 - set(attributes["cnpg_cluster"], resource.attributes["server.address"])
                 - 'replace_pattern(attributes["cnpg_cluster"], "-rw\\..*", "")'
+      extensions:
+        k8s_observer:
+          auth_type: serviceAccount
+          observe_pods: true
       service:
         # Both leader-election extensions: the events receiver fails to start
         # unless its own extension is listed here.
-        extensions: [k8s_leader_elector/k8s_cluster, k8s_leader_elector/k8s_objects]
+        extensions: [k8s_leader_elector/k8s_cluster, k8s_leader_elector/k8s_objects, k8s_observer]
         pipelines:
           metrics:
             processors: [memory_limiter, transform/cluster_label, batch]
@@ -318,7 +259,7 @@ collectors:
             exporters: [otlp/gateway]
           # CNPG PostgreSQL metrics, all clusters. Same cluster-level label as the rest.
           metrics/postgres:
-            receivers: [postgresql/authentik-postgres, postgresql/vaultwarden-postgres, postgresql/phoenix-postgres, postgresql/gatus-postgres, postgresql/forgejo-postgres, postgresql/nextcloud-postgres, postgresql/harbor-postgres, postgresql/gotosocial-postgres, postgresql/silo-pg, postgresql/immich-pg18, postgresql/miniflux-postgres]
+            receivers: [receiver_creator/cnpg]
             processors: [memory_limiter, transform/pg_cluster, transform/cluster_label, batch]
             exporters: [otlp/gateway]
   daemon:

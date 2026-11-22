@@ -72,12 +72,17 @@ to `opentelemetry-kube-stack-gateway-collector` on port 4317.
 
 ## PostgreSQL (CNPG)
 
-The cluster collector's `postgresql` receivers read every CNPG cluster through its `-rw` (primary) service,
-as the `otel_monitor` role. Every CNPG cluster creates that role through `spec.managed.roles` with
-`pg_monitor` membership. The shared password is `pg-monitor-secret`, synced from Infisical
-(`/cloudnative-pg/otel-monitor-password`) by `apps/database/cloudnative-pg/pg-monitor-cluster-external-secret.yaml`.
+Nothing here is per cluster. Three pieces make every CNPG cluster monitored automatically:
 
-- **Metrics** (`postgresql.*`, `metrics/postgres` pipeline): all 11 clusters, every 30s. The `cnpg_cluster`
+- **Login:** a Kyverno MutatingPolicy (`apps/policy/kyverno/policies/cnpg-monitoring-defaults.yaml`) adds the
+  `otel_monitor` role, with `pg_monitor` membership, to every new CNPG Cluster on creation. Existing clusters
+  declare the same role in Git.
+- **Password:** `pg-monitor-secret` is synced by ESO from Infisical (`/cloudnative-pg/otel-monitor-password`) into
+  every namespace (`apps/database/cloudnative-pg/pg-monitor-cluster-external-secret.yaml`).
+- **Discovery:** the cluster collector's `receiver_creator` with the `k8s_observer` extension creates one `postgresql`
+  receiver for the primary pod of each cluster. It reads through the `-rw` service, which carries the cluster name.
+
+- **Metrics** (`postgresql.*`, `metrics/postgres` pipeline): every CNPG cluster, every 30s. The `cnpg_cluster`
   label holds the cluster name, taken from the `server.address` resource attribute.
 - **Top queries are not collected.** The receiver's `top_query` event runs EXPLAIN on each captured query,
   which needs grants that cannot be declared in Git: CONNECT on the `app` database and EXECUTE on some
