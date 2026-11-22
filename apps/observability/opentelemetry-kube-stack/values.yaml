@@ -104,6 +104,15 @@ collectors:
       # Self-telemetry on :8888, picked up by the daemon's annotation scrape.
       prometheus.io/scrape: "true"
       prometheus.io/port: "8888"
+    # Password for the otel_monitor role (pg-monitor-secret, see apps/database/cloudnative-pg).
+    # Optional, so a missing secret leaves the postgres receivers failing, not the collector down.
+    env:
+      - name: PG_MONITOR_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: pg-monitor-secret
+            key: password
+            optional: true
     # Was 1Gi: the memory limiter (75% of the limit) started refusing scrape
     # data at ~715Mi of steady use, so raise the ceiling above that.
     resources:
@@ -143,6 +152,20 @@ collectors:
         podMonitorSelector: {}
     config:
       receivers:
+        # PostgreSQL inside CNPG, read through the -rw (primary) service as the otel_monitor role.
+        postgresql/miniflux-postgres:
+          endpoint: miniflux-postgres-rw.default.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
         prometheus:
           config:
             scrape_configs:
@@ -207,6 +230,20 @@ collectors:
         batch:
           send_batch_size: 1000
           timeout: 1s
+        # Copies the CNPG cluster name out of the -rw host (server.address) onto each datapoint or log,
+        # since resource attributes are not promoted to labels in Mimir. Only the postgres pipelines use these.
+        transform/pg_cluster:
+          metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["cnpg_cluster"], resource.attributes["server.address"])
+                - 'replace_pattern(attributes["cnpg_cluster"], "-rw\\..*", "")'
+        transform/pg_cluster_logs:
+          log_statements:
+            - context: log
+              statements:
+                - set(attributes["cnpg_cluster"], resource.attributes["server.address"])
+                - 'replace_pattern(attributes["cnpg_cluster"], "-rw\\..*", "")'
       service:
         # Both leader-election extensions: the events receiver fails to start
         # unless its own extension is listed here.
@@ -220,6 +257,16 @@ collectors:
           # listed too, or the collector fails to start.
           logs:
             processors: [memory_limiter, batch]
+            exporters: [otlp/gateway]
+          # CNPG PostgreSQL metrics, all clusters. Same cluster-level label as the rest.
+          metrics/postgres:
+            receivers: [postgresql/miniflux-postgres]
+            processors: [memory_limiter, transform/pg_cluster, transform/cluster_label, batch]
+            exporters: [otlp/gateway]
+          # Top queries from pg_stat_statements, only on clusters that have the extension.
+          logs/postgres:
+            receivers: [postgresql/miniflux-postgres]
+            processors: [memory_limiter, transform/pg_cluster_logs, batch]
             exporters: [otlp/gateway]
   daemon:
     securityContext:

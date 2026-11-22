@@ -14,6 +14,7 @@ flowchart LR
     LLM["LLM apps (OTLP)"]
     AUDIT["Talos kube-apiserver audit logs"]
     NAS["TrueNAS"]
+    PG["CNPG PostgreSQL<br/>miniflux first, more to follow"]
     ETCD["etcd (loopback on control-plane nodes)"]
     REMOTE["Remote senders<br/>otlp.darkflame.dev, bearer token"]
 
@@ -33,6 +34,7 @@ flowchart LR
     K8S -->|metrics, events| CC
     K8S -->|node + pod metrics| DC
     NAS -->|scrape| CC
+    PG -->|postgresql receiver: metrics, top queries| CC
     APPS -->|OTLP| DC
     LLM -->|OTLP| DC
     AUDIT -->|filelog| DC
@@ -59,7 +61,7 @@ flowchart LR
 
 | Collector     | Shape                       | Job                                                                 |
 |---------------|-----------------------------|---------------------------------------------------------------------|
-| Cluster       | StatefulSet, 1 replica      | Cluster-wide metrics and events, NAS scraping                       |
+| Cluster       | StatefulSet, 1 replica      | Cluster-wide metrics and events, NAS scraping, CNPG PostgreSQL      |
 | Daemon        | DaemonSet, every node       | Node and pod metrics, container logs, audit logs, OTLP intake       |
 | Control-plane | DaemonSet, control nodes    | etcd metrics from loopback (host network)                           |
 | Ingress       | Deployment, 2 replicas      | OTLP/HTTP from outside the cluster, behind a bearer token           |
@@ -67,6 +69,22 @@ flowchart LR
 
 Only the gateway holds the storage endpoints and the Phoenix admin token. Every other collector exports
 to `opentelemetry-kube-stack-gateway-collector` on port 4317.
+
+## PostgreSQL (CNPG)
+
+The cluster collector's `postgresql` receivers read every CNPG cluster through its `-rw` (primary) service,
+as the `otel_monitor` role. Every CNPG cluster creates that role through `spec.managed.roles` with
+`pg_monitor` membership. The shared password is `pg-monitor-secret`, synced from Infisical
+(`/cloudnative-pg/otel-monitor-password`) by `apps/database/cloudnative-pg/pg-monitor-cluster-external-secret.yaml`.
+
+- **Metrics** (`postgresql.*`, `metrics/postgres` pipeline): miniflux only so far, every 30s. Rolling out to the rest once it is verified. The `cnpg_cluster`
+  label holds the cluster name, taken from the `server.address` resource attribute.
+- **Top queries** (`db.server.top_query`, `logs/postgres` pipeline): miniflux only so far. Other clusters with
+  `pg_stat_statements` (authentik, vaultwarden, phoenix, gatus, forgejo, nextcloud, gotosocial) are still to follow.
+- **Traces**: the receiver does not emit traces. Query traces come from the applications' own OTLP
+  instrumentation. Postgres has no tracing of its own.
+- **Query samples** (`db.server.query_sample`) are not collected. They carry literal parameter values from
+  `pg_stat_activity`, which can contain personal data.
 
 ## Storage Backends
 
