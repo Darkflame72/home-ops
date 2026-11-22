@@ -107,6 +107,7 @@ customRules:
         (ka.user.name = "system:serviceaccount:cert-manager:cert-manager" and ka.target.namespace = "cert-manager") or
         (ka.user.name startswith "system:node:" and ka.target.namespace = "rook-ceph" and ka.target.name = "rook-csi-rbd-node") or
         (ka.user.name = "system:serviceaccount:media:immich-pg18" and ka.target.namespace = "media") or
+        (ka.user.name = "system:serviceaccount:media:silo-pg" and ka.target.namespace = "media") or
         (ka.user.name = "system:serviceaccount:default:miniflux-postgres" and ka.target.namespace = "default") or
         (ka.user.name = "system:serviceaccount:default:forgejo-postgres" and ka.target.namespace = "default") or
         (ka.user.name = "system:serviceaccount:comms:gotosocial-postgres" and ka.target.namespace = "comms") or
@@ -170,7 +171,7 @@ customRules:
     - rule: Create HostNetwork Pod
       override:
         condition: append
-      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs and not user_known_rook_ceph_hostnetwork and not user_known_host_mount_daemons and not user_known_kubelet_static_pods and not (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "rook-ceph")
+      condition: and not user_known_cilium_pods and not user_known_etcd_defrag_jobs and not user_known_rook_ceph_hostnetwork and not user_known_host_mount_daemons and not user_known_kubelet_static_pods and not (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "rook-ceph") and not (ka.user.name = "system:serviceaccount:kube-system:daemon-set-controller" and ka.target.namespace = "observability" and ka.req.pod.containers.image.repository in ("otel/opentelemetry-collector-contrib"))
     # The OTel daemon collector mounts host log and kubelet paths by design. Scoped to the DaemonSet
     # controller, observability and the collector image (reviewed 2026-10-24).
     - macro: user_known_otel_daemon_collector

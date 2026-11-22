@@ -104,7 +104,7 @@ customRules:
     - rule: Run shell untrusted
       override:
         condition: append
-      condition: and not (container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and proc.exepath in ("/bin/dash", "/usr/bin/dash") and user.name = "postgres" and proc.cmdline startswith "sh -c /controller/manager wal-restore")
+      condition: and not (container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and user.name = "postgres" and proc.cmdline startswith "sh -c /controller/manager wal-restore")
     # Nextcloud's image probes for office suites at startup with command -v (reviewed 2026-11-01).
     - rule: Run shell untrusted
       override:
@@ -155,11 +155,15 @@ customRules:
         (k8s.ns.name = "external-secrets" and k8s.pod.name startswith "external-secrets-cert-controller-" and container.name = "cert-controller"
           and proc.exepath = "/usr/bin/external-secrets" and user.uid = 1000 and proc.cmdline startswith "external-secret certcontroller") or
         (k8s.ns.name = "observability" and k8s.pod.name startswith "kiali-" and container.name = "kiali"
-          and proc.exepath = "/opt/kiali/kiali" and user.uid = 1000 and proc.cmdline startswith "kiali -config") or
+          and proc.name = "kiali" and user.uid = 1000 and proc.cmdline startswith "kiali -config") or
+        (k8s.ns.name = "observability" and k8s.pod.name startswith "grafana-operator-" and proc.name = "v5"
+          and user.uid = 1000 and proc.cmdline startswith "v5 --health-probe-bind-address=:8081") or
         (k8s.ns.name = "argocd" and k8s.pod.name startswith "argocd-application-controller-" and container.name = "application-controller"
           and proc.exepath = "/usr/local/bin/argocd" and user.uid = 999 and proc.cmdline startswith "argocd-applicat") or
         (k8s.ns.name = "observability" and k8s.pod.name startswith "opentelemetry-kube-stack-daemon-collector-" and container.name = "otc-container"
-          and proc.exepath = "/otelcol-contrib" and user.uid = 10001 and proc.cmdline startswith "otelcol-contrib --config=/conf/collector.yaml") or
+          and proc.name = "otelcol-contrib" and user.uid = 10001 and proc.cmdline startswith "otelcol-contrib --config=/conf/collector.yaml") or
+        (k8s.ns.name = "observability" and k8s.pod.name startswith "opentelemetry-kube-stack-collector-collector-"
+          and proc.name = "otelcol-contrib" and user.uid = 10001 and proc.cmdline startswith "otelcol-contrib --config=/conf/collector.yaml") or
         (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopiur-webhook-" and container.name = "webhook"
           and proc.exepath = "/usr/local/bin/app" and user.uid = 65534) or
         (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopiur-controller-" and container.name = "controller"
@@ -172,9 +176,9 @@ customRules:
         (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-reports-controller-" and container.name = "controller"
           and proc.exepath = "/ko-app/reports-controller" and user.uid = 65534 and proc.cmdline startswith "reports-control") or
         (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-admission-controller-" and container.name = "kyverno"
-          and proc.exepath = "/ko-app/kyverno" and user.uid = 65534 and proc.cmdline startswith "kyverno --caSecretName") or
+          and proc.name = "kyverno" and user.uid = 65534 and proc.cmdline startswith "kyverno --caSecretName") or
         (k8s.ns.name = "policy" and k8s.pod.name startswith "kyverno-background-controller-" and container.name = "controller"
-          and proc.exepath = "/ko-app/background-controller" and user.uid = 65534 and proc.cmdline startswith "background-cont --enableTracing") or
+          and proc.name = "background-cont" and user.uid = 65534 and proc.cmdline startswith "background-cont --enableTracing") or
         (k8s.ns.name = "kopiur-system" and k8s.pod.name startswith "kopia-primary-f-" and container.name = "mover"
           and proc.exepath = "/usr/local/bin/kopiur-mover" and user.uid = 65532 and proc.cmdline startswith "kopiur-mover") or
         (k8s.ns.name = "argocd" and k8s.pod.name startswith "argocd-server-" and container.name = "server"
@@ -223,6 +227,16 @@ customRules:
         ((k8s.ns.name = "comms" or k8s.ns.name = "default" or k8s.ns.name = "games" or k8s.ns.name = "media" or
           k8s.ns.name = "observability" or k8s.ns.name = "opencloud" or k8s.ns.name = "security") and container.name = "mover"
           and proc.exepath = "/usr/local/bin/kopiur-mover" and proc.cmdline startswith "kopiur-mover")
+    # CloudNativePG instance manager serves its status port over a network socket on stdout/stdin (reviewed 2026-11-22).
+    - rule: Redirect STDOUT/STDIN to Network Connection in Container
+      override:
+        condition: append
+      condition: and not (proc.name = "manager" and proc.cmdline startswith "manager instance run" and container.image.repository = "ghcr.io/cloudnative-pg/postgresql" and user.uid = 26)
+    # Rook-Ceph sidecars run scripted bash loops: the toolbox config watcher and the logrotate loop (reviewed 2026-11-22).
+    - rule: Terminal shell in container
+      override:
+        condition: append
+      condition: and not (k8s.ns.name = "rook-ceph" and proc.name = "bash" and (proc.cmdline contains "AUTOGENERATED from images/ceph/toolbox.sh" or proc.cmdline contains "LOG_ROTATE_CEPH_FILE"))
 
 resources:
   requests:
