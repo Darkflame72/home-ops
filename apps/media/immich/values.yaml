@@ -11,7 +11,6 @@ immich:
         enabled: false
 controllers:
   main:
-    replicas: 0
     containers:
       main:
         image:
@@ -24,7 +23,7 @@ controllers:
           DB_URL:
             valueFrom:
               secretKeyRef:
-                name: immich-v2-app
+                name: immich-pg18-app
                 key: uri
 machine-learning:
   controllers:
