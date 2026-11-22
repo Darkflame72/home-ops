@@ -348,6 +348,23 @@ collectors:
     volumeMounts:
       - name: capture
         mountPath: /capture
+    # TEMPORARY reader for the capture volume, so the file can be copied out with kubectl cp.
+    additionalContainers:
+      - name: capture-reader
+        image: docker.io/library/busybox:1.37
+        command: ["sleep", "86400"]
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+          - name: capture
+            mountPath: /capture
     podSecurityContext:
       runAsNonRoot: true
       seccompProfile:
