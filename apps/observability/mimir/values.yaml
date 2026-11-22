@@ -148,9 +148,12 @@ ingester:
       # Peaks at about 1.9 cores under ~11k samples/s. The request was 100m, so the scheduler
       # packed it onto k8s-6 with no CPU reserved, and the node went NotReady under load.
       cpu: 2000m
-      memory: 2560Mi
+      # Requests now match real usage, so the scheduler stops packing the ingester onto nodes that can't hold it.
+      memory: 6Gi
     limits:
-      memory: 13120Mi
+      # 6h peak is about 8.1 GiB, so 10Gi leaves headroom. The old 13Gi limit could take nearly all of a
+      # 16 GiB node, and k8s-6 ran out of memory and went NotReady.
+      memory: 10Gi
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"
