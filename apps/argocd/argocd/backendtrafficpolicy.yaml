@@ -10,6 +10,11 @@ kind: BackendTrafficPolicy
 metadata:
   name: argocd-server-retry
 spec:
+  # Without mergeType, this route-level policy replaces the gateway-level envoy policy
+  # (requestTimeout 0s, compression, tcpKeepalive). The argocd UI's application stream then
+  # hit Envoy's default 15s timeout and returned 504 UT. StrategicMerge keeps the gateway
+  # settings.
+  mergeType: StrategicMerge
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
