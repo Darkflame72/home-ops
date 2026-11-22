@@ -20,8 +20,8 @@ spec:
   hosts:
     - git.darkflame.dev
     - cd.darkflame.dev
-    - jelly.darkflame.dev
     - thelounge.darkflame.dev
+    - silo.darkflame.dev
     - sh.darkflame.dev
     - miniflux.darkflame.dev
     - bar.darkflame.dev

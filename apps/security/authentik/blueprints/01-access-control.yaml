@@ -8,7 +8,7 @@ entries:
       name: require-mfa-privileged-groups
     attrs:
       expression: |
-        privileged_groups = {"authentik Admins", "harbor-admins", "gitadmin", "jellyfin-admin"}
+        privileged_groups = {"authentik Admins", "harbor-admins", "gitadmin"}
         user_groups = {g.name for g in request.user.ak_groups.all()}
         return bool(privileged_groups & user_groups)
 

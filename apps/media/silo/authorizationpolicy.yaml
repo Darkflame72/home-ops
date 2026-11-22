@@ -1,6 +1,5 @@
 # envoy-internal reaches Silo's HTTP port without a mesh identity (unmeshed), so
-# the default-allow policy, which matches mesh identities, does not admit it. Like
-# Jellyfin's 8096 exception, allow port 8080 on Silo's own pods only.
+# the default-allow policy, which matches mesh identities, does not admit it.
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:

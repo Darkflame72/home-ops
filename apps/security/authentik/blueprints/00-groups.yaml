@@ -51,15 +51,3 @@ entries:
     attrs:
       is_superuser: false
       attributes: {}
-  - model: authentik_core.group
-    identifiers:
-      name: jellyfin-admin
-    attrs:
-      is_superuser: false
-      attributes: {}
-  - model: authentik_core.group
-    identifiers:
-      name: jellyfin-user
-    attrs:
-      is_superuser: false
-      attributes: {}

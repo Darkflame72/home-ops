@@ -9,7 +9,7 @@ metadata:
     # Single-homed to envoy-internal - the auto-discovered gatus-sidecar
     # check would be "guarded" (DNS-only) instead of a real healthcheck.
     # Replaced with a static entry in gatus's config.yaml instead, same as
-    # jellyfin/thelounge/etc.
+    # thelounge/etc.
     gatus.home-operations.com/enabled: "false"
 spec:
   hostnames:

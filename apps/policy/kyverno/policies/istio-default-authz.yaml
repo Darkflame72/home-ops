@@ -611,8 +611,8 @@ metadata:
       Being listed in default-allow's source.namespaces is not enough: an
       unmeshed caller is denied even if listed by name. Missing this caused
       two live outages on 2026-07-20: photos.darkflame.dev (immich-server,
-      Cloudflare-tunnel path via envoy-external) and jelly.darkflame.dev
-      (jellyfin, LAN path via envoy-internal — Gatus caught this one, see
+      Cloudflare-tunnel path via envoy-external) and a LAN route via
+      envoy-internal (since-removed media app; Gatus caught it, see
       apps/observability/gatus/config/config.yaml). Namespace-wide by ports
       rather than per-workload selector, because both ingress gateways can
       reach any HTTP-exposed workload in the namespace and enumerating
@@ -646,7 +646,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["2283", "8096"]}}
+                  {"operation": {"ports": ["2283"]}}
                 ]
               })])
             })

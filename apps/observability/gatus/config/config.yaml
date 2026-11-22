@@ -67,9 +67,9 @@ endpoints:
   # Disabled via gatus.home-operations.com/enabled: "false" on each route
   # and replaced with a real HTTP check, same resolution path as the
   # dual-homed hosts above.
-  - name: jellyfin
+  - name: silo
     group: internal
-    url: https://jelly.darkflame.dev/health
+    url: https://silo.darkflame.dev/health
     interval: 1m
     conditions:
       - "[STATUS] == 200"

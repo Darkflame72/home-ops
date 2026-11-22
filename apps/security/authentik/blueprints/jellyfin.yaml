@@ -1,49 +1,33 @@
 version: 1
 metadata:
-  name: jellyfin
+  name: jellyfin-removal
 entries:
-  - model: authentik_providers_oauth2.oauth2provider
-    id: jellyfin-provider
+  # Authentik does not delete objects when their blueprint entries are removed,
+  # so these absent entries delete the Jellyfin SSO objects. Idempotent: once
+  # applied they are no-ops and this file can be deleted from the kustomization.
+  - model: authentik_policies.policybinding
+    state: absent
     identifiers:
-      pk: 10
-      name: "Provider for Jellyfin"
-    attrs:
-      client_type: confidential
-      client_id: bxrghImr6hG5LgpUaY23xFc2ExKfhEHENJNzcMTU
-      client_secret: !Env JELLYFIN_CLIENT_SECRET
-      redirect_uris:
-        - matching_mode: strict
-          redirect_uri_type: authorization
-          url: "https://jelly.darkflame.dev/sso/OID/redirect/authentik"
-      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
-      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
-      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
-      access_token_validity: minutes=5
-      refresh_token_validity: days=30
-      include_claims_in_id_token: true
-      sub_mode: hashed_user_id
-      property_mappings:
-        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
-        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
-        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+      pk: 64100d42-99e2-4932-a5dc-b078c94b88d9
 
   - model: authentik_core.application
-    id: jellyfin-application
+    state: absent
     identifiers:
       pk: a85cbe00-6208-4a8d-92f0-1491ad2b360d
       slug: jellyfin
-    attrs:
-      name: Jellyfin
-      provider: !KeyOf jellyfin-provider
-      policy_engine_mode: any
 
-  - model: authentik_policies.policybinding
+  - model: authentik_providers_oauth2.oauth2provider
+    state: absent
     identifiers:
-      pk: 64100d42-99e2-4932-a5dc-b078c94b88d9
-    attrs:
-      target: !KeyOf jellyfin-application
-      group: !Find [authentik_core.group, [name, jellyfin-user]]
-      order: 0
-      enabled: true
-      negate: false
-      timeout: 30
+      pk: 10
+      name: "Provider for Jellyfin"
+
+  - model: authentik_core.group
+    state: absent
+    identifiers:
+      name: jellyfin-admin
+
+  - model: authentik_core.group
+    state: absent
+    identifiers:
+      name: jellyfin-user
