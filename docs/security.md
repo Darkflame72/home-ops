@@ -76,8 +76,15 @@ forward auth. Its configuration is managed as blueprints in Git (`apps/security/
 ## Service Mesh: Istio Ambient
 
 Istio runs in ambient mode, with the control plane in `istio-system` (istiod, ztunnel and istio-cni).
-The `security` namespace uses a namespace-wide waypoint proxy that adds L7 policy and mTLS-protected
-traffic between services there. Mesh-wide telemetry is set in istiod.
+Meshed namespaces are `media`, `security`, `comms`, `default`, `agents`, `observability` and
+`renovate`. Their labels come from the Kyverno `istio-ambient-namespace-labels` allow-list. `network`
+is not labeled. The Envoy gateway pods are enrolled per pod, and
+`argocd-server` is enrolled per pod too. Namespaces with a namespace-wide waypoint add L7 policy on
+top of mTLS. Mesh-wide telemetry is set in istiod.
+
+Unmeshed workloads that still reach meshed pods include the observability OpenTelemetry collectors,
+which scrape metrics ports. The `allow-unmeshed-*` AuthorizationPolicies in each namespace keep those
+ports open. Remove them only after the scrape path has a mesh identity or a narrower rule.
 
 ## Runtime Detection: Falco
 

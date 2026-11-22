@@ -34,8 +34,10 @@ The Envoy proxy pods are enrolled in the Istio ambient mesh with a pod-level lab
 (`istio.io/dataplane-mode: ambient`, set through `EnvoyProxy` `pod.labels`). Traffic from Envoy to
 meshed backends is HBONE mTLS via ztunnel, and waypoints enforce authorization. The `network`
 namespace is not labeled, so cloudflared, external-dns and the other `network` pods stay unmeshed.
-Backends in unmeshed namespaces (for example `argocd`, `kopiur-system`) still receive plaintext from
-Envoy.
+`argocd-server` is also enrolled, with a pod-level label in `server.podLabels`. Its routes have a
+BackendTrafficPolicy that retries upstream resets, because Envoy otherwise reuses connections that
+ztunnel closes. Backends in unmeshed namespaces (for example `kopiur-system`, `games`) still receive
+plaintext from Envoy.
 
 To publish an app, create an `HTTPRoute` that references one of these gateways and a hostname under
 `darkflame.dev`. Attach it to the `https` listener.
