@@ -13,6 +13,16 @@ service:
   name: kube-dns
   clusterIP: "10.43.0.10"
 replicaCount: 2
+# The chart default CPU limit (100m) was throttling CoreDNS at ~2.7% of
+# periods on one replica during normal load (2026-11-22). Raise the CPU
+# limit; memory values match what the chart was already applying.
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 128Mi
 servers:
   - zones:
       - zone: .
