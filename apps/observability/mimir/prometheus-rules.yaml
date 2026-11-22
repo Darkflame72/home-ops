@@ -65,6 +65,19 @@ spec:
             summary: "Node {{ $labels.instance }} memory usage is high"
             description: "Node {{ $labels.instance }} has used more than 90% of its memory for 15 minutes."
 
+    - name: gitops-health
+      rules:
+        - alert: ArgoCDAppNotSynced
+          # Catches an Application stuck outside Synced, such as a ComparisonError or a
+          # sync that never finishes. The 2026-08 Kyverno incident went unnoticed for 2 days.
+          expr: sum by (name) (argocd_app_info{sync_status!="Synced"}) > 0
+          for: 6h
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD application {{ $labels.name }} is not Synced"
+            description: "Application {{ $labels.name }} has been outside the Synced state for more than 6 hours."
+
     - name: workload-health
       rules:
         - alert: KubePodCrashLooping
