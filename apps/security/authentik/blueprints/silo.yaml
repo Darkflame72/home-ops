@@ -17,6 +17,10 @@ entries:
       client_type: confidential
       client_id: tuyuiu7CC9ZwhYziyObKtfVNdVks6OO0D8VSc77x
       client_secret: !Env SILO_CLIENT_SECRET
+      # Without grant types Authentik rejects every authorize request as malformed.
+      grant_types:
+        - authorization_code
+        - refresh_token
       redirect_uris:
         # Silo's stable callback (the plugin's callback: stable setting), so the
         # URI does not change with Silo's installation ID.
