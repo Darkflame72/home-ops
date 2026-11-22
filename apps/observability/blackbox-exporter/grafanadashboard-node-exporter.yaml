@@ -21,7 +21,3 @@ spec:
   datasources:
     - inputName: "DS_PROMETHEUS"
       datasourceName: "Mimir"
-  # Same grafana.com title as the in-cluster dashboard. Rename it so the two don't look like duplicates.
-  patch:
-    scripts:
-      - '.title = "TrueNAS / Node Exporter Full"'
