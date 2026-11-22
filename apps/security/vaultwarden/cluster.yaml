@@ -7,6 +7,17 @@ metadata:
   namespace: security
 spec:
   instances: 3
+  # Read-only monitoring login for the OTel postgresql receiver (pg_monitor).
+  # Password comes from the pg-monitor-secret ClusterExternalSecret.
+  managed:
+    roles:
+      - name: otel_monitor
+        ensure: present
+        login: true
+        inRoles:
+          - pg_monitor
+        passwordSecret:
+          name: pg-monitor-secret
   imageName: ghcr.io/cloudnative-pg/postgresql:18.6
   primaryUpdateStrategy: unsupervised
 

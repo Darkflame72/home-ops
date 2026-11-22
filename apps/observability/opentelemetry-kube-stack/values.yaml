@@ -153,6 +153,125 @@ collectors:
     config:
       receivers:
         # PostgreSQL inside CNPG, read through the -rw (primary) service as the otel_monitor role.
+        postgresql/authentik-postgres:
+          endpoint: authentik-postgres-rw.security.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
+            max_explain_each_interval: 0
+        postgresql/vaultwarden-postgres:
+          endpoint: vaultwarden-postgres-rw.security.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
+            max_explain_each_interval: 0
+        postgresql/phoenix-postgres:
+          endpoint: phoenix-postgres-rw.observability.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
+            max_explain_each_interval: 0
+        postgresql/gatus-postgres:
+          endpoint: gatus-postgres-rw.observability.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
+            max_explain_each_interval: 0
+        postgresql/forgejo-postgres:
+          endpoint: forgejo-postgres-rw.default.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
+            max_explain_each_interval: 0
+        postgresql/nextcloud-postgres:
+          endpoint: nextcloud-postgres-rw.default.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
+            max_explain_each_interval: 0
+        postgresql/harbor-postgres:
+          endpoint: harbor-postgres-rw.default.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+        postgresql/gotosocial-postgres:
+          endpoint: gotosocial-postgres-rw.comms.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+          # pg_stat_statements top queries, as logs (db.server.top_query).
+          events:
+            db.server.top_query:
+              enabled: true
+          top_query_collection:
+            collection_interval: 60s
+            max_explain_each_interval: 0
+        postgresql/silo-pg:
+          endpoint: silo-pg-rw.media.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
+        postgresql/immich-pg18:
+          endpoint: immich-pg18-rw.media.svc.cluster.local:5432
+          username: otel_monitor
+          password: ${env:PG_MONITOR_PASSWORD}
+          collection_interval: 30s
+          tls:
+            insecure_skip_verify: true
         postgresql/miniflux-postgres:
           endpoint: miniflux-postgres-rw.default.svc.cluster.local:5432
           username: otel_monitor
@@ -260,12 +379,12 @@ collectors:
             exporters: [otlp/gateway]
           # CNPG PostgreSQL metrics, all clusters. Same cluster-level label as the rest.
           metrics/postgres:
-            receivers: [postgresql/miniflux-postgres]
+            receivers: [postgresql/authentik-postgres, postgresql/vaultwarden-postgres, postgresql/phoenix-postgres, postgresql/gatus-postgres, postgresql/forgejo-postgres, postgresql/nextcloud-postgres, postgresql/harbor-postgres, postgresql/gotosocial-postgres, postgresql/silo-pg, postgresql/immich-pg18, postgresql/miniflux-postgres]
             processors: [memory_limiter, transform/pg_cluster, transform/cluster_label, batch]
             exporters: [otlp/gateway]
           # Top queries from pg_stat_statements, only on clusters that have the extension.
           logs/postgres:
-            receivers: [postgresql/miniflux-postgres]
+            receivers: [postgresql/authentik-postgres, postgresql/vaultwarden-postgres, postgresql/phoenix-postgres, postgresql/gatus-postgres, postgresql/forgejo-postgres, postgresql/nextcloud-postgres, postgresql/gotosocial-postgres, postgresql/miniflux-postgres]
             processors: [memory_limiter, transform/pg_cluster_logs, batch]
             exporters: [otlp/gateway]
   daemon:
