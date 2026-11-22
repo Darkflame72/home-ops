@@ -45,8 +45,7 @@ mimir:
       max_label_names_per_series: 50
       # Accept samples up to 5m behind the newest sample of a series (per-tenant limit). Concurrent
       # exporter requests from the gateway can reorder samples, which Mimir otherwise rejects.
-      # TEMPORARY test: window disabled to see whether duplicate rejections depend on it. Restore 5m afterwards.
-      out_of_order_time_window: 0s
+      out_of_order_time_window: 5m
       # kubeletstats and k8s_attributes put pod identity on the resource, not on
       # datapoints. Without promotion every pod's series collapses into one
       # label-less series and Mimir rejects the conflicting samples.
