@@ -17,6 +17,7 @@ resources:
   - ./istio-ambient-namespace-labels.yaml
   - ./istio-ambient-otel-collector-exclude.yaml
   - ./istio-waypoint-resources.yaml
+  - ./cnpg-monitoring-defaults.yaml
   - ./istio-default-authz.yaml
   - ./disallow-latest-tag.yaml
   - ./disallow-privileged-containers.yaml

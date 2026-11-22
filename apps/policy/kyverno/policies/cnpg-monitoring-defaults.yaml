@@ -1,0 +1,73 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/policies.kyverno.io/mutatingpolicy_v1.json
+#
+# Gives every new CNPG Cluster the defaults the OTel collector depends on, so a new cluster
+# needs no edit to its manifest:
+#   - the otel_monitor pg_monitor login, with its password from pg-monitor-secret (synced into
+#     every namespace by apps/database/cloudnative-pg/pg-monitor-cluster-external-secret.yaml)
+#   - pg_stat_statements parameters, which CNPG preloads when they are set
+#
+# CREATE only, so it never changes existing clusters, and it leaves anything the manifest
+# already sets alone.
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: cnpg-monitor-role
+  annotations:
+    policies.kyverno.io/title: CNPG Monitoring Role
+    policies.kyverno.io/category: Database
+    policies.kyverno.io/description: >-
+      Adds the otel_monitor pg_monitor role to new CNPG clusters.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["postgresql.cnpg.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["clusters"]
+  evaluation:
+    mutateExisting:
+      enabled: false
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (has(object.spec.managed) && has(object.spec.managed.roles) && object.spec.managed.roles.exists(r, r.name == "otel_monitor"))
+            ? []
+            : (!has(object.spec.managed)
+                ? [JSONPatch{op: "add", path: "/spec/managed", value: json.unmarshal('{"roles":[{"name":"otel_monitor","ensure":"present","login":true,"inRoles":["pg_monitor"],"passwordSecret":{"name":"pg-monitor-secret"}}]}')}]
+                : (!has(object.spec.managed.roles)
+                    ? [JSONPatch{op: "add", path: "/spec/managed/roles", value: json.unmarshal('[{"name":"otel_monitor","ensure":"present","login":true,"inRoles":["pg_monitor"],"passwordSecret":{"name":"pg-monitor-secret"}}]')}]
+                    : [JSONPatch{op: "add", path: "/spec/managed/roles/-", value: json.unmarshal('{"name":"otel_monitor","ensure":"present","login":true,"inRoles":["pg_monitor"],"passwordSecret":{"name":"pg-monitor-secret"}}')}]))
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: cnpg-monitor-pg-stat-statements
+  annotations:
+    policies.kyverno.io/title: CNPG pg_stat_statements Defaults
+    policies.kyverno.io/category: Database
+    policies.kyverno.io/description: >-
+      Sets the pg_stat_statements parameters on new CNPG clusters that do not set them.
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["postgresql.cnpg.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["clusters"]
+  evaluation:
+    mutateExisting:
+      enabled: false
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (has(object.spec.postgresql) && has(object.spec.postgresql.parameters) && ("pg_stat_statements.max" in object.spec.postgresql.parameters))
+            ? []
+            : (!has(object.spec.postgresql)
+                ? [JSONPatch{op: "add", path: "/spec/postgresql", value: json.unmarshal('{"parameters":{"pg_stat_statements.max":"10000","pg_stat_statements.track":"all"}}')}]
+                : (!has(object.spec.postgresql.parameters)
+                    ? [JSONPatch{op: "add", path: "/spec/postgresql/parameters", value: json.unmarshal('{"pg_stat_statements.max":"10000","pg_stat_statements.track":"all"}')}]
+                    : [JSONPatch{op: "add", path: "/spec/postgresql/parameters/pg_stat_statements.max", value: "10000"},
+                       JSONPatch{op: "add", path: "/spec/postgresql/parameters/pg_stat_statements.track", value: "all"}]))
