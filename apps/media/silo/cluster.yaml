@@ -17,6 +17,7 @@ spec:
         login: true
         inRoles:
           - pg_monitor
+          - pg_read_all_data
         passwordSecret:
           name: pg-monitor-secret
   primaryUpdateStrategy: unsupervised

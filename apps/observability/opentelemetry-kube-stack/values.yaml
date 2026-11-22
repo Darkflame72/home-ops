@@ -166,7 +166,6 @@ collectors:
               enabled: true
           top_query_collection:
             collection_interval: 60s
-            max_explain_each_interval: 0
         postgresql/vaultwarden-postgres:
           endpoint: vaultwarden-postgres-rw.security.svc.cluster.local:5432
           username: otel_monitor
@@ -180,7 +179,6 @@ collectors:
               enabled: true
           top_query_collection:
             collection_interval: 60s
-            max_explain_each_interval: 0
         postgresql/phoenix-postgres:
           endpoint: phoenix-postgres-rw.observability.svc.cluster.local:5432
           username: otel_monitor
@@ -194,7 +192,6 @@ collectors:
               enabled: true
           top_query_collection:
             collection_interval: 60s
-            max_explain_each_interval: 0
         postgresql/gatus-postgres:
           endpoint: gatus-postgres-rw.observability.svc.cluster.local:5432
           username: otel_monitor
@@ -208,7 +205,6 @@ collectors:
               enabled: true
           top_query_collection:
             collection_interval: 60s
-            max_explain_each_interval: 0
         postgresql/forgejo-postgres:
           endpoint: forgejo-postgres-rw.default.svc.cluster.local:5432
           username: otel_monitor
@@ -222,7 +218,6 @@ collectors:
               enabled: true
           top_query_collection:
             collection_interval: 60s
-            max_explain_each_interval: 0
         postgresql/nextcloud-postgres:
           endpoint: nextcloud-postgres-rw.default.svc.cluster.local:5432
           username: otel_monitor
@@ -236,7 +231,6 @@ collectors:
               enabled: true
           top_query_collection:
             collection_interval: 60s
-            max_explain_each_interval: 0
         postgresql/harbor-postgres:
           endpoint: harbor-postgres-rw.default.svc.cluster.local:5432
           username: otel_monitor
@@ -257,7 +251,6 @@ collectors:
               enabled: true
           top_query_collection:
             collection_interval: 60s
-            max_explain_each_interval: 0
         postgresql/silo-pg:
           endpoint: silo-pg-rw.media.svc.cluster.local:5432
           username: otel_monitor
