@@ -1,8 +1,8 @@
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/cluster_v1.json
 # Target of the PG16 -> PG18 migration (cutover done). Schema and data were
-# moved in via logical replication from immich-v2; the bootstrap import and
-# subscription have been removed now that the migration is complete.
+# moved in via logical replication; the bootstrap import and subscription
+# have been removed now that the migration is complete.
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -12,7 +12,7 @@ spec:
   instances: 3
   primaryUpdateStrategy: unsupervised
 
-  # Same Istio ambient opt-out as immich-v2 (see cluster-v2.yaml).
+  # Istio ambient opt-out for the CNPG pods.
   inheritedMetadata:
     labels:
       istio.io/dataplane-mode: none

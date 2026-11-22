@@ -555,7 +555,7 @@ metadata:
     policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — media CNPG exception
     policies.kyverno.io/category: Istio
     policies.kyverno.io/description: >-
-      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for CNPG clusters in media. Missing this caused a live ~4min outage of immich-v2's CNPG cluster on 2026-07-20 when media was first meshed — see istio-ambient-namespace-labels.yaml for context.
+      Workload-scoped exception for the CNPG operator (unmeshed, database namespace) reaching its instance-manager API on port 8000 for CNPG clusters in media. Missing this caused a live ~4min outage of a media CNPG cluster on 2026-07-20 when media was first meshed — see istio-ambient-namespace-labels.yaml for context.
 spec:
   matchConstraints:
     resourceRules:
@@ -655,7 +655,7 @@ spec:
   generate:
     - expression: "generator.Apply('media', variables.downstream)"
 
-# istio-authz-media-allow-metrics-scrape (immich-server + immich-v2's
+# istio-authz-media-allow-metrics-scrape (immich-server + its
 # postgres-exporter) removed 2026-07-20 — it was a port-blanket workaround
 # for observability scraping before observability was enrolled. media's
 # default-allow already lists "observability" in source.namespaces, so
