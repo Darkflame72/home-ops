@@ -5,6 +5,9 @@ kind: Kustomization
 resources:
   - ./pvc.yaml
   - ./cluster-v2.yaml
+  - ./cluster-pg18.yaml
+  - ./publication.yaml
+  - ./objectstore-pg18.yaml
   - ./redis.yaml
   - ./scheduled-backup.yaml
   - ./objectstore.yaml

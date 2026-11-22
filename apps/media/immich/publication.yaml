@@ -1,0 +1,14 @@
+---
+# Source side of the immich-v2 -> immich-pg18 logical replication.
+apiVersion: postgresql.cnpg.io/v1
+kind: Publication
+metadata:
+  name: immich-v2-publication
+  namespace: media
+spec:
+  cluster:
+    name: immich-v2
+  dbname: immich
+  name: immich_v2_publication
+  target:
+    allTables: true

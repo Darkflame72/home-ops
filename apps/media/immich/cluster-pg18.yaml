@@ -1,0 +1,103 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/cluster_v1.json
+# Blue/green replacement for immich-v2 (PG16 -> PG18) via logical replication.
+# Schema is imported at bootstrap, data is streamed from immich-v2 by the
+# Subscription below. Cutover = scale immich down, sync sequences, repoint
+# DB_URL to immich-pg18-app, scale back up. immich-v2 is kept as rollback.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: immich-pg18
+  namespace: media
+spec:
+  instances: 3
+  primaryUpdateStrategy: unsupervised
+
+  # Same Istio ambient opt-out as immich-v2 (see cluster-v2.yaml).
+  inheritedMetadata:
+    labels:
+      istio.io/dataplane-mode: none
+
+  affinity:
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:18-1.1.1
+
+  resources:
+    requests:
+      cpu: 75m
+      memory: 192Mi
+    limits:
+      memory: 4Gi
+
+  storage:
+    size: 25Gi
+    storageClass: openebs-hostpath
+
+  bootstrap:
+    initdb:
+      database: immich
+      owner: immich
+      import:
+        type: microservice
+        schemaOnly: true
+        databases:
+          - immich
+        source:
+          externalCluster: immich-v2
+
+  externalClusters:
+    - name: immich-v2
+      connectionParameters:
+        host: immich-v2-rw.media.svc.cluster.local
+        user: immich
+        dbname: immich
+        sslmode: require
+      password:
+        name: immich-v2-app
+        key: password
+
+  postgresql:
+    shared_preload_libraries:
+    - vchord.so
+
+  env:
+  - name: AWS_DEFAULT_REGION
+    valueFrom:
+      secretKeyRef:
+        name: cnpg-backup-secret
+        key: REGION
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: immich-pg18
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Subscription
+metadata:
+  name: immich-v2-to-pg18
+  namespace: media
+spec:
+  cluster:
+    name: immich-pg18
+  dbname: immich
+  name: immich_v2_to_pg18
+  externalClusterName: immich-v2
+  publicationName: immich_v2_publication
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: immich-pg18-backup
+  namespace: media
+spec:
+  schedule: "0 0 2 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: immich-pg18
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

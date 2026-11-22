@@ -21,7 +21,7 @@ spec:
     podAntiAffinityType: required
     topologyKey: kubernetes.io/hostname
 
-  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16-1.1.1
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:18-1.1.1
 
   resources:
     requests:
@@ -47,6 +47,18 @@ spec:
         parameters:
           barmanObjectName: immich-backup
           serverName: immich
+
+  # Logical replication source for the immich-pg18 migration: the subscriber
+  # connects as the immich role, which needs REPLICATION. Only the attribute
+  # is added; the password stays the existing immich-v2-app secret.
+  managed:
+    roles:
+    - name: immich
+      ensure: present
+      login: true
+      replication: true
+      passwordSecret:
+        name: immich-v2-app
 
   postgresql:
     shared_preload_libraries:
