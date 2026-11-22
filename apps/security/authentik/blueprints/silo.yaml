@@ -1,0 +1,56 @@
+version: 1
+metadata:
+  name: silo
+entries:
+  - model: authentik_core.group
+    id: silo-group
+    identifiers:
+      name: silo-user
+    attrs:
+      is_superuser: false
+
+  - model: authentik_providers_oauth2.oauth2provider
+    id: silo-provider
+    identifiers:
+      name: "Provider for Silo"
+    attrs:
+      client_type: confidential
+      client_id: tuyuiu7CC9ZwhYziyObKtfVNdVks6OO0D8VSc77x
+      client_secret: !Env SILO_CLIENT_SECRET
+      redirect_uris:
+        # Silo's stable callback (the plugin's callback: stable setting), so the
+        # URI does not change with Silo's installation ID.
+        - matching_mode: strict
+          redirect_uri_type: authorization
+          url: "https://silo.darkflame.dev/api/v2/auth/oauth/callback"
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
+      access_token_validity: minutes=5
+      refresh_token_validity: days=30
+      include_claims_in_id_token: true
+      sub_mode: hashed_user_id
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'openid'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'email'"]]
+        - !Find [authentik_providers_oauth2.scopemapping, [name, "authentik default OAuth Mapping: OpenID 'profile'"]]
+
+  - model: authentik_core.application
+    id: silo-application
+    identifiers:
+      slug: silo
+    attrs:
+      name: Silo
+      provider: !KeyOf silo-provider
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      pk: 396e6d2a-e2df-40d6-b516-a830b6941a8e
+    attrs:
+      target: !KeyOf silo-application
+      group: !KeyOf silo-group
+      order: 0
+      enabled: true
+      negate: false
+      timeout: 30

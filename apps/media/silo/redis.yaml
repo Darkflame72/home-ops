@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/dragonflydb.io/dragonfly_v1alpha1.json
+# Redis for Silo (Watch Party rooms, shared paging sessions), as its own pod rather
+# than bundled in the Silo container. Silo reaches it through the silo-redis Service.
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: silo-redis
+  namespace: media
+spec:
+  # renovate: datasource=docker depName=ghcr.io/dragonflydb/dragonfly
+  image: ghcr.io/dragonflydb/dragonfly:v2.1.0@sha256:94891bb22ce2fb0f7a5a3ff1bb3b2fbbc5830e2523293e47723d87fa3e5b1184
+  replicas: 1
+  authentication:
+    passwordFromSecret:
+      name: silo-secret
+      key: REDIS_PASSWORD
+  # media is enrolled in the Istio ambient mesh, which intercepts and breaks the
+  # operator's raw redis/admin-port connections used for readiness and master
+  # election. Opt this pod out of ambient capture, as immich-redis does.
+  podMetadata:
+    labels:
+      istio.io/dataplane-mode: none
+  env:
+    - name: MAX_MEMORY
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+          divisor: 1Mi
+  args:
+    - --maxmemory=$(MAX_MEMORY)Mi
+    - --proactor_threads=1
+    - --default_lua_flags=allow-undeclared-keys
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 320Mi

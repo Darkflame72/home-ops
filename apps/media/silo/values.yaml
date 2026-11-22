@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/refs/heads/main/charts/other/app-template/values.schema.json
-# Two pods. silo runs the server with PostgreSQL in the silo-pg CNPG cluster
-# (DATABASE_URL) and Redis bundled in its container. meilisearch is the upstream
-# image, its own pod, which silo reaches through the silo-meilisearch Service.
+# Nothing bundled in the Silo container. PostgreSQL is the silo-pg CNPG cluster,
+# Redis is the silo-redis Dragonfly (redis.yaml), Meilisearch is its own pod below.
+# The server reaches each through its own Service.
 controllers:
   silo:
     containers:
@@ -35,6 +35,50 @@ controllers:
               secretKeyRef:
                 name: silo-pg-app
                 key: uri
+          # Silo's own Redis is off; REDIS_URL names the Dragonfly instead.
+          ENABLE_REDIS: "false"
+          REDIS_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: silo-secret
+                key: REDIS_PASSWORD
+          REDIS_URL: redis://:$(REDIS_PASSWORD)@silo-redis.media.svc.cluster.local:6379
+          # Sign-in with authentik, provisioned by the official OIDC plugin
+          # (silo.auth.oidc). Secrets are fromEnv references, never inline. The
+          # stable callback keeps the redirect URI fixed (see blueprints/silo.yaml).
+          SILO_OIDC_CLIENT_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: silo-secret
+                key: SILO_OIDC_CLIENT_SECRET
+          SILO_CONFIG: |
+            {
+              "apiVersion": 1,
+              "plugins": {
+                "silo.auth.oidc": {
+                  "catalog": "official",
+                  "version": "0.1.2",
+                  "config": {
+                    "display_name": {"value": "authentik"},
+                    "connection": {
+                      "issuer_url": "https://auth.darkflame.dev/application/o/silo/",
+                      "client_id": "tuyuiu7CC9ZwhYziyObKtfVNdVks6OO0D8VSc77x",
+                      "client_secret": {"fromEnv": "SILO_OIDC_CLIENT_SECRET"},
+                      "token_endpoint_auth_method": "client_secret_basic",
+                      "scopes": "openid profile email"
+                    }
+                  },
+                  "auth_binding": {
+                    "capability_id": "oidc",
+                    "enabled": true,
+                    "display_order": 0,
+                    "auto_provision": true,
+                    "default_login": true,
+                    "callback": "stable"
+                  }
+                }
+              }
+            }
         resources:
           requests:
             cpu: 200m

@@ -19,6 +19,7 @@ configMapGenerator:
       - blueprints/bar-assistant.yaml
       - blueprints/device-code-flow.yaml
       - blueprints/recovery.yaml
+      - blueprints/silo.yaml
       - blueprints/forgejo.yaml
       - blueprints/gotosocial.yaml
       - blueprints/grafana.yaml

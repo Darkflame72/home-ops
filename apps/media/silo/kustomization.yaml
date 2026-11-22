@@ -11,3 +11,4 @@ resources:
   - ./scaledobject.yaml
   - ./kopiur.yaml
   - ./authorizationpolicy.yaml
+  - ./redis.yaml
