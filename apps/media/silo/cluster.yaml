@@ -22,12 +22,13 @@ spec:
 
   imageName: ghcr.io/cloudnative-pg/postgresql:18.6
 
-  # Silo's migrations need the vector extension (pgvector). It is not in the
-  # base image, so it comes from CNPG's extension image volume.
-  extensions:
-    - name: pgvector
-      image:
-        reference: ghcr.io/cloudnative-pg/pgvector:0.8.1-202512091243-18-trixie
+  postgresql:
+    # Silo's migrations need the vector extension (pgvector). It is not in the
+    # base image, so it comes from CNPG's extension image volume.
+    extensions:
+      - name: pgvector
+        image:
+          reference: ghcr.io/cloudnative-pg/pgvector:0.8.1-202512091243-18-trixie
 
   resources:
     requests:
