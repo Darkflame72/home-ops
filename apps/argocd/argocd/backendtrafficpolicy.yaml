@@ -1,0 +1,24 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
+# Needed once argocd-server is in the Istio ambient mesh (see server.podLabels).
+# Envoy can reuse an upstream connection that ztunnel closes, which returns
+# 503 UC (upstream reset before any response). Retrying a reset is safe for requests
+# the app never answered. Envoy cannot restrict retries by method, so a POST that
+# reached the app before the reset could be retried.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: argocd-server-retry
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: argocd-server
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: argocd-webhook-external
+  retry:
+    numRetries: 2
+    retryOn:
+      triggers:
+        - reset

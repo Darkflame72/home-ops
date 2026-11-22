@@ -7,4 +7,5 @@ resources:
   - ./argocd-webhook-secret.yaml
   - ./argocd-oidc-secret.yaml
   - ./argocd-webhook-httproute.yaml
+  - ./backendtrafficpolicy.yaml
   - ./grafanadashboard.yaml

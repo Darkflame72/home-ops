@@ -130,6 +130,11 @@ configs:
         - '.spec.volumeClaimTemplates[]?.status'
 
 server:
+  podLabels:
+    # Enrolls argocd-server pods in the Istio ambient mesh (HBONE mTLS from Envoy).
+    # Pod-level, so the argocd namespace is not labeled. The retry policy in
+    # backendtrafficpolicy.yaml covers the connection resets this causes.
+    istio.io/dataplane-mode: ambient
   httproute:
     enabled: true
     parentRefs:
