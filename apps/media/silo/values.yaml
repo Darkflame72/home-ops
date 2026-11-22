@@ -56,7 +56,7 @@ controllers:
               "apiVersion": 1,
               "plugins": {
                 "silo.auth.oidc": {
-                  "catalog": "official",
+                  "catalog": "silo",
                   "version": "0.1.2",
                   "config": {
                     "display_name": {"value": "authentik"},
