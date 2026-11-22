@@ -16,7 +16,6 @@ spec:
         login: true
         inRoles:
           - pg_monitor
-          - pg_read_all_data
         passwordSecret:
           name: pg-monitor-secret
   imageName: ghcr.io/cloudnative-pg/postgresql:18.6

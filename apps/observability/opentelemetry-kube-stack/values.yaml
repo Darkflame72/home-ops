@@ -160,12 +160,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         postgresql/vaultwarden-postgres:
           endpoint: vaultwarden-postgres-rw.security.svc.cluster.local:5432
           username: otel_monitor
@@ -173,12 +167,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         postgresql/phoenix-postgres:
           endpoint: phoenix-postgres-rw.observability.svc.cluster.local:5432
           username: otel_monitor
@@ -186,12 +174,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         postgresql/gatus-postgres:
           endpoint: gatus-postgres-rw.observability.svc.cluster.local:5432
           username: otel_monitor
@@ -199,12 +181,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         postgresql/forgejo-postgres:
           endpoint: forgejo-postgres-rw.default.svc.cluster.local:5432
           username: otel_monitor
@@ -212,12 +188,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         postgresql/nextcloud-postgres:
           endpoint: nextcloud-postgres-rw.default.svc.cluster.local:5432
           username: otel_monitor
@@ -225,12 +195,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         postgresql/harbor-postgres:
           endpoint: harbor-postgres-rw.default.svc.cluster.local:5432
           username: otel_monitor
@@ -245,12 +209,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         postgresql/silo-pg:
           endpoint: silo-pg-rw.media.svc.cluster.local:5432
           username: otel_monitor
@@ -272,12 +230,6 @@ collectors:
           collection_interval: 30s
           tls:
             insecure_skip_verify: true
-          # pg_stat_statements top queries, as logs (db.server.top_query).
-          events:
-            db.server.top_query:
-              enabled: true
-          top_query_collection:
-            collection_interval: 60s
         prometheus:
           config:
             scrape_configs:
@@ -350,12 +302,6 @@ collectors:
               statements:
                 - set(attributes["cnpg_cluster"], resource.attributes["server.address"])
                 - 'replace_pattern(attributes["cnpg_cluster"], "-rw\\..*", "")'
-        transform/pg_cluster_logs:
-          log_statements:
-            - context: log
-              statements:
-                - set(attributes["cnpg_cluster"], resource.attributes["server.address"])
-                - 'replace_pattern(attributes["cnpg_cluster"], "-rw\\..*", "")'
       service:
         # Both leader-election extensions: the events receiver fails to start
         # unless its own extension is listed here.
@@ -374,11 +320,6 @@ collectors:
           metrics/postgres:
             receivers: [postgresql/authentik-postgres, postgresql/vaultwarden-postgres, postgresql/phoenix-postgres, postgresql/gatus-postgres, postgresql/forgejo-postgres, postgresql/nextcloud-postgres, postgresql/harbor-postgres, postgresql/gotosocial-postgres, postgresql/silo-pg, postgresql/immich-pg18, postgresql/miniflux-postgres]
             processors: [memory_limiter, transform/pg_cluster, transform/cluster_label, batch]
-            exporters: [otlp/gateway]
-          # Top queries from pg_stat_statements, only on clusters that have the extension.
-          logs/postgres:
-            receivers: [postgresql/authentik-postgres, postgresql/vaultwarden-postgres, postgresql/phoenix-postgres, postgresql/gatus-postgres, postgresql/forgejo-postgres, postgresql/nextcloud-postgres, postgresql/gotosocial-postgres, postgresql/miniflux-postgres]
-            processors: [memory_limiter, transform/pg_cluster_logs, batch]
             exporters: [otlp/gateway]
   daemon:
     securityContext:

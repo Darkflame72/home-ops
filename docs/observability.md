@@ -14,7 +14,7 @@ flowchart LR
     LLM["LLM apps (OTLP)"]
     AUDIT["Talos kube-apiserver audit logs"]
     NAS["TrueNAS"]
-    PG["CNPG PostgreSQL<br/>miniflux first, more to follow"]
+    PG["CNPG PostgreSQL<br/>11 clusters, otel_monitor role"]
     ETCD["etcd (loopback on control-plane nodes)"]
     REMOTE["Remote senders<br/>otlp.darkflame.dev, bearer token"]
 
@@ -77,10 +77,12 @@ as the `otel_monitor` role. Every CNPG cluster creates that role through `spec.m
 `pg_monitor` membership. The shared password is `pg-monitor-secret`, synced from Infisical
 (`/cloudnative-pg/otel-monitor-password`) by `apps/database/cloudnative-pg/pg-monitor-cluster-external-secret.yaml`.
 
-- **Metrics** (`postgresql.*`, `metrics/postgres` pipeline): miniflux only so far, every 30s. Rolling out to the rest once it is verified. The `cnpg_cluster`
+- **Metrics** (`postgresql.*`, `metrics/postgres` pipeline): all 11 clusters, every 30s. The `cnpg_cluster`
   label holds the cluster name, taken from the `server.address` resource attribute.
-- **Top queries** (`db.server.top_query`, `logs/postgres` pipeline): miniflux only so far. Other clusters with
-  `pg_stat_statements` (authentik, vaultwarden, phoenix, gatus, forgejo, nextcloud, gotosocial) are still to follow.
+- **Top queries are not collected.** The receiver's `top_query` event runs EXPLAIN on each captured query,
+  which needs grants that cannot be declared in Git: CONNECT on the `app` database and EXECUTE on some
+  privileged functions. Its `max_explain_each_interval` setting does not turn EXPLAIN off. Per-query data
+  would need a different source.
 - **Traces**: the receiver does not emit traces. Query traces come from the applications' own OTLP
   instrumentation. Postgres has no tracing of its own.
 - **Query samples** (`db.server.query_sample`) are not collected. They carry literal parameter values from
