@@ -30,6 +30,13 @@ replicas. Two shared gateways are defined in the `network` namespace:
 | `envoy-external` | Internet             | Cloudflare Tunnel to `external.darkflame.dev` |
 | `envoy-internal` | LAN only             | Direct to the gateway's LAN address        |
 
+The Envoy proxy pods are enrolled in the Istio ambient mesh with a pod-level label
+(`istio.io/dataplane-mode: ambient`, set through `EnvoyProxy` `pod.labels`). Traffic from Envoy to
+meshed backends is HBONE mTLS via ztunnel, and waypoints enforce authorization. The `network`
+namespace is not labeled, so cloudflared, external-dns and the other `network` pods stay unmeshed.
+Backends in unmeshed namespaces (for example `argocd`, `kopiur-system`) still receive plaintext from
+Envoy.
+
 To publish an app, create an `HTTPRoute` that references one of these gateways and a hostname under
 `darkflame.dev`. Attach it to the `https` listener.
 

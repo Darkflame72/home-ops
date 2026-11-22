@@ -27,6 +27,11 @@ spec:
             limits:
               memory: 1Gi
         pod:
+          labels:
+            # Enrolls only these Envoy proxy pods in the Istio ambient mesh, so
+            # backend traffic is HBONE mTLS. Pod-level rather than a namespace label,
+            # so cloudflared and the other network-namespace pods stay unmeshed.
+            istio.io/dataplane-mode: ambient
           annotations:
             # The envoy-proxy PodMonitor already scrapes these proxies. Envoy Gateway's default
             # prometheus.io/scrape annotation also made the daemon collector scrape them, so
