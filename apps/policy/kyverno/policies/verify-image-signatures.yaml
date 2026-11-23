@@ -51,7 +51,7 @@ spec:
       # Admission-time verification (on pod CREATE/UPDATE) still runs and
       # still gets recorded — this only stops the redundant periodic
       # rescan of pods that already passed or failed at creation time.
-      enabled: false
+      enabled: true
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -113,7 +113,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -248,7 +248,7 @@ spec:
       # Admission-time verification (on pod CREATE/UPDATE) still runs and
       # still gets recorded — this only stops the redundant periodic
       # rescan of pods that already passed or failed at creation time.
-      enabled: false
+      enabled: true
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -305,7 +305,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -383,7 +383,7 @@ spec:
       # Admission-time verification (on pod CREATE/UPDATE) still runs and
       # still gets recorded — this only stops the redundant periodic
       # rescan of pods that already passed or failed at creation time.
-      enabled: false
+      enabled: true
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -437,7 +437,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -505,7 +505,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -580,7 +580,7 @@ spec:
       # Admission-time verification (on pod CREATE/UPDATE) still runs and
       # still gets recorded — this only stops the redundant periodic
       # rescan of pods that already passed or failed at creation time.
-      enabled: false
+      enabled: true
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -636,7 +636,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -700,7 +700,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -763,7 +763,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -835,7 +835,7 @@ spec:
       # Admission-time verification (on pod CREATE/UPDATE) still runs and
       # still gets recorded — this only stops the redundant periodic
       # rescan of pods that already passed or failed at creation time.
-      enabled: false
+      enabled: true
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -897,7 +897,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -972,7 +972,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1043,7 +1043,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1107,7 +1107,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1170,7 +1170,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1243,7 +1243,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1327,7 +1327,7 @@ spec:
       # Admission-time verification (on pod CREATE/UPDATE) still runs and
       # still gets recorded — this only stops the redundant periodic
       # rescan of pods that already passed or failed at creation time.
-      enabled: false
+      enabled: true
   failurePolicy: Ignore # a Sigstore/Rekor outage must not block all pod admission
   matchConstraints:
     resourceRules:
@@ -1403,7 +1403,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
@@ -1474,7 +1474,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
