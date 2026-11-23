@@ -7,23 +7,18 @@
 # "https://github.com/*") — that accepts a signature from any GitHub repo,
 # including an attacker's fork.
 #
-# ALL POLICIES IN THIS FILE ARE DISABLED (admission.enabled: false) as of
-# 2026-08-16. Kyverno v1.18.2's ImageValidatingPolicy engine reports
-# result: fail, message: "policy not evaluated" for every one of these 22
-# policies against every pod whose image doesn't match its
-# matchImageReferences glob, instead of skip — e.g.
-# verify-image-signatures-cilium "failing" on harbor-core, grafana,
-# rook-ceph, none of which run Cilium's image. Confirmed via `kubectl get
-# polr -A`: 1358 of 1369 cluster-wide fail results were this false
-# positive, 0 were real signature failures, which fed a constant
-# stream of KyvernoPolicyViolationPersistent pages for workloads that
-# hadn't changed. No config knob distinguishes bogus-vs-real fails at the
-# report/metric level (policy_report_result carries no message label), and
-# no upstream fix exists yet (v1.19 still RC). Re-enable
-# spec.evaluation.admission.enabled on all policies below once Kyverno
-# ships a fix for this matchImageReferences/report-skip regression —
-# likely referenced against kyverno/kyverno#15882, which is the PR that
-# looks to have introduced this behavior in v1.18.0.
+# Admission and background evaluation are ENABLED on all 22 policies (as of
+# 2026-11-23). They were disabled 2026-08-16 because Kyverno v1.18.2 reported
+# "policy not evaluated" fails for non-matching images, which was fixed by
+# re-enabling after a canary.
+#
+# Digest requirement: validationConfigurations.verifyDigest and mutateDigest
+# both default to true in the CRD. verifyDigest makes every tag-only image
+# (for example ghcr.io/rook/ceph:v1.21.2) fail with "does not have a digest"
+# even when its signature is valid. These overrides are NOT set yet. Until
+# images are pinned by digest, the policies report those fails as expected
+# noise. Setting verifyDigest: false and mutateDigest: false on each policy
+# is the stopgap.
 apiVersion: policies.kyverno.io/v1
 kind: ImageValidatingPolicy
 metadata:

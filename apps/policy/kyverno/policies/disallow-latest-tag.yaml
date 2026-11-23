@@ -31,7 +31,11 @@ spec:
         object.spec.containers + object.spec.?initContainers.orValue([]) +
         object.spec.?ephemeralContainers.orValue([])
   validations:
-    - expression: variables.allContainers.all(container, container.image.contains(':'))
-      message: "An image tag is required."
+    # A digest ref (repo@sha256:...) counts as pinned. Otherwise the tag is the
+    # ':' after the last '/', so a registry port (registry:5000/app) is not a tag.
+    - expression: >-
+        variables.allContainers.all(container, container.image.contains('@') ||
+        container.image.split('/')[size(container.image.split('/')) - 1].contains(':'))
+      message: "An image tag or digest is required."
     - expression: variables.allContainers.all(container, !container.image.endsWith(':latest'))
       message: "Using a mutable image tag e.g. 'latest' is not allowed."
