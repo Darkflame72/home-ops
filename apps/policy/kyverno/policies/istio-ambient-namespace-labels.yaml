@@ -47,7 +47,7 @@ spec:
       expression: "object.metadata.name in [\"media\", \"security\", \"comms\", \"default\", \"agents\", \"observability\", \"renovate\"]"
   evaluation:
     mutateExisting:
-      enabled: false
+      enabled: true
   mutations:
     - patchType: ApplyConfiguration
       applyConfiguration:
