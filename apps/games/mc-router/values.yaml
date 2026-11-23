@@ -16,6 +16,10 @@ minecraftRouter:
       host: minecraft.games.svc.cluster.local
       port: 25565
 
+# Enrolls these pods in the Istio ambient mesh (pod-level, not the games namespace).
+podLabels:
+  istio.io/dataplane-mode: ambient
+
 resources:
   requests:
     cpu: 10m

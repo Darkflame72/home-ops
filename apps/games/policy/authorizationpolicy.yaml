@@ -1,0 +1,18 @@
+---
+# mc-router is a LoadBalancer that players reach from outside the cluster (unmeshed).
+# Once it is enrolled, the games default-allow policy only admits mesh identities, so this
+# exception admits the Minecraft port from any source. It applies to mc-router only.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/security.istio.io/authorizationpolicy_v1.json
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-unmeshed-mc-router
+  namespace: games
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mc-router
+  rules:
+    - to:
+        - operation:
+            ports: ["25565"]
