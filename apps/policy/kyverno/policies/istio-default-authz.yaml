@@ -53,68 +53,6 @@ spec:
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
-  name: istio-authz-agents-allow-ingress
-  annotations:
-    policies.kyverno.io/title: Istio Ambient AuthorizationPolicy — agents ingress exception
-    policies.kyverno.io/category: Istio
-    policies.kyverno.io/description: >-
-      Namespace-wide exception for envoy-internal (unmeshed, network
-      namespace — see istio-authz-media-allow-ingress for why this is
-      needed). agentgateway.darkflame.dev routes envoy-internal ->
-      agentgateway-proxy:80; agentgateway-proxy then forwards internally
-      to mcp-backend via its own agentgateway-class Gateway, entirely
-      within agents, already covered by default-allow's
-      source.namespaces list. Previously also carried ports 9092/15020
-      (agentgateway's own metrics port, and Istio's per-pod stats endpoint
-      that agentgateway-proxy exposes via prometheus.io/scrape=true) as a
-      port-blanket workaround because observability wasn't enrolled yet.
-      Now that it is, those are covered by "observability" being added to
-      istio-authz-agents-default-allow's source.namespaces instead — real
-      mesh-identity matching, not a blanket port exception — so only the
-      genuinely-unmeshed network caller needs to stay here.
-      Port 15020 is back because the daemon OTel collector's scrapes of
-      agentgateway-proxy reach ztunnel without a source identity and so match
-      this exception (reviewed 2026-10-24).
-spec:
-  matchConstraints:
-    resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        operations: ["CREATE", "UPDATE"]
-        resources: ["namespaces"]
-        resourceNames: ["agents"]
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: false
-  variables:
-    - name: downstream
-      expression: >-
-        [
-          {
-            "apiVersion": dyn("security.istio.io/v1"),
-            "kind": dyn("AuthorizationPolicy"),
-            "metadata": dyn({
-              "name": "allow-unmeshed-network-ingress",
-              "namespace": "agents"
-            }),
-            "spec": dyn({
-              "rules": dyn([dyn({
-                "to": [
-                  {"operation": {"ports": ["15020"]}}
-                ]
-              })])
-            })
-          }
-        ]
-  generate:
-    - expression: "generator.Apply('agents', variables.downstream)"
-
----
-apiVersion: policies.kyverno.io/v1
-kind: GeneratingPolicy
-metadata:
   name: istio-authz-comms-default-allow
   annotations:
     policies.kyverno.io/title: Istio Ambient Default AuthorizationPolicy — comms
@@ -684,7 +622,7 @@ spec:
             "spec": dyn({
               "rules": dyn([dyn({
                 "to": [
-                  {"operation": {"ports": ["80", "3000", "3100", "6006", "8080", "8888", "9090", "20001"]}}
+                  {"operation": {"ports": ["8080", "9090", "3100"]}}
                 ]
               })])
             })
