@@ -22,4 +22,13 @@ spec:
       compression: gzip
     data:
       compression: gzip
+  instanceSidecarConfiguration:
+    # The barman-cloud sidecar is injected into every CNPG instance pod with no resources.
+    # That fails require-requests-limits (Kyverno, medium), so set them here.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 512Mi
   retentionPolicy: "30d"
