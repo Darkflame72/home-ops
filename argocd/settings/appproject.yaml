@@ -50,12 +50,12 @@ spec:
     - https://kedacore.github.io/charts
     - https://kiali.org/helm-charts
     - https://kubernetes-sigs.github.io/descheduler
-    - https://kubernetes-sigs.github.io/external-dns
     - https://kubernetes-sigs.github.io/metrics-server
     - mirror.gcr.io/envoyproxy
     - quay.io/cilium/charts
     - quay.io/jetstack/charts
     - registry-1.docker.io/arizephoenix
+    - registry.k8s.io/external-dns/charts
   destinations:
     - name: in-cluster
       namespace: '*'
