@@ -41,7 +41,7 @@ spec:
       # Disabled 2026-08-16: see file header — Kyverno v1.18.2 reports
       # fail: "policy not evaluated" for every non-matching policy on
       # every pod instead of skip. Temporary, pending an upstream fix.
-      enabled: false
+      enabled: true
     background:
       # Background scan re-verifies every one of these policies against
       # every matching pod in the cluster on each scan cycle (cosign/Rekor
