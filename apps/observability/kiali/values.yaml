@@ -44,6 +44,10 @@ server:
 # so token automount is left on.
 deployment:
   security_context:
+    # This map replaces the chart's default security_context, so runAsNonRoot must be
+    # set here. The image runs as uid 1000 (verified live).
+    runAsNonRoot: true
+    runAsUser: 1000
     seccompProfile:
       type: RuntimeDefault
     allowPrivilegeEscalation: false

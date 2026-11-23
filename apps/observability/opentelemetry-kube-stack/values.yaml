@@ -263,6 +263,11 @@ collectors:
             processors: [memory_limiter, transform/pg_cluster, transform/cluster_label, batch]
             exporters: [otlp/gateway]
   daemon:
+    # Same pod security as the gateway and control-plane collectors, which already run non-root.
+    podSecurityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
     securityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
