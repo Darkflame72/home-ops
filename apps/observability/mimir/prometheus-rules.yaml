@@ -168,7 +168,10 @@ spec:
             summary: "OTel receiver {{ $labels.receiver }} is refusing data"
             description: "Receiver {{ $labels.receiver }} on cluster {{ $labels.cluster }} has refused data for 10 minutes, usually memory_limiter back-pressure. Check collector resources."
         - alert: ObservabilityTargetDown
-          expr: up{job=~"observability/.*"} == 0
+          # The target allocator is excluded. Its pod inherits the collector's
+          # prometheus.io/port=8888 annotation, but it serves no metrics there, so the
+          # scrape always fails. Its health shows up in the collector's own metrics.
+          expr: up{job=~"observability/.*", job!="observability/opentelemetry-kube-stack-collector-targetallocator"} == 0
           for: 5m
           labels:
             severity: critical
