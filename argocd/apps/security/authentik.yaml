@@ -17,7 +17,7 @@ spec:
       ref: repo
     - repoURL: ghcr.io/goauthentik/helm-charts
       chart: authentik
-      targetRevision: 2026.8.6
+      targetRevision: 2026.8.7
       helm:
         releaseName: authentik
         valueFiles:
