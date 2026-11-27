@@ -6,7 +6,7 @@ controllers:
       api:
         image:
           repository: ghcr.io/karlomikus/barassistant
-          tag: 6.12.1@sha256:2c52dd9858d7b4206159bb36f9febf22d19b025fda0b7d4fb9f2482a7d361a0b
+          tag: 6.13.1@sha256:4117a0e73c94b505557683118c134f7f011b6719e546f062687331e44df5774e
         env:
           APP_URL: &api-url "https://bar.darkflame.dev/bar"
           MEILISEARCH_HOST: http://localhost:7700
