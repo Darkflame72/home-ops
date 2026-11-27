@@ -129,6 +129,9 @@ controllers:
         env:
           MEILI_ENV: production
           MEILI_NO_ANALYTICS: "true"
+          # One-time: upgrade the on-disk database from 1.57 to the 1.58 engine.
+          # Remove once the pod has started cleanly.
+          MEILI_UPGRADE_DB: "true"
           MEILI_MASTER_KEY:
             valueFrom:
               secretKeyRef:
