@@ -6,6 +6,10 @@
 # cannot reach it, which is the point: the endpoint is not exposed to the LAN or pod network.
 # The node name goes into the instance label, because every control-plane node serves the
 # same loopback address and series would otherwise collide in Mimir.
+#
+# It also ships the kube-apiserver audit log (Talos writes it to /var/log/audit/kube on each
+# control-plane node) to Loki through the gateway. Only this collector sees the control-plane
+# host, so the audit receiver lives here, not in the daemon collector.
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
@@ -21,7 +25,12 @@ spec:
       valueFrom:
         fieldRef:
           fieldPath: spec.nodeName
+  # The audit file is owned by uid/gid 65534 (the same reason the Fluent Bit audit shipper runs
+  # as this user), so the collector does not need root to read it.
   podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
     seccompProfile:
       type: RuntimeDefault
   securityContext:
@@ -29,6 +38,14 @@ spec:
     readOnlyRootFilesystem: true
     capabilities:
       drop: ["ALL"]
+  volumes:
+    - name: audit-log
+      hostPath:
+        path: /var/log/audit/kube
+  volumeMounts:
+    - name: audit-log
+      mountPath: /var/log/audit/kube
+      readOnly: true
   podAnnotations:
     # Self-telemetry on :8888, picked up by the daemon's annotation scrape.
     prometheus.io/scrape: "true"
@@ -53,14 +70,40 @@ spec:
               relabel_configs:
                 - target_label: instance
                   replacement: ${env:NODE_NAME}
+      filelog/audit:
+        include:
+          - /var/log/audit/kube/kube-apiserver.log
+        # Only new lines after a fresh start, matching the Fluent Bit shipper.
+        start_at: end
+        # Each line is one JSON audit event. Parsed fields become attributes, so they can be
+        # filtered and queried in Loki; the raw JSON stays in the log body.
+        operators:
+          - type: json_parser
+        retry_on_failure:
+          enabled: true
     processors:
       memory_limiter:
         check_interval: 1s
         limit_percentage: 75
         spike_limit_percentage: 15
       batch: {}
+      # Same noise cuts as the Fluent Bit shipper: lease and event churn, health probes, and
+      # Kyverno's own API traffic (trusted, and about half the volume). Secret and RBAC events
+      # are kept.
+      filter/audit:
+        error_mode: ignore
+        logs:
+          log_record:
+            - 'IsMatch(attributes["requestURI"], "^/(livez|readyz|healthz)")'
+            - 'attributes["objectRef"]["resource"] == "leases" or attributes["objectRef"]["resource"] == "events" or attributes["objectRef"]["resource"] == "selfsubjectaccessreviews" or attributes["objectRef"]["resource"] == "subjectaccessreviews"'
+            - 'IsMatch(attributes["user"]["username"], "^system:serviceaccount:policy:kyverno-")'
+      resource/audit:
+        attributes:
+          - action: insert
+            key: service.name
+            value: kube-audit
     exporters:
-      # Every collector sends through the gateway, which is the only path to Mimir.
+      # Every collector sends through the gateway, which is the only path to Mimir and Loki.
       otlp/gateway:
         endpoint: opentelemetry-kube-stack-gateway-collector.observability.svc.cluster.local:4317
         tls:
@@ -73,4 +116,8 @@ spec:
         metrics:
           receivers: [prometheus]
           processors: [memory_limiter, batch]
+          exporters: [otlp/gateway]
+        logs/audit:
+          receivers: [filelog/audit]
+          processors: [memory_limiter, filter/audit, resource/audit, batch]
           exporters: [otlp/gateway]
