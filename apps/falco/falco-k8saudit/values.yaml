@@ -80,6 +80,9 @@ customRules:
         (ka.user.name = "system:serviceaccount:observability:grafana-operator" and ka.target.namespace = "observability") or
         (ka.user.name = "system:serviceaccount:policy:kyverno-admission-controller" and ka.target.namespace = "policy") or
         (ka.user.name = "system:serviceaccount:external-secrets:external-secrets-cert-controller" and ka.target.namespace = "external-secrets") or
+        # The pg-monitor ClusterExternalSecret targets every namespace and refreshes hourly, so ESO reads
+        # its own copy of this one secret in each namespace. Pinned to the secret name and the ESO principal.
+        (ka.user.name = "system:serviceaccount:external-secrets:external-secrets" and ka.target.name = "pg-monitor-secret") or
         (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.target.namespace in ("default", "system-upgrade")) or
         (ka.user.name = "system:serviceaccount:rook-ceph:rook-ceph-rbd-csi-ceph-com-nodeplugin-sa" and ka.target.namespace = "rook-ceph") or
         (ka.user.name = "system:serviceaccount:renovate:renovate-operator-renovate-operator" and ka.target.namespace = "renovate") or
