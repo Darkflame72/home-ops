@@ -232,10 +232,14 @@ customRules:
     - macro: user_known_argocd_metrics_server_clusterroles
       condition: (ka.user.name = "system:serviceaccount:argocd:argocd-application-controller" and ka.verb = "patch" and
         ka.target.name in ("system:metrics-server", "system:metrics-server-aggregated-reader"))
+    # Talos reconciles system:talos-nodes with server-side apply and dryRun=All (reviewed 2026-11-27). A dry run
+    # changes nothing, so only that exact dry-run patch from the talos field manager is allowed.
+    - macro: user_known_talos_dryrun_clusterroles
+      condition: (ka.user.name = "admin" and ka.verb = "patch" and ka.target.name = "system:talos-nodes" and ka.uri.param[dryRun] = "All" and ka.uri.param[fieldManager] = "talos")
     - rule: System ClusterRole Modified/Deleted
       override:
         condition: append
-      condition: and not user_known_argocd_metrics_server_clusterroles
+      condition: and not user_known_argocd_metrics_server_clusterroles and not user_known_talos_dryrun_clusterroles
     # kopiur recreates its kopia-primary-discovery ConfigMap during reconciles (reviewed 2026-11-05).
     - macro: user_known_kopiur_discovery_configmap
       condition: (ka.user.name = "system:serviceaccount:kopiur-system:kopiur" and ka.target.namespace = "kopiur-system" and
