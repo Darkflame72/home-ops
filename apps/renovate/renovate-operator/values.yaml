@@ -43,9 +43,12 @@ metrics:
     enabled: true
     grafanaDashboard:
       allowCrossNamespaceImport: true
-auth:
+authorization:
   # Only members of this Authentik group can see/manage RenovateJobs in the UI (secure by default).
-  defaultAllowedGroups: "authentik Admins"
+  defaults:
+    adminGroups:
+      - "authentik Admins"
+auth:
   oidc:
     enabled: true
     issuerUrl: "https://auth.darkflame.dev/application/o/renovate/"
